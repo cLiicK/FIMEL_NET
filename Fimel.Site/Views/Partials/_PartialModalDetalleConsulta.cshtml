@@ -1,0 +1,80 @@
+﻿
+<div class="modal fade" id="modalDetalleConsulta" tabindex="-1" aria-labelledby="modalDetalleConsultaLabel">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDetalleConsultaLabel">Datos Consulta: <label id="lblFechaConsulta"></label></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <input type="hidden" id="hfIdConsulta">
+                    <div class="row">
+                        <div class="mb-3 col-md-3">
+                            <label for="inputTipoConsulta" class="form-label">Tipo Consulta</label>
+                            <input type="text" class="form-control" id="inputTipoConsulta" maxlength="3" disabled>
+                        </div>
+                        <div class="mb-3 col-md-2">
+                            <label for="inputPesoAnteriores" class="form-label">Peso(kg)</label>
+                            <input type="text" class="form-control" id="inputPesoAnteriores" maxlength="3" disabled>
+                        </div>
+                        <div class="mb-3 col-md-2">
+                            <label for="inputTallaAnteriores" class="form-label">Talla(cm)</label>
+                            <input type="text" class="form-control" id="inputTallaAnteriores" maxlength="3" disabled>
+                        </div>
+                        <div class="mb-3 col-md-2">
+                            <label for="inputIMCAnteriores" class="form-label">IMC</label>
+                            <input type="text" class="form-control" id="inputIMCAnteriores" disabled>
+                        </div>
+                        <div class="mb-3 col-md-3">
+                            <label for="inputEstadoNutricionalAnteriores" class="form-label">Est Nutricional</label>
+                            <input type="text" class="form-control" id="inputEstadoNutricionalAnteriores" maxlength="0" disabled>
+                        </div>
+                    </div>
+
+                    <div class="form-floating">
+                        <textarea class="form-control" id="lblMotivoConsulta" placeholder="Efectirijillo" style="height: 120px" disabled></textarea>
+                        <label for="lblMotivoConsulta">Motivo Consulta</label>
+                    </div>
+                    <br />
+                    <div class="form-floating">
+                        <textarea class="form-control" id="lblAnamnesis" placeholder="Efectirijillo" style="height: 80px" disabled></textarea>
+                        <label for="lblAnamnesis">Anamnesis</label>
+                    </div>
+                    <br />
+                    <div class="form-floating">
+                        <textarea class="form-control" id="lblExamenFisico" placeholder="Efectirijillo" style="height: 80px" disabled></textarea>
+                        <label for="lblExamenFisico">Exámen Físico</label>
+                    </div>
+                    <br />
+                    <div class="form-floating">
+                        <textarea class="form-control" id="lblDiagnostico" placeholder="Efectirijillo" style="height: 80px" disabled></textarea>
+                        <label for="lblDiagnostico">Diagnóstico</label>
+                    </div>
+                    <br />
+                    <div class="form-floating">
+                        <textarea class="form-control" id="lblIndicaciones" placeholder="Efectirijillo" style="height: 80px" disabled></textarea>
+                        <label for="lblIndicaciones">Indicaciones</label>
+                    </div>
+                    <br />
+                    <div class="form-floating">
+                        <textarea class="form-control" id="lblReceta" placeholder="Efectirijillo" style="height: 120px" disabled></textarea>
+                        <label for="lblReceta">Receta</label>
+                    </div>
+                    <br />
+                    <div class="form-floating">
+                        <textarea class="form-control" id="lblOrdenExamenes" placeholder="Efectirijillo" style="height: 120px" disabled></textarea>
+                        <label for="lblOrdenExamenes">Orden Exámenes</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnModificarDatos" onclick="HabilitaModificarDatos();">Modificar Datos</button>
+                <button type="button" class="btn btn-primary" style="display:none;" id="btnGuardarDetalleConsulta" onclick="ModificarDatosConsulta();">Actualizar</button>
+                <button type="button" class="btn btn-danger" style="display:none;" id="btnCancelarActualizacion" onclick="CancelarModificarDatos();">Cancelar</button>
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

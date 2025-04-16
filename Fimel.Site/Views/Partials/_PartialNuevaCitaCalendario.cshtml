@@ -1,0 +1,58 @@
+﻿<input type="hidden" id="hdnURL_EliminarCitaModal" value="@Url.Action("_EliminarCita","Horario")" />
+<input type="hidden" id="hdnURL_CrearCita" value="@Url.Action("_GuardarCita","Horario")" />
+
+<div class="modal fade" id="modalEventoNuevo" tabindex="-1" aria-labelledby="modalEventoNuevoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <input type="hidden" value="" id="fechaModal" />
+                <center><strong><h5 class="modal-title" id="modalEventoNuevoLabel"></h5></strong></center>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Hora de Inicio</strong> <input class="form-control" type="time" id="horaInicioCitaNuevo" disabled/></p>
+                <p><strong>Hora Término</strong> <input class="form-control" type="time" id="horaTerminoCitaNuevo" /></p>
+                <p><strong>Nombre</strong> <input class="form-control" id="nombreCitaNuevo" /></p>
+                <p><strong>Correo</strong> <input class="form-control" id="correoCitaNuevo" /></p>
+                <p>
+                    <strong>Tipo de Documento</strong>
+                    <select class="form-control" id="selectTipoDocumentoCitaNuevo">
+                        <option value="">Seleccione...</option>
+                        <option value="RUT">RUT</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                        <option value="DNIExtranjero">DNI Extranjero</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </p>
+                <p><input class="form-control" id="numDocCitaNuevo" /></p>
+                <p><input class="form-control" id="inputRutCita" /></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-blue" id="btnGuardarCitaModal" onclick="ModuloHorarioCita.GuardarCitaModal()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalEvento" tabindex="-1" aria-labelledby="modalEventoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <center><strong><h5 class="modal-title" id="modalEventoLabel"></h5></strong></center>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <input type="hidden" value="" id="idCitaModal" />
+            </div>
+            <div class="modal-body">
+                <p><strong>Hora de Inicio</strong> <input class="form-control" id="horaInicioCita" disabled/></p>
+                <p><strong>Hora Término</strong> <input class="form-control" id="horaTerminoCita" disabled /></p>
+                <p><strong>Nombre</strong> <input class="form-control" id="nombreCita" disabled /></p>
+                <p><strong>Correo</strong> <input class="form-control" id="correoCita" disabled /></p>
+                <p><strong><span id="tipoDocumentoCita"></span></strong> <input class="form-control" id="numDocCita" disabled /> </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" style="background-color: red; color:white;" id="btnEliminarCitaModal" onclick="ModuloHorarioCita.EliminarCitaModal()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>

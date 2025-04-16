@@ -1,0 +1,58 @@
+﻿@model CorreoVM
+
+<style>
+    .btn:hover {
+        background-color: #60A4C8;
+        transform: translateY(-2px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+</style>
+
+<div id="HtmlCorreo" class="col-md-12">
+    <table border='0' align='center' cellspacing='0' cellpadding='0' width='800'>
+        <tbody>
+            <tr style="background: linear-gradient(180deg, rgba(252, 119, 121, 1) 50%, rgba(248, 187, 155, 1));" height="70">
+                <td></td>
+                <td style="font-weight:lighter;font-size:24px;color:#ffffff;">
+                    <div style="display: flex; align-items: center;">
+                        <img src='http://www.fimel.cl/Content/images/logo-empresa.png' style='height: 50px; padding: 10px 0px -20px 0px;'>
+                        <span>Hola @Model.Usuario.Nombres @Model.Usuario.ApellidoPaterno</span>
+                    </div>
+                </td>
+
+                <td></td>
+            </tr>
+            <tr>
+                <td style='background-color: #f5f5f5'></td>
+                <td>
+                    <table border='0' width='100%' cellpadding='0' bgcolor='ffffff' style='padding: 10px;'>
+                        <center>
+                            @* <img src="http://www.fimel.cl/Content/images/logo-empresa.png" width="120" height="120"> *@
+                            <h2>¿Olvidaste tu contraseña? Crea una nueva</h2>
+                            <br />
+                            <a href="@Model.IdEncriptado" class="btn" style="display: inline-block; padding: 12px 30px; background-color: #75BDE0; color: #fff; text-align: center; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease, transform 0.2s;">
+                                Resetear mi contraseña
+                            </a>
+                            <br />
+                            <br />
+                            <p>
+                                Si no fuiste tú, no te preocupes, tu contraseña no será reseteada hasta que presiones el botón y la cambies.
+                            </p>
+                        </center>
+                       </table>
+                </td>
+                <td style='background-color:#f5f5f5'></td>
+            </tr>
+            <tr height='50' style='background-color:#f5f5f5'>
+                <td></td>
+                <td align='center' style='font-family: Open Sans,arial,helvetica,sans-serif; font-size: 12px; color: #444444'>
+                    <center><span class="text-muted">&copy; 2020 - @DateTime.Now.Year - Fimel S.A</span></center>
+                </td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

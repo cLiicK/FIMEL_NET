@@ -1,0 +1,178 @@
+﻿@model ConfiguracionUsuarioVM
+
+<input type="hidden" id="hdnURL_GuardarConfiguracion" value='@Url.Action("_GuardarConfiguracion", "Usuario")' />
+<input type="hidden" id="hdnURL_ActualizarConfiguracion" value='@Url.Action("_ActualizarConfiguracion", "Usuario")' />
+<input type="hidden" id="idConfig" value='@Model.Configuracion.Id' />
+
+
+
+
+<div id="content-wrapper" class="container-9">
+	<!--TITULO-->
+	<div class="row">
+		<div class="col-12">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<h2 class="colorfimel-blue">Mi Configuración</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--TITULO-->
+	<!--Contenido-->
+	<div class="row mt-3">
+		<div class="col-12 col-md-12 mt-3">
+
+			<div id="divAjustesGenerales">
+				<div class="container mt-3">
+					<div class="row">
+						<div class="col-md-8">
+							<div class="accordion" id="accordionFicha">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="accordionAjuste-AjustesGenerales-head">
+										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
+											General
+										</button>
+									</h2>
+									<div id="accordionFicha-datosPaciente" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosPaciente-head">
+										<div class="accordion-body">
+											<form class="row g-3">
+												<div class="col-md-3">
+													<label for="inputBloqueHorarioConfig" class="form-label">Duración Bloque Horario</label>
+													<select class="form-control" id="inputBloqueHorarioConfig" name="duracion">
+														<option value="" selected="selected">Seleccione...</option>
+														@if (Model.Configuracion != null)
+														{
+															@if (Model.Configuracion.DuracionBloqueHorario.ToString() == "00:15:00")
+															{<option value="00:15:00" selected="selected">15 minutos</option>}
+															else{<option value="00:15:00" >15 minutos</option>}
+															@if (Model.Configuracion.DuracionBloqueHorario.ToString() == "00:30:00")
+															{<option value="00:30:00" selected="selected">30 minutos</option>}
+															else{<option value="00:30:00" >30 minutos</option>}
+															@if (Model.Configuracion.DuracionBloqueHorario.ToString() == "00:45:00")
+															{<option value="00:45:00" selected="selected">45 minutos</option>}
+															else{<option value="00:45:00" >45 minutos</option>}
+															@if (Model.Configuracion.DuracionBloqueHorario.ToString() == "01:00:00")
+															{<option value="01:00:00" selected="selected">1 Hora</option>}
+															else{<option value="01:00:00" >1 Hora</option>}
+														}
+														else
+														{
+															<option value="00:15:00">15 Minutos</option>
+															<option value="00:30:00">30 Minutos</option>
+															<option value="00:45:00">45 Minutos</option>
+															<option value="01:00:00">1 Hora</option>
+														}
+													</select>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="accordionAjuste-CamposPersonalizados-head">
+										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-CamposPersonalizados" aria-expanded="true" aria-controls="accordionFicha-CamposPersonalizados">
+											Campos Personalizados
+										</button>
+									</h2>
+									<div id="accordionFicha-CamposPersonalizados" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-CamposPersonalizados-head">
+										<div class="accordion-body">
+											<form class="row g-3">
+												<div class="col-md-4">
+													<label for="selectTipoCampo" class="form-label">Tipo de Campo Personalizado</label>
+													<select class="form-control" id="selectTipoCampo">
+														<option value="" selected="selected">Seleccione...</option>
+														<option value="text">Texto</option>
+														<option value="num">Números</option>
+														<option value="date">Fecha</option>
+														<option value="time">Hora</option>
+													</select>
+												</div>
+
+												<div class="col-md-6">
+													<label for="inputDescripcionCampo" class="form-label">Descripción del Campo Personalizado</label>
+													<input id="inputDescripcionCampo" type="text" class="form-control" placeholder="EJ: N° de Teléfono">
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="accordionGeneral-General-head">
+										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionConfig-Correo" aria-expanded="true" aria-controls="accordionConfig-Correo">
+											Configuración de Correo
+										</button>
+									</h2>
+									<div id="accordionConfig-Correo" class="accordion-collapse collapse show" aria-labelledby="accordionConfig-Correo-head">
+										<div class="accordion-body">
+											<form class="row g-3">
+												<div class="col-md-3">
+													<label class="form-label">Asunto</label>
+													<input class="form-control" />
+												</div>
+												<div class="col-md-3">
+													<label class="form-label">Cuerpo</label>
+													<input class="form-control" />
+												</div>
+												<div class="col-md-3">
+													<label class="form-label">Imagen</label>
+													<input class="form-control" />
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!--LATERAL-->
+						<div class="col-md-4">
+							<div class="accordion" id="accordionFicha">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="accordionFicha-datosContacto-head">
+										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosContacto" aria-expanded="true" aria-controls="accordionFicha-datosContacto">
+											Mi Usuario
+										</button>
+									</h2>
+									<div id="accordionFicha-datosContacto" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosContacto-head">
+										<div class="accordion-body">
+											<form class="row g-3">
+												<div class="col-md-12 position-relative">
+													<label for="" class="form-label">Nombres</label>
+													<input type="text" class="form-control" id="inputNombresConfig" value="@Model.Usuario.Nombres @Model.Usuario.ApellidoPaterno" disabled>
+													<i class="fas fa-user icon-input-ficha"></i>
+												</div>
+												<div class="col-md-12 position-relative">
+													<label for="" class="form-label">Correo Electrónico</label>
+													<input type="text" class="form-control" id="inputCorreoConfig" value="@Model.Usuario.Email" disabled>
+													<i class="fas fa-envelope icon-input-ficha"></i>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="bg-white rounded p-3 text-center">
+								@if (Model.Configuracion.Id > 0)
+								{
+									<button class="btn btn-blue" id="btnActualizarConfigUser" onclick="ModuloConfiguracionUsuario.ActualizarConfiguracion(this)">Actualizar</button>
+								}
+								else
+								{
+									<button class="btn btn-blue" id="btnGuardarConfigUser" onclick="ModuloConfiguracionUsuario.GuardarConfiguracion(this)">Guardar</button>
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+	<!--Contenido-->
+</div>
+@section scripts {
+	<script src="~/js/Site/Configuracion_Usuario.js?v=1.0" type="text/javascript"></script>
+}

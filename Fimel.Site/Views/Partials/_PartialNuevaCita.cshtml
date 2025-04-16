@@ -1,0 +1,32 @@
+﻿<div class="modal fade" id="modalNuevaCita" tabindex="-1" aria-labelledby="modalNuevaCitaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <center><strong><h5 class="modal-title">Nueva Cita</h5></strong></center>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Fecha</strong> <input class="form-control" type="date" id="fechaCitaNueva" /></p>
+                <p><strong>Hora de Inicio</strong> <input class="form-control" type="time" id="horaInicioCitaNueva" /></p>
+                <p><strong>Hora Término</strong> <input class="form-control" type="time" id="horaTerminoCitaNueva" /></p>
+                <p><strong>Nombre</strong> <input class="form-control" id="nombreCitaNueva" /></p>
+                <p><strong>Correo</strong> <input class="form-control" id="correoCitaNueva" /></p>
+                <p>
+                    <strong>Tipo de Documento</strong>
+                    <select class="form-control" id="selectTipoDocumentoNuevaCita">
+                        <option value="">Seleccione...</option>
+                        <option value="RUT">RUT</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                        <option value="DNIExtranjero">DNI Extranjero</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </p>
+                <p><input class="form-control" id="numDocNuevaCita" /></p>
+                <p><input class="form-control" id="inputRutNuevaCita" /></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-blue" id="btnGuardarCita" onclick="ModuloHorarioCita.GuardarCita()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+    <script src="https://kit.fontawesome.com/3c01587029.js" crossorigin="anonymous"></script>
+
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10" type="text/javascript"></script>
+
+    <script src="~/js/Site/Utils.js?v=1.0" type="text/javascript"></script>
+    <script src="~/js/Site/Shared.js?v=1.0" type="text/javascript"></script>
+    <link href="~/css/Site.css" rel="stylesheet" />
+    <title>Fimel - Ficha Médica Electrónica</title>
+    <link rel="icon" type="image/png" href="~/img/Logo-Empresa.png">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top" style="background-color: #e3f2fd;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="~/img/Logo-Empresa.png" alt="" width="40" height="36" class="d-inline-block align-top">
+                Fimel
+            </a>
+            <div class="navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" id="navLinkFichaPaciente" aria-current="page" href="@Url.Action("FichaPaciente", "Pacientes")">Ficha Paciente</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="navLinkNuevaConsulta" aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">Nueva Consulta</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="navLinkHistorialPacientes" aria-current="page" href="@Url.Action("HistorialPacientes", "Pacientes")">Historial Pacientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="@Url.Action("Login", "Login")">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container body-content">
+        <br />
+        @RenderBody()
+    </div>
+    <footer class="footer py-2" style="background-color: #e3f2fd;">
+        <div class="container">
+            <span class="text-muted">&copy; 2025 - @DateTime.Now.Year - Fimel S.A</span>
+        </div>
+    </footer>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

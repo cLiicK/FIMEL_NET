@@ -1,0 +1,86 @@
+﻿<input type="hidden" id="hdnURL_ObtenerHistorial" value='@Url.Action("ObtenerHistorial", "Consulta")' />
+<input type="hidden" id="hdnURL_EliminarConsulta" value='@Url.Action("EliminarConsulta", "Consulta")' />
+
+<div id="content-wrapper" class="container-9">
+	<!--TITULO-->
+	<div class="row">
+		<div class="col-12">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<h2 class="colorfimel-blue"><a class="colorfimel-rosa" href="@Url.Action("FichaPaciente", "Pacientes")"><i class="fas fa-angle-left me-3"></i></a> Historial Consultas</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--TITULO-->
+	<!--Contenido-->
+	<div class="row mt-3">
+		<div class="col-12 col-md-12 mt-3">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<div class="row div-buscar">
+							<div class="col-2">
+								<label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">Tipo de Documento</label>
+								<select class="form-control" id="comboTipoDocumentoHist">
+									<option value="RUT" selected="selected">RUT</option>
+									<option value="Pasaporte">Pasaporte</option>
+									<option value="DNIExtranjero">DNI Extranjero</option>
+									<option value="Otro">Otro</option>
+								</select>
+							</div>
+							<div class="col-2">
+								<label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
+								<input id="inputRutBusq" type="text" class="form-control" placeholder="Ej. 12.325.369-9">
+								<input type="text" class="form-control col-md-2" placeholder="N° Documento" id="inputNumDocumentoBusq" style="display:none">
+							</div>
+							<div class="col-3">
+								<label for="" style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">Fecha Desde</label>
+								<input type="date" class="form-control" id="inputBusqFechaDesde" placeholder="">
+							</div>
+							<div class="col-3">
+								<label for="" style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">Fecha Hasta</label>
+								<input type="date" class="form-control" id="inputBusqFechaHasta" placeholder="">
+							</div>
+							<div class="col-1 text-center">
+								<label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
+								<button class="btn btn-blue" onclick="ModuloHistorialConsultas.CargarHistorial(this)">Buscar</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="container mt-4">
+				<div class="row">
+					<strong><h2 style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;" id="idPacienteConsultado"></h2></strong>
+					<div class="col-md-12">
+						<table class="table" id="HistorialTable">
+							<thead class="thead-rosa">
+								<tr>
+									<th>Tipo Consulta</th>
+									<th>Motivo Consulta</th>
+									<th>Diagnóstico</th>
+									<th>Indicaciones</th>
+									<th>&nbsp;</th>
+									<th>&nbsp;</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--Contenido-->
+</div>
+
+@section scripts {
+	<script src="~/js/Site/Historial_Consultas.js?v=1.0"></script>
+}

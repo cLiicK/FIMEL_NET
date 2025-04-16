@@ -1,0 +1,65 @@
+﻿@model Usuarios
+@{
+	ViewBag.Title = "Login";
+	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+
+<body class="bg-login">
+	<main>
+		<div class="container">
+			<div class="row d-flex justify-content-center">
+				<div class="col-12 col-md-8">
+					<div class="div-login shadow bg-white">
+						<div class="container">
+							<div class="row justify-content-center">
+								<div class="col-12 text-center div-logo">
+									<img src="~/img/logo1.svg">
+								</div>
+								@using (Html.BeginForm("RecuperarContrasenia", "Login", FormMethod.Post, new { @id = "recoveryForm" }))
+								{
+									<div class="col-12 col-md-11 my-4">
+										<div class="form-floating mb-3 col-12 position-relative">
+											@Html.TextBoxFor(u => u.Email, new { @class = "form-control", @id = "floatingInput", required = "required", autofocus = "autofocus", @placeholder = "Ingresa tu Correo" })
+											<label for="floatingInput">Correo Electrónico</label>
+											<i class="fas fa-user icon-input"></i>
+										</div>
+										@if (ViewBag.MensajeError != null)
+										{
+											<center><p style="color:red; font-size: 13px">@ViewBag.MensajeError</p></center>
+										}
+										@if (ViewBag.MensajeExito != null)
+										{
+											<center><p style="color:seagreen; font-size: 13px">@ViewBag.MensajeExito</p></center>
+										}
+									</div>
+									<div class="col-12 text-center div-btn-footer">
+										<button id="submitBtn" class="btn btn-blue" type="submit">Continuar</button>
+									</div>
+								}
+								<center><a class="nav-link active" style="color: gray; font-size: 12px" href="@Url.Action("Login", "Login")">Volver al Inicio</a></center>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+	<footer class="footer py-2">
+		<div class="container">
+			<center><span class="text-muted">&copy; 2020 - @DateTime.Now.Year - Fimel S.A</span></center>
+		</div>
+	</footer>
+</body>
+
+@section scripts {
+	<script>
+		$(document).ready(function () {
+			$('#recoveryForm').on('submit', function () {
+				var submitBtn = $('#submitBtn');
+				submitBtn.prop('disabled', true);
+				submitBtn.text('Recuperando...');
+				submitBtn.css('background-color', '#b8d9ea');
+			});
+		});
+	</script>
+}

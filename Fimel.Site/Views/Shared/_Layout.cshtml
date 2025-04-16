@@ -1,0 +1,111 @@
+﻿@using Fimel.Utils
+@using System.Text.Json
+<!DOCTYPE html>
+
+@{
+    Usuarios usuarioConectado = new Utileria().ObtenerData<Usuarios>(Context.Session.GetString("UsuarioConectado"));
+    if (usuarioConectado == null) { new Fimel.Site.Controllers.LoginController().Login(); };
+
+    Instituciones inst = new Utileria().ObtenerData<Instituciones>(Context.Session.GetString("InstitucionSesion"));
+}
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Fimel</title>
+	<meta name="description" content="Fimel">
+	<meta name="author" content="">
+	<link rel="apple-touch-icon" sizes="180x180" href="~/img/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="~/img/favicon-16x16.png">
+	<link rel="mask-icon" href="~/img/safari-pinned-tab.svg" color="#5bbad5">
+	<meta name="msapplication-TileColor" content="#da532c">
+	<meta name="theme-color" content="#ffffff">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10" type="text/javascript"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Signika+Negative:wght@300;400;600;700&display=swap"
+		  rel="stylesheet">
+	<!-- CSS BOOTSAPT-->
+	<link rel="stylesheet" href="~/lib/bootstrap-5/css/bootstrap.min.css" type="text/css">
+	<!-- FONT AWESOME-->
+	<link rel="stylesheet" href="~/lib/fontawesome/all.min.css" type="text/css">
+	<!-- CSS-->
+	<link rel="stylesheet" href="~/css/style-fimel.css" type="text/css">
+
+	<script src="~/js/Site/Utils.js?v=1.0" type="text/javascript"></script>
+	<script src="~/js/Site/Shared.js?v=1.0" type="text/javascript"></script>
+	<script type="text/javascript" src="~/lib/bootstrap-5/js/popper.min.js"></script>
+	<script type="text/javascript" src="~/lib/bootstrap-5/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <body>
+        <main>
+            <ul class="navbar-nav bg-white sidebar">
+                <div class="text-center d-none d-md-inline">
+                    <a class="sidebar-brand logo-large" href="">
+                        <img src="~/img/logo1.svg">
+                    </a>
+                </div>
+                <li class="my-3">
+                    <div class="dropdown">
+                        <div class="div-usuario" id="dropdownMenuCerrarS" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="info-user dropdown-toggle">
+                                <p>@usuarioConectado.Nombres @usuarioConectado.ApellidoPaterno</p>
+                                <p><strong>@inst.RazonSocial</strong></p>
+                            </div>
+                            <div class="ico-user"><span></span></div>
+                        </div>
+                        <div class="dropdown-menu dm-user" aria-labelledby="dropdownMenuCerrarS">
+                            <a class="nav-link" href="@Url.Action("Configuracion", "Usuario")">
+                                <span>Configuración <i class="fas fa-cog"></i></span>
+                            </a>
+                            <a class="dropdown-item" href="@Url.Action("Login", "Login")">Cerrar sesión <i class="fas fa-sign-out-alt"></i></a>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item mt-5">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Inicio" || ViewContext.RouteData.Values["action"].ToString() == "Inicio" ? "active" : "")"
+                       aria-current="page" href="@Url.Action("Inicio", "Login")">
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "FichaPaciente" ||
+                         ViewContext.RouteData.Values["action"].ToString() == "HistorialPacientes" ? "active" : "")"
+                       aria-current="page" href="@Url.Action("FichaPaciente", "Pacientes")">
+                        <span>Ficha Paciente</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
+                       aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">
+                        <span>Nueva Consulta</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "MiHorario" || ViewContext.RouteData.Values["action"].ToString() == "MiHorario" ? "active" : "")"
+                       aria-current="page" href="@Url.Action("MiHorario", "Horario")">
+                        <span>Mi Horario</span>
+                    </a>
+                </li>
+                <div class="text-center footer-sidebar">
+                    <p>© 2020 - @DateTime.Now.Year - Fimel S.A</p>
+                </div>
+            </ul>
+            @RenderBody()
+        </main>
+    </body>
+	@RenderSection("scripts", required: false)
+</body>
+</html>

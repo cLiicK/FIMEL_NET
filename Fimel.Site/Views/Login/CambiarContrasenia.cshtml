@@ -1,0 +1,64 @@
+﻿@{
+    ViewBag.Title = "Login";
+	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+
+<input type="hidden" id="hfMensajeError" value="@ViewBag.MensajeError" />
+<input type="hidden" id="hfUsuarioEncryptado" value="@ViewBag.usuarioEncryptado" />
+<input type="hidden" id="hdnURL_GuardarNuevaContrasenia" value="@Url.Action("GuardarNuevaContrasenia", "Login")" />
+
+<body class="bg-login">
+	<main>
+		<div class="container">
+			<div class="row d-flex justify-content-center">
+				<div class="col-12 col-md-6">
+					<div class="div-login shadow bg-white">
+						<div class="container">
+							<div class="row justify-content-center">
+								<div class="col-12 text-center div-logo">
+									<img src="~/img/logo1.svg">
+								</div>
+								@using (Html.BeginForm("RecuperarContrasenia", "Login", FormMethod.Post, new { @id = "loginForm" }))
+								{
+									<div class="col-12 col-md-11 my-4">
+										<div class="form-floating mb-3 col-12 position-relative">
+											<input type="password" class="form-control" id="inputPassword1" maxlength="100" autofocus="autofocus" required>
+											<label for="floatingInput">Nueva Contraseña</label>
+											<i class="fas fa-user icon-input"></i>
+										</div>
+										<div class="form-floating mb-3 col-12 position-relative">
+											<input type="password" class="form-control" id="inputPassword2" maxlength="100" autofocus="autofocus" required>
+											<label for="floatingInput">Repite la Contraseña</label>
+											<i class="fas fa-user icon-input"></i>
+										</div>
+										@if (ViewBag.MensajeError != null)
+										{
+											<center><p style="color:red; font-size: 13px">@ViewBag.MensajeError</p></center>
+										}
+										@if (ViewBag.MensajeExito != null)
+										{
+											<center><p style="color:limegreen; font-size: 13px">@ViewBag.MensajeExito</p></center>
+										}
+									</div>
+									<div class="col-12 text-center div-btn-footer">
+										<button class="btn btn-blue" onclick="ModuloCambioContrasena.CambiarContrasenia(this)">Guardar</button>
+									</div>
+								}
+								<center><p class="nav-link active" style="color: gray; font-size: 12px">Mínimo 8 carácteres</p></center>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+	<footer class="footer py-2">
+		<div class="container">
+			<center><span class="text-muted">&copy; 2020 - @DateTime.Now.Year - Fimel S.A</span></center>
+		</div>
+	</footer>
+</body>
+
+@section scripts {
+	<script src="~/js/Site/Cambia_Contrasenia.js?v=1.0" type="text/javascript"></script>
+}

@@ -1,0 +1,67 @@
+﻿@model Usuarios
+@{
+	ViewBag.Title = "Login";
+	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+	// Layout = null;
+}
+
+<body class="bg-login">
+	<main>
+		<div class="container">
+			<div class="row d-flex justify-content-center">
+				<div class="col-12 col-md-8">
+					<div class="div-login shadow bg-white">
+						<div class="container">
+							<div class="row justify-content-center">
+								<div class="col-12 text-center div-logo">
+									<img src="~/img/logo1.svg">
+								</div>
+								@using (Html.BeginForm("Login", "Login", FormMethod.Post, new { @id = "loginForm" }))
+								{
+									<div class="col-12 col-md-11 my-4">
+										<div class="form-floating mb-3 col-12 position-relative">
+											@Html.TextBoxFor(u => u.Usuario, new { @class = "form-control", @id = "floatingInput", @placeholder = "Ingresa tu usuario" })
+											<label for="floatingInput">Usuario</label>
+											<i class="fas fa-user icon-input"></i>
+										</div>
+										<div class="form-floating col-12 position-relative">
+											@Html.PasswordFor(u => u.Password, new { @class = "form-control", @id = "floatingPassword", @placeholder = "Ingresa tu Contraseña", @type = "password" })
+											<label for="floatingPassword">Contraseña</label>
+											<i class="fas fa-lock icon-input"></i>
+										</div>
+										@if (ViewBag.MensajeError != null)
+										{
+											<center><p style="color:red; font-size: 13px">@ViewBag.MensajeError</p></center>
+										}
+									</div>
+									<div class="col-12 text-center div-btn-footer">
+										<button id="submitBtn" class="btn btn-blue" type="submit">Iniciar sesión</button>
+									</div>
+								}
+								<center><a class="nav-link active" style="color: gray; font-size: 12px" href="@Url.Action("RecuperarContrasenia", "Login")">Recuperar Contraseña</a></center>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+	<footer class="footer py-2">
+		<div class="container">
+			<center><span class="text-muted" style="color: #ececec !important">&copy; 2020 - @DateTime.Now.Year - Fimel S.A</span></center>
+		</div>
+	</footer>
+</body>
+
+@section scripts {
+	<script>
+		$(document).ready(function () {
+			$('#loginForm').on('submit', function () {
+				var submitBtn = $('#submitBtn');
+				submitBtn.prop('disabled', true);
+				submitBtn.text('Iniciando sesión...');
+				submitBtn.css('background-color', '#b8d9ea');
+			});
+		});
+	</script>
+}

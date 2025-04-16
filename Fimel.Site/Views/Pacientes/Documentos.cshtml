@@ -1,0 +1,96 @@
+﻿
+@{
+    ViewBag.Title = "Documentos Paciente";
+}
+
+<h2>Documentos Paciente</h2>
+
+<div class="card">
+    <div class="card-body">
+        <div class="mb-3 row">
+            <label for="inputRut" class="col-md-1 col-form-label">Rut</label>
+            <div class="col-md-2">
+                <input type="text" class="form-control" id="inputRut">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-primary" onclick="BuscarPaciente(this)">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+
+<div style="display:none;" id="divNuevaConsulta">
+    <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDatosPaciente" aria-expanded="false"
+                        aria-controls="collapseDatosPaciente" id="btnDatosPaciente" disabled>
+                    <i class="fas fa-user"></i>
+                    &nbsp;
+                    Datos Paciente:
+                </button>
+            </h2>
+            <div id="collapseDatosPaciente" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    @Html.Partial("~/Views/Partials/_fichapaciente.cshtml", "disabled")
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+
+    @*@Html.Partial("~/Views/Partials/_consultasAnteriores.cshtml")*@
+    @*<br />*@
+
+    <div class="card">
+        <div class="card-header">
+            Documentos Paciente
+        </div>
+        <div class="card-body">
+            <h6>Ingrese los documentos del paciente</h6>
+            <br />
+            <div class="row">
+                <div class="mb-3 col-md-12">
+                    <input class="form-control" type="file" id="inputFile" onchange="ValidarDocumento(this)">
+                    <br />
+                </div>
+            </div>
+            @*<div class="row">
+                    <div class="mb-3 col-md-12">
+                        <div class="col-4">
+                            <button class="btn btn-primary" type="button" onclick="AgregarDocumento()" id="btnAgregarDocumento">
+                                <i class="fas fa-plus"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>*@
+            <div class="row" id="divDocumentos">
+            </div>
+            <br />
+            <br />
+            <div class="row">
+                <div class="mb-3 col-md-12">
+                    <div class="d-grid gap-2 col-6 mx-auto">
+                        <button class="btn btn-lg btn-primary" type="button" onclick="GrabarDocumentos(this)" id="btnGrabarDocumentos">
+                            <i class="fas fa-save"></i> Grabar Documentos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<br />
+
+
+
+
+@section scripts{
+    <script src="~/js/Site/Nueva_Consulta.js?v=1.0"></script>
+    <script src="~/js/Site/Documentos.js?v=1.0"></script>
+}
+
