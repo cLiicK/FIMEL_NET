@@ -1,0 +1,47 @@
+## Archivos generados por Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+
+## Archivos temporales
+*.log
+*.tmp
+
+## Archivos de configuración local
+*.local.json
+
+## Paquetes y dependencias
+packages/
+*.nupkg
+
+## Archivos de publicación
+publish/
+out/
+
+## Configuración de Rider o VS Code (opcional)
+.idea/
+.vscode/
+
+## Archivos de seguridad o sensibles
+secrets.json
+
+## Archivos generados por cobertura de código
+*.coverage
+*.coveragexml
+
+## Archivos para unit tests
+TestResults/
+
+## Archivos de backup o sistema
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
