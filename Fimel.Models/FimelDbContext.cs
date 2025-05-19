@@ -29,8 +29,8 @@ namespace Fimel.Models
         public DbSet<ConfiguracionUsuario> ConfiguracionesUsuario { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Consultas>().ToTable("Consultas", t => t.ExcludeFromMigrations());
-            modelBuilder.Entity<Pacientes>().ToTable("Pacientes", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<Consultas>().ToTable("Consultas");
+            modelBuilder.Entity<Pacientes>().ToTable("Pacientes");
             modelBuilder.Entity<Usuarios>().ToTable("Usuarios", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<Reservas>().ToTable("Reservas", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<parExamenes>().ToTable("parExamenes", t => t.ExcludeFromMigrations());
@@ -41,6 +41,10 @@ namespace Fimel.Models
             modelBuilder.Entity<Perfiles>().ToTable("Perfiles", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<Documentos>().ToTable("Documentos", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<BitacoraMensajerias>().ToTable("BitacoraMensajerias", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<Config>().ToTable("Config", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<HorarioAtencion>().ToTable("HorariosAtencion", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<Cita>().ToTable("Citas", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario", t => t.ExcludeFromMigrations());
         }
     }
 }

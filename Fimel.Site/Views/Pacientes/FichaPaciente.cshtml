@@ -1,5 +1,5 @@
 ﻿@{
-	ViewBag.Title = "FichaPaciente";
+    ViewBag.Title = "FichaPaciente";
 }
 
 <input type="hidden" id="hdnURL_BuscarPaciente" value='@Url.Action("BuscarPaciente", "Pacientes")' />
@@ -12,380 +12,380 @@
 <!-- fin sidebar -->
 <!-- contenido central -->
 <div id="content-wrapper" class="container-9">
-	<!--TITULO-->
-	<div class="row">
-		<div class="col-12">
-			<div class="container">
-				<div class="row">
-					<div class="col-12">
-						<h2 class="colorfimel-blue">Ficha paciente</h2>
-						<h6 class="colorfimel-blue"><a class="btn colorfimel-rosa" href="@Url.Action("HistorialPacientes", "Pacientes")">Ver Historial</a></h6>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!--TITULO-->
-	<!--Contenido-->
-	<div class="row mt-3">
-		<div class="col-12 col-md-12 mt-3">
-			<div class="container">
-				<div class="row">
-					<div class="col-12">
-						<div class="row div-buscar">
-							<div class="col-2">
-								<label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">Tipo de Documento</label>
-								<select class="form-control" id="comboTipoDocumento">
-									<option value="RUT" selected="selected">RUT</option>
-									<option value="Pasaporte">Pasaporte</option>
-									<option value="DNIExtranjero">DNI Extranjero</option>
-									<option value="Otro">Otro</option>
-								</select>
-							</div>
-							@* 									<div class="col-2">
-										<label for="">Rut paciente</label>
-									</div> *@
-							<div class="col-3">
-								<label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
-								<input id="inputRut" type="text" class="form-control" placeholder="Ej. 12.325.369-9">
-								<input type="text" class="form-control col-md-2" placeholder="N° Documento" id="inputNumDocumento" style="display:none">
-							</div>
-							<div class="col-1 text-center">
-								<label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
-								<button class="btn btn-blue" onclick="ModuloFichaPaciente.BuscarPaciente(this)">Buscar</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+    <!--TITULO-->
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="colorfimel-blue">Ficha paciente</h2>
+                        <h6 class="colorfimel-blue"><a class="btn colorfimel-rosa" href="@Url.Action("HistorialPacientes", "Pacientes")">Ver Historial</a></h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--TITULO-->
+    <!--Contenido-->
+    <div class="row mt-3">
+        <div class="col-12 col-md-12 mt-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row div-buscar">
+                            <div class="col-2">
+                                <label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">Tipo de Documento</label>
+                                <select class="form-select" id="comboTipoDocumento">
+                                    <option value="RUT" selected="selected">RUT</option>
+                                    <option value="Pasaporte">Pasaporte</option>
+                                    <option value="DNIExtranjero">DNI Extranjero</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            @* 									<div class="col-2">
+                            <label for="">Rut paciente</label>
+                            </div> *@
+                            <div class="col-3">
+                                <label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
+                                <input id="inputRut" type="text" class="form-control" placeholder="Ej. 12.325.369-9">
+                                <input type="text" class="form-control col-md-2" placeholder="N° Documento" id="inputNumDocumento" style="display:none">
+                            </div>
+                            <div class="col-1 text-center">
+                                <label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
+                                <button class="btn btn-blue" onclick="ModuloFichaPaciente.BuscarPaciente(this)">Buscar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-			@* <div id="divFichaPaciente" class="collapse"> *@
-			<div id="divFichaPaciente">
-				<div class="container mt-3">
-					<div class="row">
-						<div class="col-md-8">
-							<div class="accordion" id="accordionFicha">
-								<div class="accordion-item">
-									<h2 class="accordion-header" id="accordionFicha-datosPaciente-head">
-										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
-											Datos paciente
-										</button>
-									</h2>
-									<div id="accordionFicha-datosPaciente" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosPaciente-head">
-										<div class="accordion-body">
-											<form class="row g-3">
-												<div class="col-md-6">
-													<label for="" class="form-label">Nombres</label>
-													<input type="text" class="form-control" id="inputNombres">
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Apellido paterno</label>
-													<input type="text" class="form-control" id="inputPrimerApellido">
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Apellido materno</label>
-													<input type="text" class="form-control" id="inputSegundoApellido">
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Rut</label>
-													<input type="text" class="form-control" id="inputRutData">
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Fecha de nacimiento</label>
-													<input type="date" class="form-control" id="inputFechaNacimiento">
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Edad</label>
-													<input type="text" class="form-control" id="inputEdad" disabled>
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Nacionalidad</label>
-													<select class="form-control" id="comboNacionalidad">
-														<option value="" selected>Seleccione...</option>
-														<option value="Chile">Chile</option>
-														<option value="Argentina">Argentina</option>
-														<option value="Peru">Peru</option>
-														<option value="Haiti">Haiti</option>
-														<option value="Colombia">Colombia</option>
-														<option value="Venezuela">Venezuela</option>
-														<option value="Bolivia">Bolivia</option>
-														<option value="Uruguay">Uruguay</option>
-														<option value="Paraguay">Paraguay</option>
-														<option value="Brasil">Brasil</option>
-														<option value="Otro">Otro</option>
-													</select>
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Previsión</label>
-													<input type="text" class="form-control" id="inputPrevision">
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Religión</label>
-													<select class="form-control" id="comboReligion">
-														<option value="" selected>Seleccione...</option>
-														<option value="Ateo">Ateo</option>
-														<option value="Cristiana">Cristiana</option>
-														<option value="Testigo">Testigo</option>
-														<option value="No Profesa">No Profesa</option>
-													</select>
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Regimen alimenticio</label>
-													<select class="form-control" id="comboRegimenAlimenticio">
-														<option value="" selected>Seleccione...</option>
-														<option value="Normal">Normal</option>
-														<option value="Vegetariano">Vegetariano</option>
-														<option value="Vegano">Vegano</option>
-														<option value="Pescetariano">Pescetariano</option>
-													</select>
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Orientación Sexual</label>
-													<input type="text" class="form-control" id="inputOrientacion">
-												</div>
-												<div class="col-md-3">
-													<label for="" class="form-label">Identidad de Género</label>
-													<input type="text" class="form-control" id="inputIdentidad">
-												</div>
-												<div class="col-md-6">
-													<label for="" class="form-label d-block">Sexo Biológico</label>
-													<input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M">
-													<label class="btn btn-radio" for="radioSexo1">Masculino</label>
-													<input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F">
-													<label class="btn btn-radio" for="radioSexo2">Femenino</label>
-												</div>
-											</form>
-										</div>
-									</div>
-								</div>
-								<div class="accordion-item">
-									<h2 class="accordion-header" id="accordionFicha-antecedentes-head">
-										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentes" aria-expanded="false" aria-controls="accordionFicha-antecedentes">
-											Antecedentes generales
-										</button>
-									</h2>
-									<div id="accordionFicha-antecedentes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentes-head">
-										<div class="accordion-body">
-											<form class="row g-3">
-												<div class="col-md-12">
-													<label for="" class="form-label">Antecedentes generales</label>
-													<textarea class="form-control" id="inputAntPersonales" rows="3"></textarea>
-												</div>
-												<div class="col-md-12">
-													<label for="" class="form-label">Medicamentos</label>
-													<textarea class="form-control" id="inputMedicamentos" rows="3"></textarea>
-												</div>
-												<div class="col-md-12">
-													<label for="" class="form-label">Antecedentes movidos familiares</label>
-													<textarea class="form-control" id="inputAntFamiliares" rows="3"></textarea>
-												</div>
-												<div class="col-md-12">
-													<label for="" class="form-label">Antecedentes quirúrgicos</label>
-													<textarea class="form-control" id="inputAntQuirurgicos" rows="3"></textarea>
-												</div>
-												<div class="col-md-12 bg-fimel-lightblue p-2">
-													<div class="row d-flex justify-content-between flex-nowrap">
-														<div class="col border-right-pink text-center p-2">
-															<label for="" class="form-label">Tabaco</label>
-															<div class="div-switch">
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioTabaco1">
-																	<div class="handle"></div>
-																</button>
-															</div>
-															<input type="text" class="form-control mt-3" id="inputTabaco">
-														</div>
-														<div class="col border-right-pink text-center p-2">
-															<label for="" class="form-label">Alcohol</label>
-															<div class="div-switch">
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlcohol1">
-																	<div class="handle"></div>
-																</button>
-															</div>
-															<input type="text" class="form-control mt-3" id="inputAlcohol">
-														</div>
-														<div class="col border-right-pink text-center p-2">
-															<label for="" class="form-label">Drogas</label>
-															<div class="div-switch">
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioDrogas1">
-																	<div class="handle"></div>
-																</button>
-															</div>
-															<input type="text" class="form-control mt-3" id="inputDrogas">
-														</div>
-														<div class="col text-center p-2">
-															<label for="" class="form-label">Alergias conocidas</label>
-															<div class="div-switch">
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlergias1">
-																	<div class="handle"></div>
-																</button>
-															</div>
-															<input type="text" class="form-control mt-3" id="inputAlergias">
-														</div>
-													</div>
-												</div>
-											</form>
-										</div>
-									</div>
-								</div>
-								<div class="accordion-item">
-									<h2 class="accordion-header" id="accordionFicha-antecedentesGine-head">
-										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentesGine" aria-expanded="false" aria-controls="accordionFicha-antecedentesGine">
-											Antecedentes ginecologicos
-										</button>
-									</h2>
-									<div id="accordionFicha-antecedentesGine" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentesGine-head">
-										<div class="accordion-body">
-											<form class="row g-3">
-												<div class="col-md-4 mt-0">
-													<label for="" class="form-label">Paridad</label>
-													<div class="row">
-														<div class="col text-center f-14">
-															<label for="" class="form-label">G</label>
-															<input type="text" class="form-control" id="inputGesta">
-														</div>
-														<div class="col text-center f-14">
-															<label for="" class="form-label">P</label>
-															<input type="text" class="form-control" id="inputParto">
-														</div>
-														<div class="col text-center f-14">
-															<label for="" class="form-label">A</label>
-															<input type="text" class="form-control" id="inputAborto">
-														</div>
-													</div>
-												</div>
-												<div class="col-md-4 mt-1-8">
-													<label for="" class="form-label">Menarquia</label>
-													<input type="text" class="form-control" id="inputMenarquia">
-												</div>
-												<div class="col-md-4 mt-1-8">
-													<label for="" class="form-label">Menopausia</label>
-													<input type="text" class="form-control" id="inputMenopausia">
-												</div>
-											</form>
-										</div>
-									</div>
-								</div>
-								<div class="accordion-item">
-									<h2 class="accordion-header" id="accordionFicha-historial-head">
-										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-historial" aria-expanded="false" aria-controls="accordionFicha-historial">
-											Historial
-										</button>
-									</h2>
-									@Html.Partial("~/Views/Partials/_PartialConsultasAnteriores.cshtml")
-								</div>
-								<div class="accordion-item">
-									<h2 class="accordion-header" id="accordionFicha-examenes-head">
-										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenes" aria-expanded="false" aria-controls="accordionFicha-examenes">
-											Examenes
-										</button>
-									</h2>
-									<div id="accordionFicha-examenes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenes-head">
-										<div class="accordion-body">
-											<div class="col-md-12 px-4 my-2">
-												<div class="row d-flex justify-content-between align-items-end">
-													<div class="col">
-														<p class="mb-0">Tipo de examen</p>
-													</div>
-													<div class="col">
-														<p class="mb-0 text-center">Fecha</p>
-													</div>
-													<div class="col-md-3 text-center">
-														<p class="mb-0 text-center">Adjunto</p>
-													</div>
-												</div>
-											</div>
-											<div class="col-md-12 bg-fimel-lightblue p-4">
-												<div class="row d-flex justify-content-between align-items-end mb-2">
-													<div class="col">
-														<p class="mb-0">Ecografía bilateral</p>
-													</div>
-													<div class="col">
-														<p class="mb-0 text-center">15/05/2022</p>
-													</div>
-													<div class="col-md-3 text-center">
-														<button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
-													</div>
-												</div>
-												<div class="row d-flex justify-content-between align-items-end mb-2">
-													<div class="col">
-														<p class="mb-0">Ecografía bilateral</p>
-													</div>
-													<div class="col">
-														<p class="mb-0 text-center">15/05/2022</p>
-													</div>
-													<div class="col-md-3 text-center">
-														<button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
+            @* <div id="divFichaPaciente" class="collapse"> *@
+            <div id="divFichaPaciente">
+                <div class="container mt-3">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="accordion" id="accordionFicha">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accordionFicha-datosPaciente-head">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
+                                            Datos Demográficos
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-datosPaciente" class="accordion-collapse collapse" aria-labelledby="accordionFicha-datosPaciente-head">
+                                        <div class="accordion-body">
+                                            <form class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="" class="form-label">Nombres</label>
+                                                    <input type="text" class="form-control" id="inputNombres" maxlength="100">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Apellido paterno</label>
+                                                    <input type="text" class="form-control" id="inputPrimerApellido" maxlength="50">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Apellido materno</label>
+                                                    <input type="text" class="form-control" id="inputSegundoApellido" maxlength="50">
+                                                </div>
+                                                <div class="col-md-3" style="display:none" >
+                                                    <label for="" class="form-label">Rut</label>
+                                                    <input type="text" class="form-control" id="inputRutData" maxlength="12">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Fecha de nacimiento</label>
+                                                    <input type="date" class="form-control" id="inputFechaNacimiento" maxlength="12">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="" class="form-label">Edad</label>
+                                                    <input type="text" class="form-control" id="inputEdad" disabled maxlength="3">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Identidad de Género</label>
+                                                    <input type="text" class="form-control" id="inputIdentidad" maxlength="50">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="" class="form-label d-block">Sexo Biológico</label>
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M">
+                                                    <label class="btn btn-radio" for="radioSexo1">Masculino</label>
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F">
+                                                    <label class="btn btn-radio" for="radioSexo2">Femenino</label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Orientación Sexual</label>
+                                                    <input type="text" class="form-control" id="inputOrientacion" maxlength="50">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Nacionalidad</label>
+                                                    <select class="form-select" id="comboNacionalidad">
+                                                        <option value="" selected>Seleccione...</option>
+                                                        <option value="Chile">Chile</option>
+                                                        <option value="Argentina">Argentina</option>
+                                                        <option value="Peru">Peru</option>
+                                                        <option value="Haiti">Haiti</option>
+                                                        <option value="Colombia">Colombia</option>
+                                                        <option value="Venezuela">Venezuela</option>
+                                                        <option value="Bolivia">Bolivia</option>
+                                                        <option value="Uruguay">Uruguay</option>
+                                                        <option value="Paraguay">Paraguay</option>
+                                                        <option value="Brasil">Brasil</option>
+                                                        <option value="Otro">Otro</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Previsión</label>
+                                                    <input type="text" class="form-control" id="inputPrevision">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Religión</label>
+                                                    <select class="form-select" id="comboReligion">
+                                                        <option value="" selected>Seleccione...</option>
+                                                        <option value="Ateo">Ateo</option>
+                                                        <option value="Cristiana">Cristiana</option>
+                                                        <option value="Testigo">Testigo</option>
+                                                        <option value="No Profesa">No Profesa</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Regimen alimenticio</label>
+                                                    <select class="form-select" id="comboRegimenAlimenticio">
+                                                        <option value="" selected>Seleccione...</option>
+                                                        <option value="Omnivoro">Omnívoro</option>
+                                                        <option value="Vegetariano">Vegetariano</option>
+                                                        <option value="Vegano">Vegano</option>
+                                                        <option value="Pescetariano">Pescetariano</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accordionFicha-antecedentes-head">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentes" aria-expanded="false" aria-controls="accordionFicha-antecedentes">
+                                            Antecedentes Generales
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-antecedentes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentes-head">
+                                        <div class="accordion-body">
+                                            <form class="row g-3">
+                                                <div class="col-md-12">
+                                                    <label for="" class="form-label">Antecedentes mórbidos familiares</label>
+                                                    <textarea class="form-control" id="inputAntFamiliares" rows="3" maxlength="1000"></textarea>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <label for="" class="form-label">Antecedentes mórbidos personales</label>
+                                                    <textarea class="form-control" id="inputAntPersonales" rows="3" maxlength="1000"></textarea>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <label for="" class="form-label">Antecedentes quirúrgicos</label>
+                                                    <textarea class="form-control" id="inputAntQuirurgicos" rows="3" maxlength="1000"></textarea>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <label for="" class="form-label">Medicamentos</label>
+                                                    <textarea class="form-control" id="inputMedicamentos" rows="3" maxlength="1000"></textarea>
+                                                </div>
+                                                <div class="col-md-12 bg-fimel-lightblue p-2">
+                                                    <div class="row d-flex justify-content-between flex-nowrap">
+                                                        <div class="col border-right-pink text-center p-2">
+                                                            <label for="" class="form-label">Tabaco</label>
+                                                            <div class="div-switch">
+                                                                <button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioTabaco1">
+                                                                    <div class="handle"></div>
+                                                                </button>
+                                                            </div>
+                                                            <input type="text" class="form-control mt-3" id="inputTabaco" maxlength="30">
+                                                        </div>
+                                                        <div class="col border-right-pink text-center p-2">
+                                                            <label for="" class="form-label">Alcohol</label>
+                                                            <div class="div-switch">
+                                                                <button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlcohol1">
+                                                                    <div class="handle"></div>
+                                                                </button>
+                                                            </div>
+                                                            <input type="text" class="form-control mt-3" id="inputAlcohol" maxlength="30">
+                                                        </div>
+                                                        <div class="col border-right-pink text-center p-2">
+                                                            <label for="" class="form-label">Drogas</label>
+                                                            <div class="div-switch">
+                                                                <button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioDrogas1">
+                                                                    <div class="handle"></div>
+                                                                </button>
+                                                            </div>
+                                                            <input type="text" class="form-control mt-3" id="inputDrogas" maxlength="30">
+                                                        </div>
+                                                        <div class="col text-center p-2">
+                                                            <label for="" class="form-label">Alergias conocidas</label>
+                                                            <div class="div-switch">
+                                                                <button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlergias1">
+                                                                    <div class="handle"></div>
+                                                                </button>
+                                                            </div>
+                                                            <input type="text" class="form-control mt-3" id="inputAlergias" maxlength="30">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accordionFicha-antecedentesGine-head">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentesGine" aria-expanded="false" aria-controls="accordionFicha-antecedentesGine">
+                                            Antecedentes Gineco-Obstétricos
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-antecedentesGine" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentesGine-head">
+                                        <div class="accordion-body">
+                                            <form class="row g-3">
+                                                <div class="col-md-4 mt-0">
+                                                    <label for="" class="form-label">Paridad</label>
+                                                    <div class="row">
+                                                        <div class="col text-center f-14">
+                                                            <label for="" class="form-label">G</label>
+                                                            <input type="text" class="form-control" id="inputGesta" maxlength="2">
+                                                        </div>
+                                                        <div class="col text-center f-14">
+                                                            <label for="" class="form-label">P</label>
+                                                            <input type="text" class="form-control" id="inputParto" maxlength="2">
+                                                        </div>
+                                                        <div class="col text-center f-14">
+                                                            <label for="" class="form-label">A</label>
+                                                            <input type="text" class="form-control" id="inputAborto" maxlength="2">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mt-1-8">
+                                                    <label for="" class="form-label">Menarquia</label>
+                                                    <input type="text" class="form-control" id="inputMenarquia" placeholder="Ej: 13 años" maxlength="20">
+                                                </div>
+                                                <div class="col-md-4 mt-1-8">
+                                                    <label for="" class="form-label">Menopausia</label>
+                                                    <input type="text" class="form-control" id="inputMenopausia" placeholder="Ej: 50 años" maxlength="20">
+                                                </div>
+                                                <div class="col-md-4 mt-1-8">
+                                                    <label for="" class="form-label">Grupo y RH</label>
+                                                    <input type="text" class="form-control" id="inputGrupoRH" placeholder="Ej: AB RH-" maxlength="20">
+                                                </div>
+                                                <div class="col-md-8 mt-1-8">
+                                                    <label for="" class="form-label">Inmunizaciones</label>
+                                                    <input type="text" class="form-control" id="inputInmunizaciones" placeholder="Ej: Rogham, Gardasil 9" maxlength="100">
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accordionFicha-historial-head">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-historial" aria-expanded="false" aria-controls="accordionFicha-historial">
+                                            Historial
+                                        </button>
+                                    </h2>
+                                    @Html.Partial("~/Views/Partials/_PartialConsultasAnteriores.cshtml")
+                                </div>
+                                @* <div class="accordion-item">
+                                <h2 class="accordion-header" id="accordionFicha-examenes-head">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenes" aria-expanded="false" aria-controls="accordionFicha-examenes">
+                                Examenes
+                                </button>
+                                </h2>
+                                <div id="accordionFicha-examenes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenes-head">
+                                <div class="accordion-body">
+                                <div class="col-md-12 px-4 my-2">
+                                <div class="row d-flex justify-content-between align-items-end">
+                                <div class="col">
+                                <p class="mb-0">Tipo de examen</p>
+                                </div>
+                                <div class="col">
+                                <p class="mb-0 text-center">Fecha</p>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                <p class="mb-0 text-center">Adjunto</p>
+                                </div>
+                                </div>
+                                </div>
+                                <div class="col-md-12 bg-fimel-lightblue p-4">
+                                <div class="row d-flex justify-content-between align-items-end mb-2">
+                                <div class="col">
+                                <p class="mb-0">Ecografía bilateral</p>
+                                </div>
+                                <div class="col">
+                                <p class="mb-0 text-center">15/05/2022</p>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                <button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
+                                </div>
+                                </div>
+                                <div class="row d-flex justify-content-between align-items-end mb-2">
+                                <div class="col">
+                                <p class="mb-0">Ecografía bilateral</p>
+                                </div>
+                                <div class="col">
+                                <p class="mb-0 text-center">15/05/2022</p>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                <button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div> *@
+                            </div>
+                            <div class="text-center mt-4">
+                                <button class="btn btn-blue" id="btnGuardarPaciente" onclick="ModuloFichaPaciente.GrabarNuevoPaciente(this)" disabled>Guardar Paciente</button>
+                                <button class="btn btn-blue" id="btnActualizarPaciente" onclick="ModuloFichaPaciente.ActualizarPaciente(this)" style="display: none">Actualizar Paciente</button>
+                            </div>
+                        </div>
+                        <!--LATERAL-->
+                        <div class="col-md-4">
+                            <div class="accordion" id="accordionFicha">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accordionFicha-datosContacto-head">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosContacto" aria-expanded="true" aria-controls="accordionFicha-datosContacto">
+                                            Información de contacto
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-datosContacto" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosContacto-head">
+                                        <div class="accordion-body">
+                                            <form class="row g-3">
+                                                <div class="col-md-12 position-relative">
+                                                    <label for="" class="form-label">Dirección particular</label>
+                                                    <input type="text" class="form-control" id="inputDireccion">
+                                                    <i class="fas fa-address-book icon-input-ficha"></i>
+                                                </div>
+                                                <div class="col-md-12 position-relative">
+                                                    <label for="" class="form-label">Teléfono</label>
+                                                    <input type="text" class="form-control" id="inputCelular">
+                                                    <i class="fas fa-phone icon-input-ficha"></i>
+                                                </div>
+                                                <div class="col-md-12 position-relative">
+                                                    <label for="" class="form-label">Email</label>
+                                                    <input type="text" class="form-control" id="inputEmail">
+                                                    <i class="fas fa-envelope icon-input-ficha"></i>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+        </div>
 
-						</div>
-						<!--LATERAL-->
-						<div class="col-md-4">
-							<div class="accordion" id="accordionFicha">
-								<div class="accordion-item">
-									<h2 class="accordion-header" id="accordionFicha-datosContacto-head">
-										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosContacto" aria-expanded="true" aria-controls="accordionFicha-datosContacto">
-											Información de contacto
-										</button>
-									</h2>
-									<div id="accordionFicha-datosContacto" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosContacto-head">
-										<div class="accordion-body">
-											<form class="row g-3">
-												<div class="col-md-12 position-relative">
-													<label for="" class="form-label">Dirección particular</label>
-													<input type="text" class="form-control" id="inputDireccion">
-													<i class="fas fa-address-book icon-input-ficha"></i>
-												</div>
-												<div class="col-md-12 position-relative">
-													<label for="" class="form-label">Teléfono</label>
-													<input type="text" class="form-control" id="inputCelular">
-													<i class="fas fa-phone icon-input-ficha"></i>
-												</div>
-												<div class="col-md-12 position-relative">
-													<label for="" class="form-label">Email</label>
-													<input type="text" class="form-control" id="inputEmail">
-													<i class="fas fa-envelope icon-input-ficha"></i>
-												</div>
-											</form>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="bg-white rounded p-3 text-center">
-								<button class="btn btn-blue" id="btnGuardarPaciente" onclick="ModuloFichaPaciente.GrabarNuevoPaciente(this)">Guardar Paciente</button>
-								<button class="btn btn-blue" id="btnActualizarPaciente" onclick="ModuloFichaPaciente.ActualizarPaciente(this)" style="display: none">Actualizar Paciente</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-		</div>
-
-	</div>
-	<!--Contenido-->
+    </div>
+    <!--Contenido-->
 </div>
 <!--contenido central -->
 @Html.Partial("~/Views/Partials/_PartialModalDetalleConsulta.cshtml")
 
 @section scripts {
-	<script>
-		$(".btn-toggle").click(function () {
-		  if ($(this).hasClass("active")) {
-			$(".btn-toggle").removeClass("active");
-		  }
-		  else {
-			$(".btn-toggle").removeClass("active");
-			$(this).addClass("active");
-		  }
-		});
-	</script>
-	<script src="~/js/Site/Ficha_Paciente.js?v=1.0" type="text/javascript"></script>
+    <script>
+        $(".btn-toggle").click(function () {
+            $(this).toggleClass("active");
+        });
+    </script>
+    <script src="~/js/Site/Ficha_Paciente.js?v=1.0" type="text/javascript"></script>
 }

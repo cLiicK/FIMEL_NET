@@ -159,7 +159,7 @@
             $('#inputExamenFisico').prop('disabled', bool);
             $('#inputDiagnostico').prop('disabled', bool);
             $('#inputIndicaciones').prop('disabled', bool);
-            $('#inputReceta').prop('disabled', bool);
+            //$('#inputReceta').prop('disabled', bool);
         },
         ActualizarConsulta: function (object) {
             Swal.fire({
@@ -270,11 +270,11 @@
             }
             objDatosConsulta["Indicaciones"] = $("#inputIndicaciones").val() || null;
 
-            if (!$("#inputReceta").val()) {
-                Swal.fire('Ingrese la Receta', 'Nueva Consulta', 'warning');
-                return null;
-            }
-            objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
+            //if (!$("#inputReceta").val()) {
+            //    Swal.fire('Ingrese la Receta', 'Nueva Consulta', 'warning');
+            //    return null;
+            //}
+            //objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
 
 
 

@@ -22,5 +22,8 @@ namespace Fimel.Models
         public double? IMC { get; set; }
         public string? EstadoNutricional { get; set; }
         public int? UsuarioCreacion { get; set; }
+        public string? PresionArterial { get; set; }
+        public DateTime? FechaConsulta { get; set; }
+        public DateTime? FechaProximoControl { get; set; }
     }
 }

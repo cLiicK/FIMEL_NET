@@ -161,6 +161,7 @@
                             $("#inputAntFamiliares").val(response.AntFamiliares);
                             $("#inputAntPersonales").val(response.AntPersonales);
                             $("#inputAntQuirurgicos").val(response.AntQuirurgicos);
+                            $("#inputMedicamentos").val(response.Medicamentos);
 
                             $("#inputOrientacion").val(response.OrientacionSexual);
                             $("#inputIdentidad").val(response.IdentidadGenero);
@@ -179,8 +180,8 @@
                             if (response.Drogas === "SI") {
                                 btnDrogas.classList.add('active')
                             }
-                            if (btnAlergias.Alergias === "SI") {
-                                btnTabaco.classList.add('active')
+                            if (response.Alergias === "SI") {
+                                btnAlergias.classList.add('active')
                             }
 
                             $("#inputTabaco").val(response.DescTabaco);
@@ -193,7 +194,9 @@
                             $("#inputAborto").val(response.Aborto);
                             $("#inputMenarquia").val(response.Menarquia);
                             $("#inputMenopausia").val(response.Menopausia);
-                            $("#inputMedicamentos").val(response.Medicamentos);
+                            $("#inputGrupoRH").val(response.GrupoRH);
+                            $("#inputInmunizaciones").val(response.Inmunizaciones);
+                            
 
                             $("#comboReligion").val(response.Religion);
                             $("#comboRegimenAlimenticio").val(response.RegimenAlimenticio);
@@ -208,16 +211,17 @@
                         else {
                             Swal.fire('Nuevo paciente', 'Favor complete los datos del nuevo paciente', 'info')
 
-                            $("#btnGrabarPaciente").show();
+                            $("#btnGuardarPaciente").show();
+                            $('#btnGuardarPaciente').prop('disabled', false);
                             $("#btnActualizarPaciente").hide();
 
                             $("#ListConsultasAnteriores").html('<li class="list-group-item">Sin consultas anteriores</li>');
                         }
                     } else {
-                        Swal.fire('Sin Registros', 'No hay registros de Pacientes con el Rut ingresado', 'info')
+                        Swal.fire('Nuevo Paciente', 'Completar los datos del nuevo paciente', 'info')
                     }
-                    //$("#divDatosFicha").fadeIn();
-                    $("#divFichaPaciente").fadeIn();
+                    
+                    $(".accordion-collapse").collapse("show");
                     closeLoading(object);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -408,6 +412,9 @@
             objDatosPaciente["Aborto"] = $("#inputAborto").val() || null;
             objDatosPaciente["Menarquia"] = $("#inputMenarquia").val() || null;
             objDatosPaciente["Menopausia"] = $("#inputMenopausia").val() || null;
+
+            objDatosPaciente["GrupoRH"] = $("#inputGrupoRH").val() || null;
+            objDatosPaciente["Inmunizaciones"] = $("#inputInmunizaciones").val() || null;
 
             objDatosPaciente["Medicamentos"] = $("#inputMedicamentos").val() || null;
             objDatosPaciente["Religion"] = $('#comboReligion').val() || null;

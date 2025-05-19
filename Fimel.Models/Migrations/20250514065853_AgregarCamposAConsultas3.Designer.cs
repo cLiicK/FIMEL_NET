@@ -4,6 +4,7 @@ using Fimel.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Fimel.Models.Migrations
 {
     [DbContext(typeof(FimelDbContext))]
-    partial class FimelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250514065853_AgregarCamposAConsultas3")]
+    partial class AgregarCamposAConsultas3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,6 +230,9 @@ namespace Fimel.Models.Migrations
                     b.Property<DateTime?>("FechaProximoControl")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("GrupoRH")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double?>("IMC")
                         .HasColumnType("float");
 
@@ -234,6 +240,9 @@ namespace Fimel.Models.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Indicaciones")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Inmunizaciones")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MotivoConsulta")
@@ -265,7 +274,10 @@ namespace Fimel.Models.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Consultas", (string)null);
+                    b.ToTable("Consultas", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Fimel.Models.Documentos", b =>
@@ -447,13 +459,7 @@ namespace Fimel.Models.Migrations
                     b.Property<int?>("Gesta")
                         .HasColumnType("int");
 
-                    b.Property<string>("GrupoRH")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("IdentidadGenero")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Inmunizaciones")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Medicamentos")
@@ -504,9 +510,6 @@ namespace Fimel.Models.Migrations
                     b.Property<string>("Tabaco")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Talla")
-                        .HasColumnType("int");
-
                     b.Property<string>("TipoDocumento")
                         .HasColumnType("nvarchar(max)");
 
@@ -518,7 +521,10 @@ namespace Fimel.Models.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pacientes", (string)null);
+                    b.ToTable("Pacientes", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Fimel.Models.Perfiles", b =>

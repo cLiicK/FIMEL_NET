@@ -5,85 +5,85 @@ var ModuloHorarioCita = (function () {
         IniciarScripts: function () {
             ModuloHorarioCita.IniciarCalendario();
 
-            $("#inputRutCita").hide();
-            $("#inputRutNuevaCita").hide();
-            $("#numDocCitaNuevo").hide();
-            $("#numDocNuevaCita").hide();
-            $("#inputRutCita").keypress(function (e) { onlyNumbersWithK(e); });
-            $("#inputRutNuevaCita").keypress(function (e) { onlyNumbersWithK(e); });
-            $('#selectTipoDocumentoCitaNuevo').on('change', function (e) {
-                let tipoDocto = $('#selectTipoDocumentoCitaNuevo option:selected').val();
-                if (tipoDocto == "RUT") {
-                    $("#inputRutCita").show();
-                    $("#numDocCitaNuevo").hide();
-                }
-                else {
-                    $("#inputRutCita").hide();
-                    $("#numDocCitaNuevo").show();
-                }
-            });
+            //$("#inputRutCita").hide();
+            //$("#inputRutNuevaCita").hide();
+            //$("#numDocCitaNuevo").hide();
+            //$("#numDocNuevaCita").hide();
+            //$("#inputRutCita").keypress(function (e) { onlyNumbersWithK(e); });
+            //$("#inputRutNuevaCita").keypress(function (e) { onlyNumbersWithK(e); });
+            //$('#selectTipoDocumentoCitaNuevo').on('change', function (e) {
+            //    let tipoDocto = $('#selectTipoDocumentoCitaNuevo option:selected').val();
+            //    if (tipoDocto == "RUT") {
+            //        $("#inputRutCita").show();
+            //        $("#numDocCitaNuevo").hide();
+            //    }
+            //    else {
+            //        $("#inputRutCita").hide();
+            //        $("#numDocCitaNuevo").show();
+            //    }
+            //});
 
-            $('#selectTipoDocumentoNuevaCita').on('change', function (e) {
-                let tipoDocto = $('#selectTipoDocumentoNuevaCita option:selected').val();
-                if (tipoDocto == "RUT") {
-                    $("#inputRutNuevaCita").show();
-                    $("#numDocNuevaCita").hide();
-                }
-                else {
-                    $("#inputRutNuevaCita").hide();
-                    $("#numDocNuevaCita").show();
-                }
-            });
+            //$('#selectTipoDocumentoNuevaCita').on('change', function (e) {
+            //    let tipoDocto = $('#selectTipoDocumentoNuevaCita option:selected').val();
+            //    if (tipoDocto == "RUT") {
+            //        $("#inputRutNuevaCita").show();
+            //        $("#numDocNuevaCita").hide();
+            //    }
+            //    else {
+            //        $("#inputRutNuevaCita").hide();
+            //        $("#numDocNuevaCita").show();
+            //    }
+            //});
 
-            $("#inputRutCita").keyup(function () {
+            //$("#inputRutCita").keyup(function () {
 
-                let cadena = $("#inputRutCita").val();
-                cadena = cadena.replace(/[.]/gi, "").replace("-", "");
-                if (cadena.length > 9) {
-                    cadena = cadena.substr(0, 9);
-                }
-                let concatenar = "";
-                let i = cadena.length - 1;
-                for (; i >= 0;) {
-                    concatenar = cadena[i] + concatenar;
-                    if (i + 1 == (cadena.length) && i > 0) {
-                        concatenar = "-" + concatenar;
-                    }
-                    if (concatenar.length == 9 && cadena.length > 7) {
-                        concatenar = "." + concatenar;
-                    }
-                    if (concatenar.length == 5 && cadena.length > 4) {
-                        concatenar = "." + concatenar;
-                    }
-                    i--;
-                }
-                $("#inputRutCita").val(concatenar);
-            });
+            //    let cadena = $("#inputRutCita").val();
+            //    cadena = cadena.replace(/[.]/gi, "").replace("-", "");
+            //    if (cadena.length > 9) {
+            //        cadena = cadena.substr(0, 9);
+            //    }
+            //    let concatenar = "";
+            //    let i = cadena.length - 1;
+            //    for (; i >= 0;) {
+            //        concatenar = cadena[i] + concatenar;
+            //        if (i + 1 == (cadena.length) && i > 0) {
+            //            concatenar = "-" + concatenar;
+            //        }
+            //        if (concatenar.length == 9 && cadena.length > 7) {
+            //            concatenar = "." + concatenar;
+            //        }
+            //        if (concatenar.length == 5 && cadena.length > 4) {
+            //            concatenar = "." + concatenar;
+            //        }
+            //        i--;
+            //    }
+            //    $("#inputRutCita").val(concatenar);
+            //});
 
-            $("#inputRutNuevaCita").keyup(function () {
+            //$("#inputRutNuevaCita").keyup(function () {
 
-                let cadena = $("#inputRutNuevaCita").val();
-                cadena = cadena.replace(/[.]/gi, "").replace("-", "");
-                if (cadena.length > 9) {
-                    cadena = cadena.substr(0, 9);
-                }
-                let concatenar = "";
-                let i = cadena.length - 1;
-                for (; i >= 0;) {
-                    concatenar = cadena[i] + concatenar;
-                    if (i + 1 == (cadena.length) && i > 0) {
-                        concatenar = "-" + concatenar;
-                    }
-                    if (concatenar.length == 9 && cadena.length > 7) {
-                        concatenar = "." + concatenar;
-                    }
-                    if (concatenar.length == 5 && cadena.length > 4) {
-                        concatenar = "." + concatenar;
-                    }
-                    i--;
-                }
-                $("#inputRutNuevaCita").val(concatenar);
-            });
+            //    let cadena = $("#inputRutNuevaCita").val();
+            //    cadena = cadena.replace(/[.]/gi, "").replace("-", "");
+            //    if (cadena.length > 9) {
+            //        cadena = cadena.substr(0, 9);
+            //    }
+            //    let concatenar = "";
+            //    let i = cadena.length - 1;
+            //    for (; i >= 0;) {
+            //        concatenar = cadena[i] + concatenar;
+            //        if (i + 1 == (cadena.length) && i > 0) {
+            //            concatenar = "-" + concatenar;
+            //        }
+            //        if (concatenar.length == 9 && cadena.length > 7) {
+            //            concatenar = "." + concatenar;
+            //        }
+            //        if (concatenar.length == 5 && cadena.length > 4) {
+            //            concatenar = "." + concatenar;
+            //        }
+            //        i--;
+            //    }
+            //    $("#inputRutNuevaCita").val(concatenar);
+            //});
 
             $('#horaInicioNuevoBloque').change(function () {
                 let value = $('#horaInicioNuevoBloque').val();
@@ -333,44 +333,44 @@ var ModuloHorarioCita = (function () {
             var btnGuardar = $('#btnGuardarCitaModal');
 
             if (!$("#horaInicioCitaNuevo").val()) {
-                Swal.fire('Ingrese la Hora de Inicio', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese la Hora de Inicio', '', 'warning');
                 return null;
             }
             if (!$("#horaTerminoCitaNuevo").val()) {
-                Swal.fire('Ingrese la Hora de Termino', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese la Hora de Termino', '', 'warning');
                 return null;
             }
             if (!$("#nombreCitaNuevo").val()) {
-                Swal.fire('Ingrese el Nombre y Apellido', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese el Nombre y Apellido', '', 'warning');
                 return null;
             }
             if (!$("#correoCitaNuevo").val()) {
-                Swal.fire('Ingrese un Correo Electrónico', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese un Correo Electrónico', '', 'warning');
                 return null;
             }
-            if (!$("#selectTipoDocumentoCitaNuevo").val()) {
-                Swal.fire('Seleccione el Tipo de Documento', 'Nueva Cita', 'warning');
-                return null;
-            }
-            if (!$("#numDocCitaNuevo").val() && !$("#inputRutCita").val()) {
-                Swal.fire('Valide el campo del Documento', 'Nueva Cita', 'warning');
-                return null;
-            }
+            //if (!$("#selectTipoDocumentoCitaNuevo").val()) {
+            //    Swal.fire('Seleccione el Tipo de Documento', '', 'warning');
+            //    return null;
+            //}
+            //if (!$("#numDocCitaNuevo").val() && !$("#inputRutCita").val()) {
+            //    Swal.fire('Valide el campo del Documento', '', 'warning');
+            //    return null;
+            //}
 
-            let validacionRut = validarRut($("#inputRutCita").val());
-            if (validacionRut == "01" || validacionRut == "00") {
-                Swal.fire('Ingresa un Rut válido', 'Datos Paciente', 'warning');
-                return null;
-            }
+            //let validacionRut = validarRut($("#inputRutCita").val());
+            //if (validacionRut == "01" || validacionRut == "00") {
+            //    Swal.fire('Ingresa un Rut válido', 'Datos Paciente', 'warning');
+            //    return null;
+            //}
 
-            let numDoc;
-            let tipoDocto = $('#selectTipoDocumentoCitaNuevo option:selected').val();
-            if (tipoDocto == "RUT") {
-                const rutData = $("#inputRutCita").val();
-                numDoc = rutData ? rutData.split("-")[0].replace(/\./g, "") : null;
-            } else {
-                numDoc= $("#inputNumDocumento").val() || null;
-            }
+            //let numDoc;
+            //let tipoDocto = $('#selectTipoDocumentoCitaNuevo option:selected').val();
+            //if (tipoDocto == "RUT") {
+            //    const rutData = $("#inputRutCita").val();
+            //    numDoc = rutData ? rutData.split("-")[0].replace(/\./g, "") : null;
+            //} else {
+            //    numDoc= $("#inputNumDocumento").val() || null;
+            //}
 
             let fecha = $('#fechaModal').val();
 
@@ -392,13 +392,13 @@ var ModuloHorarioCita = (function () {
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
                 NombrePaciente: $('#nombreCitaNuevo').val(),
                 CorreoPaciente: $('#correoCitaNuevo').val(),
-                TipoDocumento: $('#selectTipoDocumentoCitaNuevo').val(),
-                NumeroDocumento: numDoc
+                //TipoDocumento: $('#selectTipoDocumentoCitaNuevo').val(),
+                //NumeroDocumento: numDoc
             }
 
 
             Swal.fire({
-                title: 'Nueva Cita',
+                title: '',
                 text: '¿Esta seguro de crear la Cita?',
                 icon: 'question',
                 showCancelButton: true,
@@ -451,44 +451,44 @@ var ModuloHorarioCita = (function () {
             var btnGuardar = $('#btnGuardarCita');
 
             if (!$("#horaInicioCitaNueva").val()) {
-                Swal.fire('Ingrese la Hora de Inicio', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese la Hora de Inicio', '', 'warning');
                 return null;
             }
             if (!$("#horaTerminoCitaNueva").val()) {
-                Swal.fire('Ingrese la Hora de Termino', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese la Hora de Termino', '', 'warning');
                 return null;
             }
             if (!$("#nombreCitaNueva").val()) {
-                Swal.fire('Ingrese el Nombre y Apellido', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese el Nombre y Apellido', '', 'warning');
                 return null;
             }
             if (!$("#correoCitaNueva").val()) {
-                Swal.fire('Ingrese un Correo Electrónico', 'Nueva Cita', 'warning');
+                Swal.fire('Ingrese un Correo Electrónico', '', 'warning');
                 return null;
             }
-            if (!$("#selectTipoDocumentoNuevaCita").val()) {
-                Swal.fire('Seleccione el Tipo de Documento', 'Nueva Cita', 'warning');
-                return null;
-            }
-            if (!$("#numDocNuevaCita").val() && !$("#inputRutNuevaCita").val()) {
-                Swal.fire('Valide el campo del Documento', 'Nueva Cita', 'warning');
-                return null;
-            }
+            //if (!$("#selectTipoDocumentoNuevaCita").val()) {
+            //    Swal.fire('Seleccione el Tipo de Documento', '', 'warning');
+            //    return null;
+            //}
+            //if (!$("#numDocNuevaCita").val() && !$("#inputRutNuevaCita").val()) {
+            //    Swal.fire('Valide el campo del Documento', '', 'warning');
+            //    return null;
+            //}
 
-            let validacionRut = validarRut($("#inputRutNuevaCita").val());
-            if (validacionRut == "01" || validacionRut == "00") {
-                Swal.fire('Ingresa un Rut válido', 'Datos Paciente', 'warning');
-                return null;
-            }
+            //let validacionRut = validarRut($("#inputRutNuevaCita").val());
+            //if (validacionRut == "01" || validacionRut == "00") {
+            //    Swal.fire('Ingresa un Rut válido', 'Datos Paciente', 'warning');
+            //    return null;
+            //}
 
-            let numDoc;
-            let tipoDocto = $('#selectTipoDocumentoNuevaCita option:selected').val();
-            if (tipoDocto == "RUT") {
-                const rutData = $("#inputRutNuevaCita").val();
-                numDoc = rutData ? rutData.split("-")[0].replace(/\./g, "") : null;
-            } else {
-                numDoc = $("#numDocNuevaCita").val() || null;
-            }
+            //let numDoc;
+            //let tipoDocto = $('#selectTipoDocumentoNuevaCita option:selected').val();
+            //if (tipoDocto == "RUT") {
+            //    const rutData = $("#inputRutNuevaCita").val();
+            //    numDoc = rutData ? rutData.split("-")[0].replace(/\./g, "") : null;
+            //} else {
+            //    numDoc = $("#numDocNuevaCita").val() || null;
+            //}
 
             let fecha = $('#fechaCitaNueva').val();
 
@@ -508,13 +508,13 @@ var ModuloHorarioCita = (function () {
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
                 NombrePaciente: $('#nombreCitaNueva').val(),
                 CorreoPaciente: $('#correoCitaNueva').val(),
-                TipoDocumento: $('#selectTipoDocumentoNuevaCita').val(),
-                NumeroDocumento: numDoc
+                //TipoDocumento: $('#selectTipoDocumentoNuevaCita').val(),
+                //NumeroDocumento: numDoc
             }
 
 
             Swal.fire({
-                title: 'Nueva Cita',
+                title: '',
                 text: '¿Esta seguro de crear la Cita?',
                 icon: 'question',
                 showCancelButton: true,

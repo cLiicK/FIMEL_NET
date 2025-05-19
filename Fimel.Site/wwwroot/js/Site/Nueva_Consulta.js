@@ -94,6 +94,7 @@
                     if (response != null) {
                         if (response.Id > 0) {
                             const nombreCompleto = response.Nombres + " " + response.PrimerApellido + " " + response.SegundoApellido;
+                            $("#spanNombrePaciente").text(" - " + nombreCompleto);
                             $("#inputNombres").val(response.Nombres);
                             $("#inputPrimerApellido").val(response.PrimerApellido);
                             $("#inputSegundoApellido").val(response.SegundoApellido);
@@ -135,9 +136,19 @@
 
                             $('#btnGuardarConsulta').prop('disabled', false);
 
+                            $("#accordionFicha-nuevaConsulta").collapse("show");
                         }
                     } else {
-                        Swal.fire('Sin Registros', 'No hay registros de Pacientes con el Rut ingresado', 'info')
+                        Swal.fire({
+                            title: 'Paciente nuevo',
+                            text: 'Registra al paciente en "Ficha Paciente"',
+                            icon: 'info',
+                            confirmButtonText: 'Ir a Ficha Paciente'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.replace("/Pacientes/FichaPaciente?p=" + rutCompleto);
+                            }
+                        });
                     }
                     closeLoading(object);
                 },
@@ -198,27 +209,22 @@
             let objDatosConsulta = {};
 
             if (!$("#comboTipoConsulta").val()) {
-                Swal.fire('Ingrese el Tipo de Consulta', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese el Tipo de Consulta', '', 'warning');
                 return null;
             }
             objDatosConsulta["TipoConsulta"] = $("#comboTipoConsulta").val() || null;
 
             if (!$("#inputPeso").val()) {
-                Swal.fire('Ingrese el Peso', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese el Peso', '', 'warning');
                 return null;
             }
             objDatosConsulta["Peso"] = $("#inputPeso").val() || null;
 
             if (!$("#inputTalla").val()) {
-                Swal.fire('Ingrese la Talla', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese la Talla', '', 'warning');
                 return null;
             }
             objDatosConsulta["Talla"] = $("#inputTalla").val() || null;
-
-            if (!$("#inputIMC").val()) {
-                Swal.fire('Haga el cálculo del IMC', 'Nueva Consulta', 'warning');
-                return null;
-            }
             objDatosConsulta["IMC"] = $("#inputIMC").val() || null;
 
             if (!$("#inputEstadoNutricional").val()) {
@@ -228,44 +234,50 @@
             objDatosConsulta["EstadoNutricional"] = $("#inputEstadoNutricional").val() || null;
 
             if (!$("#inputMotivoConsulta").val()) {
-                Swal.fire('Ingrese el Motivo', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese el Motivo', '', 'warning');
                 return null;
             }
             objDatosConsulta["MotivoConsulta"] = $("#inputMotivoConsulta").val() || null;
 
             if (!$("#inputAnamnesis").val()) {
-                Swal.fire('Ingrese Anamnesis', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese Anamnesis', '', 'warning');
                 return null;
             }
             objDatosConsulta["Anamnesis"] = $("#inputAnamnesis").val() || null;
 
             if (!$("#inputExamenFisico").val()) {
-                Swal.fire('Ingrese el Examen Físico', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese el Examen Físico', '', 'warning');
                 return null;
             }
             objDatosConsulta["ExamenFisico"] = $("#inputExamenFisico").val() || null;
 
             if (!$("#inputDiagnostico").val()) {
-                Swal.fire('Ingrese un Diagnóstico', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese un Diagnóstico', '', 'warning');
                 return null;
             }
             objDatosConsulta["Diagnostico"] = $("#inputDiagnostico").val() || null;
 
             if (!$("#inputIndicaciones").val()) {
-                Swal.fire('Ingrese las Indicaciones', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese las Indicaciones', '', 'warning');
                 return null;
             }
             objDatosConsulta["Indicaciones"] = $("#inputIndicaciones").val() || null;
 
             if (!$("#inputReceta").val()) {
-                Swal.fire('Ingrese la Receta', 'Nueva Consulta', 'warning');
+                Swal.fire('Ingrese la Receta', '', 'warning');
                 return null;
             }
             objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
+            objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val();
 
+            if ($("#inputFechaConsulta").val() != "") {
+                objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val();
+            }
 
+            if ($("#inputFechaProximoControl").val() != "") {
+                objDatosConsulta["FechaProximoControl"] = $("#inputFechaProximoControl").val();
+            }
 
-            //objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val();
             showLoading(object);
             return objDatosConsulta;
         },
@@ -296,10 +308,24 @@
                 $("#inputEstadoNutricional").removeClass();
                 $("#inputEstadoNutricional").addClass(classEstadoNutricional);
             }
+        },
+
+        SetFechaHoy: function (inputSelector) {
+            const hoy = new Date();
+            const yyyy = hoy.getFullYear();
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            const fechaFormateada = `${yyyy}-${mm}-${dd}`;
+            $(inputSelector).val(fechaFormateada);
         }
     }
 })();
 
 $(function () {
     ModuloConsulta.IniciarScripts();
+
+    $("#inputPeso, #inputTalla").on("input", function () {
+        ModuloConsulta.CalcularIMC();
+    });
+     ModuloConsulta.SetFechaHoy('#inputFechaConsulta');
 });

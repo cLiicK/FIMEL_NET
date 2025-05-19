@@ -14,9 +14,11 @@
                 <p><strong>Hora Término</strong> <input class="form-control" type="time" id="horaTerminoCitaNuevo" /></p>
                 <p><strong>Nombre</strong> <input class="form-control" id="nombreCitaNuevo" /></p>
                 <p><strong>Correo</strong> <input class="form-control" id="correoCitaNuevo" /></p>
-                <p>
+                <p><strong>Telefono</strong> <input class="form-control" id="telefonoCitaNueva" /></p>
+                <p><strong>Nota</strong> <input class="form-control" id="notaCitaNueva" /></p>
+@*                 <p>
                     <strong>Tipo de Documento</strong>
-                    <select class="form-control" id="selectTipoDocumentoCitaNuevo">
+                    <select class="form-select" id="selectTipoDocumentoCitaNuevo">
                         <option value="">Seleccione...</option>
                         <option value="RUT">RUT</option>
                         <option value="Pasaporte">Pasaporte</option>
@@ -25,7 +27,7 @@
                     </select>
                 </p>
                 <p><input class="form-control" id="numDocCitaNuevo" /></p>
-                <p><input class="form-control" id="inputRutCita" /></p>
+                <p><input class="form-control" id="inputRutCita" /></p> *@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-blue" id="btnGuardarCitaModal" onclick="ModuloHorarioCita.GuardarCitaModal()">Guardar</button>
@@ -46,7 +48,7 @@
             <div class="modal-body">
                 <p><strong>Hora de Inicio</strong> <input class="form-control" id="horaInicioCita" disabled/></p>
                 <p><strong>Hora Término</strong> <input class="form-control" id="horaTerminoCita" disabled /></p>
-                <p><strong>Nombre</strong> <input class="form-control" id="nombreCita" disabled /></p>
+                <p><strong>Nombre y apellido</strong> <input class="form-control" id="nombreCita" disabled /></p>
                 <p><strong>Correo</strong> <input class="form-control" id="correoCita" disabled /></p>
                 <p><strong><span id="tipoDocumentoCita"></span></strong> <input class="form-control" id="numDocCita" disabled /> </p>
             </div>

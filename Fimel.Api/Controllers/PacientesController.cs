@@ -209,6 +209,8 @@ namespace Fimel.Api.Controllers
                 dbPaciente.SegundoApellido = paciente.SegundoApellido;
                 dbPaciente.TipoDocumento = paciente.TipoDocumento;
                 dbPaciente.NumeroDocumento = paciente.NumeroDocumento;
+                dbPaciente.GrupoRH = paciente.GrupoRH;
+                dbPaciente.Inmunizaciones = paciente.Inmunizaciones;
 
                 db.SaveChanges();
 

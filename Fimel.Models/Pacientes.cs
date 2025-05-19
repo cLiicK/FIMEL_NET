@@ -44,5 +44,8 @@ namespace Fimel.Models
         public string? SegundoApellido { get; set; }
         public string? TipoDocumento { get; set; }
         public string? NumeroDocumento { get; set; }
+        public string? GrupoRH { get; set; }
+        public string? Inmunizaciones { get; set; }
+        public int? Talla { get; set; }
     }
 }

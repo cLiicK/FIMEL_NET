@@ -1,378 +1,355 @@
 ﻿@model Pacientes
 
 @{
-	string rutCompleto = new Utileria().FormatearRut(Model.Rut.Value,Model.Dv);
-	int edad = new Utileria().CalcularEdad(Model.FechaNacimiento.Value);
+    string rutCompleto = new Utileria().FormatearRut(Model.Rut.Value, Model.Dv);
+    int edad = new Utileria().CalcularEdad(Model.FechaNacimiento.Value);
 }
 
 
 <div id="content-wrapper" class="container-9">
-	<!--TITULO-->
-	<div class="row">
-		<div class="col-12">
-			<div class="container">
-				<div class="row">
-					<div class="col-12">
-						<h2 class="colorfimel-blue"><a class="colorfimel-rosa" href="@Url.Action("HistorialPacientes", "Pacientes")"><i class="fas fa-angle-left me-3"></i></a>Detalle del Paciente</h2>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!--TITULO-->
-	<!--Contenido-->
-	<div class="row mt-3">
-		<div id="divFichaPaciente">
-			<div class="container mt-3">
-				<div class="row">
-					<div class="col-md-8">
-						<div class="accordion" id="accordionFicha">
-							<div class="accordion-item">
-								<h2 class="accordion-header" id="accordionFicha-datosPaciente-head">
-									<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
-										Datos paciente
-									</button>
-								</h2>
-								<div id="accordionFicha-datosPaciente" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosPaciente-head">
-									<div class="accordion-body">
-										<form class="row g-3">
-											<div class="col-md-6">
-												<label for="" class="form-label">Nombres</label>
-												<input type="text" class="form-control" value="@Model.Nombres" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Apellido paterno</label>
-												<input type="text" class="form-control" value="@Model.PrimerApellido" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Apellido materno</label>
-												<input type="text" class="form-control" value="@Model.SegundoApellido" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Rut</label>
-												<input type="text" class="form-control" value="@rutCompleto" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Fecha de nacimiento</label>
-												<input type="text" class="form-control" value="@Model.FechaNacimiento.Value.ToString("dd-MM-yyyy")" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Edad</label>
-												<input type="text" class="form-control" value="@edad" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Nacionalidad</label>
-												<select class="form-control" id="comboNacionalidad" @Model disabled>
-													<option value="Chile">Chile</option>
-													<option value="Argentina">Argentina</option>
-													<option value="Peru">Peru</option>
-													<option value="Haiti">Haiti</option>
-													<option value="Colombia">Colombia</option>
-													<option value="Venezuela">Venezuela</option>
-													<option value="Bolivia">Bolivia</option>
-													<option value="Uruguay">Uruguay</option>
-													<option value="Paraguay">Paraguay</option>
-													<option value="Brasil">Brasil</option>
-													<option value="Otro">Otro</option>
-												</select>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Previsión</label>
-												<input type="text" class="form-control" value="@Model.Prevision" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Religión</label>
-												<select class="form-control" id="comboReligion" @Model disabled>
-													<option value="Ateo">Ateo</option>
-													<option value="Cristiana">Cristiana</option>
-													<option value="Testigo">Testigo</option>
-													<option value="No Profesa">No Profesa</option>
-												</select>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Regimen alimenticio</label>
-												<select class="form-control" id="comboRegimenAlimenticio" @Model disabled>
-													<option value="Normal">Normal</option>
-													<option value="Vegetariano">Vegetariano</option>
-													<option value="Vegano">Vegano</option>
-													<option value="Pescetariano">Pescetariano</option>
-												</select>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Orientación Sexual</label>
-												<input type="text" class="form-control" id="inputOrientacion" value="@Model.OrientacionSexual" disabled>
-											</div>
-											<div class="col-md-3">
-												<label for="" class="form-label">Identidad de Género</label>
-												<input type="text" class="form-control" id="inputIdentidad" value="@Model.IdentidadGenero" disabled>
-											</div>
-											<div class="col-md-6">
-												<label for="" class="form-label d-block">Sexo Biológico</label>
-												@if (Model.SexoBiologico == "M")
-												{
-													<input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" checked disabled>
-													<label class="btn btn-radio" for="radioSexo1">Masculino</label>
-													<input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" disabled>
-													<label class="btn btn-radio" for="radioSexo2">Femenino</label>
-												}
-												else if (Model.SexoBiologico == "F")
-												{
-													<input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" disabled>
-													<label class="btn btn-radio" for="radioSexo1">Masculino</label>
-													<input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" checked disabled>
-													<label class="btn btn-radio" for="radioSexo2">Femenino</label>
-												}
-											</div>
-										</form>
-									</div>
-								</div>
-							</div>
-							<div class="accordion-item">
-								<h2 class="accordion-header" id="accordionFicha-antecedentes-head">
-									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentes" aria-expanded="false" aria-controls="accordionFicha-antecedentes">
-										Antecedentes generales
-									</button>
-								</h2>
-								<div id="accordionFicha-antecedentes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentes-head">
-									<div class="accordion-body">
-										<form class="row g-3">
-											<div class="col-md-12">
-												<label for="" class="form-label">Antecedentes generales</label>
-												<textarea class="form-control" id="inputAntPersonales" rows="3" disabled>@Model.AntPersonales</textarea>
-											</div>
-											<div class="col-md-12">
-												<label for="" class="form-label">Medicamentos</label>
-												<textarea class="form-control" id="inputMedicamentos" rows="3" disabled>@Model.Medicamentos</textarea>
-											</div>
-											<div class="col-md-12">
-												<label for="" class="form-label">Antecedentes movidos familiares</label>
-												<textarea class="form-control" id="inputAntFamiliares" rows="3" disabled>@Model.AntFamiliares</textarea>
-											</div>
-											<div class="col-md-12">
-												<label for="" class="form-label">Antecedentes quirúrgicos</label>
-												<textarea class="form-control" id="inputAntQuirurgicos" rows="3" disabled>@Model.AntQuirurgicos</textarea>
-											</div>
-											<div class="col-md-12 bg-fimel-lightblue p-2">
-												<div class="row d-flex justify-content-between flex-nowrap">
-													<div class="col border-right-pink text-center p-2">
-														<label for="" class="form-label">Tabaco</label>
-														<div class="div-switch">
-															@if (Model.Tabaco == "SI")
-															{
-																<button type="button" class="btn-toggle active" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioTabaco1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-															else{
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioTabaco1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-														</div>
-														<input type="text" class="form-control mt-3" id="inputTabaco" disabled>
-													</div>
-													<div class="col border-right-pink text-center p-2">
-														<label for="" class="form-label">Alcohol</label>
-														<div class="div-switch">
-															@if (Model.Alcohol == "SI")
-															{
-																<button type="button" class="btn-toggle active" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlcohol1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-															else
-															{
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlcohol1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-														</div>
-														<input type="text" class="form-control mt-3" value="@Model.DescTabaco" disabled>
-													</div>
-													<div class="col border-right-pink text-center p-2">
-														<label for="" class="form-label">Drogas</label>
-														<div class="div-switch">
-															@if (Model.Drogas == "SI")
-															{
-																<button type="button" class="btn-toggle active" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioDrogas1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-															else
-															{
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioDrogas1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-														</div>
-														<input type="text" class="form-control mt-3" value="@Model.DescDrogas" disabled>
-													</div>
-													<div class="col text-center p-2">
-														<label for="" class="form-label">Alergias conocidas</label>
-														<div class="div-switch">
-															@if (Model.Drogas == "SI")
-															{
-																<button type="button" class="btn-toggle active" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlergias1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-															else
-															{
-																<button type="button" class="btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off" id="radioAlergias1" disabled>
-																	<div class="handle"></div>
-																</button>
-															}
-														</div>
-														<input type="text" class="form-control mt-3" value="@Model.DescAlergias" disabled>
-													</div>
-												</div>
-											</div>
-										</form>
-									</div>
-								</div>
-							</div>
-							<div class="accordion-item">
-								<h2 class="accordion-header" id="accordionFicha-antecedentesGine-head">
-									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentesGine" aria-expanded="false" aria-controls="accordionFicha-antecedentesGine">
-										Antecedentes ginecologicos
-									</button>
-								</h2>
-								<div id="accordionFicha-antecedentesGine" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentesGine-head">
-									<div class="accordion-body">
-										<form class="row g-3">
-											<div class="col-md-4 mt-0">
-												<label for="" class="form-label">Paridad</label>
-												<div class="row">
-													<div class="col text-center f-14">
-														<label for="" class="form-label">G</label>
-														<input type="text" class="form-control" value="@Model.Gesta" disabled>
-													</div>
-													<div class="col text-center f-14">
-														<label for="" class="form-label">P</label>
-														<input type="text" class="form-control" value="@Model.Parto" disabled>
-													</div>
-													<div class="col text-center f-14">
-														<label for="" class="form-label">A</label>
-														<input type="text" class="form-control" value="@Model.Aborto" disabled>
-													</div>
-												</div>
-											</div>
-											<div class="col-md-4 mt-1-8">
-												<label for="" class="form-label">Menarquia</label>
-												<input type="text" class="form-control" value="@Model.Menarquia" disabled>
-											</div>
-											<div class="col-md-4 mt-1-8">
-												<label for="" class="form-label">Menopausia</label>
-												<input type="text" class="form-control" value="@Model.Menopausia" disabled>
-											</div>
-										</form>
-									</div>
-								</div>
-							</div>
-							<div class="accordion-item">
-								<h2 class="accordion-header" id="accordionFicha-examenes-head">
-									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenes" aria-expanded="false" aria-controls="accordionFicha-examenes">
-										Examenes
-									</button>
-								</h2>
-								<div id="accordionFicha-examenes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenes-head">
-									<div class="accordion-body">
-										<div class="col-md-12 px-4 my-2">
-											<div class="row d-flex justify-content-between align-items-end">
-												<div class="col">
-													<p class="mb-0">Tipo de examen</p>
-												</div>
-												<div class="col">
-													<p class="mb-0 text-center">Fecha</p>
-												</div>
-												<div class="col-md-3 text-center">
-													<p class="mb-0 text-center">Adjunto</p>
-												</div>
-											</div>
-										</div>
-										<div class="col-md-12 bg-fimel-lightblue p-4">
-											<div class="row d-flex justify-content-between align-items-end mb-2">
-												<div class="col">
-													<p class="mb-0">Ecografía bilateral</p>
-												</div>
-												<div class="col">
-													<p class="mb-0 text-center">15/05/2022</p>
-												</div>
-												<div class="col-md-3 text-center">
-													<button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
-												</div>
-											</div>
-											<div class="row d-flex justify-content-between align-items-end mb-2">
-												<div class="col">
-													<p class="mb-0">Ecografía bilateral</p>
-												</div>
-												<div class="col">
-													<p class="mb-0 text-center">15/05/2022</p>
-												</div>
-												<div class="col-md-3 text-center">
-													<button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+    <!--TITULO-->
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="colorfimel-blue"><a class="colorfimel-rosa" href="@Url.Action("HistorialPacientes", "Pacientes")"><i class="fas fa-angle-left me-3"></i></a>Detalle del Paciente</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--TITULO-->
+    <!--Contenido-->
+    <div class="row mt-3">
+        <div id="divFichaPaciente">
+            <div class="container mt-3">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="accordion" id="accordionFicha">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="accordionFicha-datosPaciente-head">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
+                                        Datos Demográficos
+                                    </button>
+                                </h2>
+                                <div id="accordionFicha-datosPaciente" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosPaciente-head">
+                                    <div class="accordion-body">
+                                        <form class="row g-3">
+                                            <div class="col-md-6">
+                                                <label for="" class="form-label">Nombres</label>
+                                                <input type="text" class="form-control" value="@Model.Nombres" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Apellido paterno</label>
+                                                <input type="text" class="form-control" value="@Model.PrimerApellido" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Apellido materno</label>
+                                                <input type="text" class="form-control" value="@Model.SegundoApellido" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Rut</label>
+                                                <input type="text" class="form-control" value="@rutCompleto" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Fecha de nacimiento</label>
+                                                <input type="text" class="form-control" value="@Model.FechaNacimiento.Value.ToString("dd-MM-yyyy")" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Edad</label>
+                                                <input type="text" class="form-control" value="@edad" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Nacionalidad</label>
+                                                <select class="form-select" id="comboNacionalidad" @Model disabled>
+                                                    <option value="Chile">Chile</option>
+                                                    <option value="Argentina">Argentina</option>
+                                                    <option value="Peru">Peru</option>
+                                                    <option value="Haiti">Haiti</option>
+                                                    <option value="Colombia">Colombia</option>
+                                                    <option value="Venezuela">Venezuela</option>
+                                                    <option value="Bolivia">Bolivia</option>
+                                                    <option value="Uruguay">Uruguay</option>
+                                                    <option value="Paraguay">Paraguay</option>
+                                                    <option value="Brasil">Brasil</option>
+                                                    <option value="Otro">Otro</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Previsión</label>
+                                                <input type="text" class="form-control" value="@Model.Prevision" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Religión</label>
+                                                <select class="form-select" id="comboReligion" @Model disabled>
+                                                    <option value="Ateo">Ateo</option>
+                                                    <option value="Cristiana">Cristiana</option>
+                                                    <option value="Testigo">Testigo</option>
+                                                    <option value="No Profesa">No Profesa</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Regimen alimenticio</label>
+                                                <select class="form-select" id="comboRegimenAlimenticio" @Model disabled>
+                                                    <option value="Normal">Normal</option>
+                                                    <option value="Vegetariano">Vegetariano</option>
+                                                    <option value="Vegano">Vegano</option>
+                                                    <option value="Pescetariano">Pescetariano</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Orientación Sexual</label>
+                                                <input type="text" class="form-control" id="inputOrientacion" value="@Model.OrientacionSexual" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Identidad de Género</label>
+                                                <input type="text" class="form-control" id="inputIdentidad" value="@Model.IdentidadGenero" disabled>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="" class="form-label d-block">Sexo Biológico</label>
+                                                @if (Model.SexoBiologico == "M")
+                                                {
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" checked disabled>
+                                                    <label class="btn btn-radio" for="radioSexo1">Masculino</label>
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" disabled>
+                                                    <label class="btn btn-radio" for="radioSexo2">Femenino</label>
+                                                }
+                                                else if (Model.SexoBiologico == "F")
+                                                {
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" disabled>
+                                                    <label class="btn btn-radio" for="radioSexo1">Masculino</label>
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" checked disabled>
+                                                    <label class="btn btn-radio" for="radioSexo2">Femenino</label>
+                                                }
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="accordionFicha-antecedentes-head">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentes" aria-expanded="false" aria-controls="accordionFicha-antecedentes">
+                                        Antecedentes generales
+                                    </button>
+                                </h2>
+                                <div id="accordionFicha-antecedentes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentes-head">
+                                    <div class="accordion-body">
+                                        <form class="row g-3">
+                                            <div class="col-md-12">
+                                                <label for="" class="form-label">Antecedentes generales</label>
+                                                <textarea class="form-control" id="inputAntPersonales" rows="3" disabled>@Model.AntPersonales</textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="" class="form-label">Medicamentos</label>
+                                                <textarea class="form-control" id="inputMedicamentos" rows="3" disabled>@Model.Medicamentos</textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="" class="form-label">Antecedentes mórbidos familiares</label>
+                                                <textarea class="form-control" id="inputAntFamiliares" rows="3" disabled>@Model.AntFamiliares</textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="" class="form-label">Antecedentes quirúrgicos</label>
+                                                <textarea class="form-control" id="inputAntQuirurgicos" rows="3" disabled>@Model.AntQuirurgicos</textarea>
+                                            </div>
 
 
 
-					</div>
-					<!--LATERAL-->
-					<div class="col-md-4">
-						<div class="accordion" id="accordionFicha">
-							<div class="accordion-item">
-								<h2 class="accordion-header" id="accordionFicha-datosContacto-head">
-									<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosContacto" aria-expanded="true" aria-controls="accordionFicha-datosContacto">
-										Información de contacto
-									</button>
-								</h2>
-								<div id="accordionFicha-datosContacto" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosContacto-head">
-									<div class="accordion-body">
-										<form class="row g-3">
-											<div class="col-md-12 position-relative">
-												<label for="" class="form-label">Dirección particular</label>
-												<input type="text" class="form-control" value="@Model.Direccion" disabled>
-												<i class="fas fa-address-book icon-input-ficha"></i>
-											</div>
-											<div class="col-md-12 position-relative">
-												<label for="" class="form-label">Teléfono</label>
-												<input type="text" class="form-control" value="@Model.Celular" disabled>
-												<i class="fas fa-phone icon-input-ficha"></i>
-											</div>
-											<div class="col-md-12 position-relative">
-												<label for="" class="form-label">Email</label>
-												<input type="text" class="form-control" value="@Model.Email" disabled>
-												<i class="fas fa-envelope icon-input-ficha"></i>
-											</div>
-										</form>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                                            <div class="col-md-12 bg-fimel-lightblue p-2">
+                                                <div class="row d-flex justify-content-between flex-nowrap">
 
-	</div>
+                                                    <!-- Tabaco -->
+                                                    <div class="col border-right-pink text-center p-2">
+                                                        <label for="radioTabaco1" class="form-label">Tabaco</label>
+                                                        <div class="div-switch">
+                                                            <button type="button" class="btn-toggle @(Model.Tabaco == "SI" ? "active" : "")" id="radioTabaco1" disabled>
+                                                                <div class="handle"></div>
+                                                            </button>
+                                                        </div>
+                                                        <input type="text" class="form-control mt-3" value="@Model.DescTabaco" id="inputTabaco" disabled>
+                                                    </div>
+
+                                                    <!-- Alcohol -->
+                                                    <div class="col border-right-pink text-center p-2">
+                                                        <label for="radioAlcohol1" class="form-label">Alcohol</label>
+                                                        <div class="div-switch">
+                                                            <button type="button" class="btn-toggle @(Model.Alcohol == "SI" ? "active" : "")" id="radioAlcohol1" disabled>
+                                                                <div class="handle"></div>
+                                                            </button>
+                                                        </div>
+                                                        <input type="text" class="form-control mt-3" value="@Model.DescAlcohol" id="inputAlcohol" disabled>
+                                                    </div>
+
+                                                    <!-- Drogas -->
+                                                    <div class="col border-right-pink text-center p-2">
+                                                        <label for="radioDrogas1" class="form-label">Drogas</label>
+                                                        <div class="div-switch">
+                                                            <button type="button" class="btn-toggle @(Model.Drogas == "SI" ? "active" : "")" id="radioDrogas1" disabled>
+                                                                <div class="handle"></div>
+                                                            </button>
+                                                        </div>
+                                                        <input type="text" class="form-control mt-3" value="@Model.DescDrogas" id="inputDrogas" disabled>
+                                                    </div>
+
+                                                    <!-- Alergias conocidas -->
+                                                    <div class="col text-center p-2">
+                                                        <label for="radioAlergias1" class="form-label">Alergias conocidas</label>
+                                                        <div class="div-switch">
+                                                            <button type="button" class="btn-toggle @(Model.Alergias == "SI" ? "active" : "")" id="radioAlergias1" disabled>
+                                                                <div class="handle"></div>
+                                                            </button>
+                                                        </div>
+                                                        <input type="text" class="form-control mt-3" value="@Model.DescAlergias" id="inputAlergias" disabled>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="accordionFicha-antecedentesGine-head">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentesGine" aria-expanded="false" aria-controls="accordionFicha-antecedentesGine">
+                                        Antecedentes ginecologicos
+                                    </button>
+                                </h2>
+                                <div id="accordionFicha-antecedentesGine" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentesGine-head">
+                                    <div class="accordion-body">
+                                        <form class="row g-3">
+                                            <div class="col-md-4 mt-0">
+                                                <label for="" class="form-label">Paridad</label>
+                                                <div class="row">
+                                                    <div class="col text-center f-14">
+                                                        <label for="" class="form-label">G</label>
+                                                        <input type="text" class="form-control" value="@Model.Gesta" disabled>
+                                                    </div>
+                                                    <div class="col text-center f-14">
+                                                        <label for="" class="form-label">P</label>
+                                                        <input type="text" class="form-control" value="@Model.Parto" disabled>
+                                                    </div>
+                                                    <div class="col text-center f-14">
+                                                        <label for="" class="form-label">A</label>
+                                                        <input type="text" class="form-control" value="@Model.Aborto" disabled>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mt-1-8">
+                                                <label for="" class="form-label">Menarquia</label>
+                                                <input type="text" class="form-control" value="@Model.Menarquia" disabled>
+                                            </div>
+                                            <div class="col-md-4 mt-1-8">
+                                                <label for="" class="form-label">Menopausia</label>
+                                                <input type="text" class="form-control" value="@Model.Menopausia" disabled>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="accordionFicha-examenes-head">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenes" aria-expanded="false" aria-controls="accordionFicha-examenes">
+                                        Examenes
+                                    </button>
+                                </h2>
+                                <div id="accordionFicha-examenes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenes-head">
+                                    <div class="accordion-body">
+                                        <div class="col-md-12 px-4 my-2">
+                                            <div class="row d-flex justify-content-between align-items-end">
+                                                <div class="col">
+                                                    <p class="mb-0">Tipo de examen</p>
+                                                </div>
+                                                <div class="col">
+                                                    <p class="mb-0 text-center">Fecha</p>
+                                                </div>
+                                                <div class="col-md-3 text-center">
+                                                    <p class="mb-0 text-center">Adjunto</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 bg-fimel-lightblue p-4">
+                                            <div class="row d-flex justify-content-between align-items-end mb-2">
+                                                <div class="col">
+                                                    <p class="mb-0">Ecografía bilateral</p>
+                                                </div>
+                                                <div class="col">
+                                                    <p class="mb-0 text-center">15/05/2022</p>
+                                                </div>
+                                                <div class="col-md-3 text-center">
+                                                    <button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
+                                                </div>
+                                            </div>
+                                            <div class="row d-flex justify-content-between align-items-end mb-2">
+                                                <div class="col">
+                                                    <p class="mb-0">Ecografía bilateral</p>
+                                                </div>
+                                                <div class="col">
+                                                    <p class="mb-0 text-center">15/05/2022</p>
+                                                </div>
+                                                <div class="col-md-3 text-center">
+                                                    <button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                    <!--LATERAL-->
+                    <div class="col-md-4">
+                        <div class="accordion" id="accordionFicha">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="accordionFicha-datosContacto-head">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosContacto" aria-expanded="true" aria-controls="accordionFicha-datosContacto">
+                                        Información de contacto
+                                    </button>
+                                </h2>
+                                <div id="accordionFicha-datosContacto" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosContacto-head">
+                                    <div class="accordion-body">
+                                        <form class="row g-3">
+                                            <div class="col-md-12 position-relative">
+                                                <label for="" class="form-label">Dirección particular</label>
+                                                <input type="text" class="form-control" value="@Model.Direccion" disabled>
+                                                <i class="fas fa-address-book icon-input-ficha"></i>
+                                            </div>
+                                            <div class="col-md-12 position-relative">
+                                                <label for="" class="form-label">Teléfono</label>
+                                                <input type="text" class="form-control" value="@Model.Celular" disabled>
+                                                <i class="fas fa-phone icon-input-ficha"></i>
+                                            </div>
+                                            <div class="col-md-12 position-relative">
+                                                <label for="" class="form-label">Email</label>
+                                                <input type="text" class="form-control" value="@Model.Email" disabled>
+                                                <i class="fas fa-envelope icon-input-ficha"></i>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 </div>
 
 @section scripts {
-	<script>
-		$(".btn-toggle").click(function () {
-		  if ($(this).hasClass("active")) {
-			$(".btn-toggle").removeClass("active");
-		  }
-		  else {
-			$(".btn-toggle").removeClass("active");
-			$(this).addClass("active");
-		  }
-		});
-	</script>
+    <script>
+        $(".btn-toggle").click(function () {
+            if ($(this).hasClass("active")) {
+                $(".btn-toggle").removeClass("active");
+            }
+            else {
+                $(".btn-toggle").removeClass("active");
+                $(this).addClass("active");
+            }
+        });
+    </script>
 }
