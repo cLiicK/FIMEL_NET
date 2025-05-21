@@ -5,85 +5,15 @@ var ModuloHorarioCita = (function () {
         IniciarScripts: function () {
             ModuloHorarioCita.IniciarCalendario();
 
-            //$("#inputRutCita").hide();
-            //$("#inputRutNuevaCita").hide();
-            //$("#numDocCitaNuevo").hide();
-            //$("#numDocNuevaCita").hide();
-            //$("#inputRutCita").keypress(function (e) { onlyNumbersWithK(e); });
-            //$("#inputRutNuevaCita").keypress(function (e) { onlyNumbersWithK(e); });
-            //$('#selectTipoDocumentoCitaNuevo').on('change', function (e) {
-            //    let tipoDocto = $('#selectTipoDocumentoCitaNuevo option:selected').val();
-            //    if (tipoDocto == "RUT") {
-            //        $("#inputRutCita").show();
-            //        $("#numDocCitaNuevo").hide();
-            //    }
-            //    else {
-            //        $("#inputRutCita").hide();
-            //        $("#numDocCitaNuevo").show();
-            //    }
-            //});
+            const hoyLocal = new Date();
+            const anio = hoyLocal.getFullYear();
+            const mes = String(hoyLocal.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoyLocal.getDate()).padStart(2, '0');
+            const fechaChile = `${anio}-${mes}-${dia}`;
 
-            //$('#selectTipoDocumentoNuevaCita').on('change', function (e) {
-            //    let tipoDocto = $('#selectTipoDocumentoNuevaCita option:selected').val();
-            //    if (tipoDocto == "RUT") {
-            //        $("#inputRutNuevaCita").show();
-            //        $("#numDocNuevaCita").hide();
-            //    }
-            //    else {
-            //        $("#inputRutNuevaCita").hide();
-            //        $("#numDocNuevaCita").show();
-            //    }
-            //});
-
-            //$("#inputRutCita").keyup(function () {
-
-            //    let cadena = $("#inputRutCita").val();
-            //    cadena = cadena.replace(/[.]/gi, "").replace("-", "");
-            //    if (cadena.length > 9) {
-            //        cadena = cadena.substr(0, 9);
-            //    }
-            //    let concatenar = "";
-            //    let i = cadena.length - 1;
-            //    for (; i >= 0;) {
-            //        concatenar = cadena[i] + concatenar;
-            //        if (i + 1 == (cadena.length) && i > 0) {
-            //            concatenar = "-" + concatenar;
-            //        }
-            //        if (concatenar.length == 9 && cadena.length > 7) {
-            //            concatenar = "." + concatenar;
-            //        }
-            //        if (concatenar.length == 5 && cadena.length > 4) {
-            //            concatenar = "." + concatenar;
-            //        }
-            //        i--;
-            //    }
-            //    $("#inputRutCita").val(concatenar);
-            //});
-
-            //$("#inputRutNuevaCita").keyup(function () {
-
-            //    let cadena = $("#inputRutNuevaCita").val();
-            //    cadena = cadena.replace(/[.]/gi, "").replace("-", "");
-            //    if (cadena.length > 9) {
-            //        cadena = cadena.substr(0, 9);
-            //    }
-            //    let concatenar = "";
-            //    let i = cadena.length - 1;
-            //    for (; i >= 0;) {
-            //        concatenar = cadena[i] + concatenar;
-            //        if (i + 1 == (cadena.length) && i > 0) {
-            //            concatenar = "-" + concatenar;
-            //        }
-            //        if (concatenar.length == 9 && cadena.length > 7) {
-            //            concatenar = "." + concatenar;
-            //        }
-            //        if (concatenar.length == 5 && cadena.length > 4) {
-            //            concatenar = "." + concatenar;
-            //        }
-            //        i--;
-            //    }
-            //    $("#inputRutNuevaCita").val(concatenar);
-            //});
+            const inputFecha = $('#fechaCitaNueva');
+            inputFecha.val(fechaChile);
+            inputFecha.attr('min', fechaChile); // impide seleccionar fechas anteriores
 
             $('#horaInicioNuevoBloque').change(function () {
                 let value = $('#horaInicioNuevoBloque').val();
@@ -348,30 +278,6 @@ var ModuloHorarioCita = (function () {
                 Swal.fire('Ingrese un Correo Electrónico', '', 'warning');
                 return null;
             }
-            //if (!$("#selectTipoDocumentoCitaNuevo").val()) {
-            //    Swal.fire('Seleccione el Tipo de Documento', '', 'warning');
-            //    return null;
-            //}
-            //if (!$("#numDocCitaNuevo").val() && !$("#inputRutCita").val()) {
-            //    Swal.fire('Valide el campo del Documento', '', 'warning');
-            //    return null;
-            //}
-
-            //let validacionRut = validarRut($("#inputRutCita").val());
-            //if (validacionRut == "01" || validacionRut == "00") {
-            //    Swal.fire('Ingresa un Rut válido', 'Datos Paciente', 'warning');
-            //    return null;
-            //}
-
-            //let numDoc;
-            //let tipoDocto = $('#selectTipoDocumentoCitaNuevo option:selected').val();
-            //if (tipoDocto == "RUT") {
-            //    const rutData = $("#inputRutCita").val();
-            //    numDoc = rutData ? rutData.split("-")[0].replace(/\./g, "") : null;
-            //} else {
-            //    numDoc= $("#inputNumDocumento").val() || null;
-            //}
-
             let fecha = $('#fechaModal').val();
 
             fecha = fecha.split("T")[0]
@@ -392,8 +298,6 @@ var ModuloHorarioCita = (function () {
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
                 NombrePaciente: $('#nombreCitaNuevo').val(),
                 CorreoPaciente: $('#correoCitaNuevo').val(),
-                //TipoDocumento: $('#selectTipoDocumentoCitaNuevo').val(),
-                //NumeroDocumento: numDoc
             }
 
 
@@ -466,29 +370,6 @@ var ModuloHorarioCita = (function () {
                 Swal.fire('Ingrese un Correo Electrónico', '', 'warning');
                 return null;
             }
-            //if (!$("#selectTipoDocumentoNuevaCita").val()) {
-            //    Swal.fire('Seleccione el Tipo de Documento', '', 'warning');
-            //    return null;
-            //}
-            //if (!$("#numDocNuevaCita").val() && !$("#inputRutNuevaCita").val()) {
-            //    Swal.fire('Valide el campo del Documento', '', 'warning');
-            //    return null;
-            //}
-
-            //let validacionRut = validarRut($("#inputRutNuevaCita").val());
-            //if (validacionRut == "01" || validacionRut == "00") {
-            //    Swal.fire('Ingresa un Rut válido', 'Datos Paciente', 'warning');
-            //    return null;
-            //}
-
-            //let numDoc;
-            //let tipoDocto = $('#selectTipoDocumentoNuevaCita option:selected').val();
-            //if (tipoDocto == "RUT") {
-            //    const rutData = $("#inputRutNuevaCita").val();
-            //    numDoc = rutData ? rutData.split("-")[0].replace(/\./g, "") : null;
-            //} else {
-            //    numDoc = $("#numDocNuevaCita").val() || null;
-            //}
 
             let fecha = $('#fechaCitaNueva').val();
 
@@ -508,8 +389,6 @@ var ModuloHorarioCita = (function () {
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
                 NombrePaciente: $('#nombreCitaNueva').val(),
                 CorreoPaciente: $('#correoCitaNueva').val(),
-                //TipoDocumento: $('#selectTipoDocumentoNuevaCita').val(),
-                //NumeroDocumento: numDoc
             }
 
 

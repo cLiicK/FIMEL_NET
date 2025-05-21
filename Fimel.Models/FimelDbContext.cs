@@ -43,7 +43,7 @@ namespace Fimel.Models
             modelBuilder.Entity<BitacoraMensajerias>().ToTable("BitacoraMensajerias", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<Config>().ToTable("Config", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<HorarioAtencion>().ToTable("HorariosAtencion", t => t.ExcludeFromMigrations());
-            modelBuilder.Entity<Cita>().ToTable("Citas", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<Cita>().ToTable("Citas");
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario", t => t.ExcludeFromMigrations());
         }
     }
