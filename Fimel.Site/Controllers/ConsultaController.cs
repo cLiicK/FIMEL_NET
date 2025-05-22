@@ -36,12 +36,12 @@ namespace Fimel.Site.Controllers
                 if (!string.IsNullOrEmpty(query.NumDoc))
                     { paciente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{query.NumDoc}"); }
 
-                List<Consultas> historial = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{paciente.Id}").OrderByDescending(t => t.FechaCreacion).ToList();
+                List<Consultas> historial = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{paciente.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
 
                 if (query.FechaConsultaDesde.HasValue)
-                    historial = historial.Where(x => x.FechaCreacion >= query.FechaConsultaDesde).ToList();
+                    historial = historial.Where(x => x.FechaConsulta >= query.FechaConsultaDesde).ToList();
                 if (query.FechaConsultaHasta.HasValue)
-                    historial = historial.Where(x => x.FechaCreacion <= query.FechaConsultaHasta).ToList();
+                    historial = historial.Where(x => x.FechaConsulta <= query.FechaConsultaHasta).ToList();
 
                 return Json(new { success = true, data = historial, dataPaciente = paciente });
             }
@@ -121,7 +121,7 @@ namespace Fimel.Site.Controllers
             try
             {
                 Pacientes pacienteConsultado = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{rutPaciente}");
-                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaCreacion).ToList();
+                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
                 return Json(consultasAnteriores);
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace Fimel.Site.Controllers
             try
             {
                 Pacientes pacienteConsultado = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{numDocumento}");
-                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaCreacion).ToList();
+                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
                 return Json(consultasAnteriores);
             }
             catch (Exception ex)

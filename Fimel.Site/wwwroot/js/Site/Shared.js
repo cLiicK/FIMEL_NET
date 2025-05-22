@@ -16,9 +16,8 @@
         async: false,
         success: function (response, jqXHR) {
             if (response.length > 0) {
+                $("#inputTalla").val(response[0].Talla)
                 for (var i = 0; i < response.length; i++) {
-
-
                     let timestamp;
                     if (/\/Date\((\d+)\)\//.test(response[i].FechaCreacion)) {
                         timestamp = parseInt(response[i].FechaCreacion.replace(/\/Date\((\d+)\)\//, '$1'), 10);

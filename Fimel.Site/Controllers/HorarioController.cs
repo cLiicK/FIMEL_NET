@@ -46,6 +46,8 @@ namespace Fimel.Site.Controllers
                         idCita = cita.Id,
                         nombre = cita.NombrePaciente,
                         correo = cita.CorreoPaciente,
+                        telefono = cita.Telefono,
+                        nota = cita.Nota,
                         documento = cita.TipoDocumento,
                         numDocumento = cita.TipoDocumento == "RUT" ? Utileria.FormatearRutSinDv(Convert.ToInt32(cita.NumeroDocumento)) : cita.NumeroDocumento,
                         horaInicio = cita.FechaHoraInicio.ToString("HH:mm"),

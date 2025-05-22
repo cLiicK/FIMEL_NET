@@ -269,6 +269,7 @@
             }
             objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
             objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val();
+            objDatosConsulta["PresionArterial"] = $("#inputPresionArterial").val();
 
             if ($("#inputFechaConsulta").val() != "") {
                 objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val();

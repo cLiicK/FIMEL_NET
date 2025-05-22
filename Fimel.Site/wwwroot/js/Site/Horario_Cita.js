@@ -87,8 +87,8 @@ var ModuloHorarioCita = (function () {
                     $('#horaTerminoCita').val(info.event.extendedProps.horaFinal);
                     $('#nombreCita').val(info.event.extendedProps.nombre);
                     $('#correoCita').val(info.event.extendedProps.correo);
-                    $('#tipoDocumentoCita').text(info.event.extendedProps.documento);
-                    $('#numDocCita').val(info.event.extendedProps.numDocumento);
+                    $('#telefonoCita').val(info.event.extendedProps.telefono);
+                    $('#notaCita').val(info.event.extendedProps.nota);
                     $('#idCitaModal').val(info.event.extendedProps.idCita);
 
                     $('#modalEvento').modal('show');
@@ -298,6 +298,8 @@ var ModuloHorarioCita = (function () {
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
                 NombrePaciente: $('#nombreCitaNuevo').val(),
                 CorreoPaciente: $('#correoCitaNuevo').val(),
+                Telefono: $('#telefonoCitaNuevo').val(),
+                Nota: $('#notaCitaNuevo').val(),
             }
 
 
@@ -389,6 +391,8 @@ var ModuloHorarioCita = (function () {
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
                 NombrePaciente: $('#nombreCitaNueva').val(),
                 CorreoPaciente: $('#correoCitaNueva').val(),
+                Telefono: $('#telefonoCitaNueva').val(),
+                Nota: $('#notaCitaNueva').val(),
             }
 
 

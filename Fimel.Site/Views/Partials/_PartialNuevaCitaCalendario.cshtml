@@ -14,8 +14,8 @@
                 <p><strong>Hora Término</strong> <input class="form-control" type="time" id="horaTerminoCitaNuevo" /></p>
                 <p><strong>Nombre y apellido</strong> <input class="form-control" id="nombreCitaNuevo" /></p>
                 <p><strong>Correo</strong> <input class="form-control" id="correoCitaNuevo" /></p>
-                <p><strong>Telefono</strong> <input class="form-control" id="telefonoCitaNueva" /></p>
-                <p><strong>Nota</strong> <input class="form-control" id="notaCitaNueva" /></p>
+                <p><strong>Telefono</strong> <input class="form-control" id="telefonoCitaNuevo" /></p>
+                <p><strong>Nota</strong> <input class="form-control" id="notaCitaNuevo" /></p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-blue" id="btnGuardarCitaModal" onclick="ModuloHorarioCita.GuardarCitaModal()">Guardar</button>
@@ -38,10 +38,11 @@
                 <p><strong>Hora Término</strong> <input class="form-control" id="horaTerminoCita" disabled /></p>
                 <p><strong>Nombre y apellido</strong> <input class="form-control" id="nombreCita" disabled /></p>
                 <p><strong>Correo</strong> <input class="form-control" id="correoCita" disabled /></p>
-                <p><strong><span id="tipoDocumentoCita"></span></strong> <input class="form-control" id="numDocCita" disabled /> </p>
+                <p><strong>Telefono</strong> <input class="form-control" id="telefonoCita" disabled /></p>
+                <p><strong>Nota</strong> <input class="form-control" id="notaCita" disabled /></p>
             </div>
             <div class="modal-footer">
-                <button class="btn" style="background-color: red; color:white;" id="btnEliminarCitaModal" onclick="ModuloHorarioCita.EliminarCitaModal()">Eliminar</button>
+                <button class="btn btn-danger" id="btnEliminarCitaModal" onclick="ModuloHorarioCita.EliminarCitaModal()">Eliminar Cita</button>
             </div>
         </div>
     </div>
