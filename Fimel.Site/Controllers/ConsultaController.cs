@@ -170,6 +170,11 @@ namespace Fimel.Site.Controllers
             {
                 _consulta = APIBase.Get<Consultas>($"Consultas/{_datosConsulta.Id}");
 
+                _consulta.Peso = _datosConsulta.Peso;
+                _consulta.Talla = _datosConsulta.Talla;
+                _consulta.IMC = _datosConsulta.IMC;
+                _consulta.PresionArterial = _datosConsulta.PresionArterial;
+                _consulta.EstadoNutricional = _datosConsulta.EstadoNutricional;
                 _consulta.MotivoConsulta = _datosConsulta.MotivoConsulta;
                 _consulta.Anamnesis = _datosConsulta.Anamnesis;
                 _consulta.ExamenFisico = _datosConsulta.ExamenFisico;

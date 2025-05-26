@@ -52,65 +52,127 @@
     <script src="~/js/Site/Shared.js?v=1.0" type="text/javascript"></script>
     <script type="text/javascript" src="~/lib/bootstrap-5/js/popper.min.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap-5/js/bootstrap.min.js"></script>
+
+
+
 </head>
 <body>
-    <body>
-        <main>
-            <ul class="navbar-nav bg-white sidebar">
-                <div class="text-center d-none d-md-inline">
-                    <a class="sidebar-brand logo-large" href="">
-                        <img src="~/img/logo1.svg">
-                    </a>
-                </div>
-                <li class="my-3">
-                    <div class="dropdown">
-                        <div class="div-usuario" id="dropdownMenuCerrarS" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="info-user dropdown-toggle">
-                                <p>@usuarioConectado.Nombres @usuarioConectado.ApellidoPaterno</p>
-                                <p><strong>@inst.RazonSocial</strong></p>
-                            </div>
-                            <div class="ico-user"><span></span></div>
+    <main>
+        <ul class="navbar-nav bg-white sidebar">
+            <div class="text-center d-none d-md-inline">
+                <a class="sidebar-brand logo-large" href="">
+                    <img src="~/img/logo1.svg">
+                </a>
+            </div>
+            <li class="my-3">
+                <div class="dropdown">
+                    <div class="div-usuario" id="dropdownMenuCerrarS" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="info-user dropdown-toggle">
+                            <p>@usuarioConectado.Nombres @usuarioConectado.ApellidoPaterno</p>
+                            <p><strong>@inst.RazonSocial</strong></p>
                         </div>
-                        <div class="dropdown-menu dm-user" aria-labelledby="dropdownMenuCerrarS">
-                            <a class="nav-link" href="@Url.Action("Configuracion", "Usuario")">
-                                <span>Configuración <i class="fas fa-cog"></i></span>
-                            </a>
-                            <a class="dropdown-item" href="@Url.Action("Login", "Login")">Cerrar sesión <i class="fas fa-sign-out-alt"></i></a>
-                        </div>
+                        <div class="ico-user"><span></span></div>
                     </div>
-                </li>
-                <li class="nav-item mt-5">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Inicio" || ViewContext.RouteData.Values["action"].ToString() == "Inicio" ? "active" : "")"
-                       aria-current="page" href="@Url.Action("Inicio", "Login")">
-                        <span>Inicio</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "FichaPaciente" ||
-                                                ViewContext.RouteData.Values["action"].ToString() == "HistorialPacientes" ? "active" : "")"
-                       aria-current="page" href="@Url.Action("FichaPaciente", "Pacientes")">
-                        <span>Ficha Paciente</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
-                       aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">
-                        <span>Nueva Consulta</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "MiHorario" || ViewContext.RouteData.Values["action"].ToString() == "MiHorario" ? "active" : "")"
-                       aria-current="page" href="@Url.Action("MiHorario", "Horario")">
-                        <span>Mi Horario</span>
-                    </a>
-                </li>
-                <div class="text-center footer-sidebar">
-                    <p>© 2020 - @DateTime.Now.Year - Fimel S.A</p>
+                    <div class="dropdown-menu dm-user" aria-labelledby="dropdownMenuCerrarS">
+                        <a class="nav-link" href="@Url.Action("Configuracion", "Usuario")">
+                            <span>Configuración <i class="fas fa-cog"></i></span>
+                        </a>
+                        <a class="dropdown-item" href="@Url.Action("Login", "Login")">Cerrar sesión <i class="fas fa-sign-out-alt"></i></a>
+                    </div>
                 </div>
-            </ul>
-            @RenderBody()
-        </main>
-    </body>
+            </li>
+            <li class="nav-item mt-5">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Inicio" || ViewContext.RouteData.Values["action"].ToString() == "Inicio" ? "active" : "")"
+                   aria-current="page" href="@Url.Action("Inicio", "Login")">
+                    <span>Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "FichaPaciente" ||
+                                                                                      ViewContext.RouteData.Values["action"].ToString() == "HistorialPacientes" ? "active" : "")"
+                   aria-current="page" href="@Url.Action("FichaPaciente", "Pacientes")">
+                    <span>Ficha Paciente</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
+                   aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">
+                    <span>Nueva Consulta</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "MiHorario" || ViewContext.RouteData.Values["action"].ToString() == "MiHorario" ? "active" : "")"
+                   aria-current="page" href="@Url.Action("MiHorario", "Horario")">
+                    <span>Mi Horario</span>
+                </a>
+            </li>
+            <div class="text-center footer-sidebar">
+                <p>© 2020 - @DateTime.Now.Year - Fimel S.A</p>
+            </div>
+        </ul>
+        @RenderBody()
+    </main>
     @RenderSection("scripts", required: false)
+
+    <script>
+        let usuarioActivo = false;
+        const intervaloPing = 5 * 60 * 1000; // 🔁 Ping cada 5 minutos
+        const tiempoInactividadMax = 15 * 60 * 1000; // ⏱ Si lleva más de 15 minutos inactivo, no se hace ping
+
+        let ultimoMovimiento = Date.now();
+
+        // Detectar actividad del usuario
+        ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evento => {
+            document.addEventListener(evento, () => {
+                usuarioActivo = true;
+                ultimoMovimiento = Date.now();
+            });
+        });
+
+        // Validar al cargar la página
+        window.addEventListener('load', function () {
+            validarSesion();
+        });
+
+        // Ping periódico
+        setInterval(() => {
+            const ahora = Date.now();
+            const inactivo = (ahora - ultimoMovimiento) > tiempoInactividadMax;
+
+            if (usuarioActivo && !inactivo) {
+                validarSesion();
+                usuarioActivo = false;
+            }
+        }, intervaloPing);
+
+        // Función para validar sesión y mostrar alerta si expiró
+        function validarSesion() {
+            fetch('/Login/PingSesion', { cache: 'no-store' })
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data.estado === 'expirada') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Sesión expirada',
+                            text: 'Tu sesión ha expirado. Serás redirigido al login.',
+                            confirmButtonText: 'Aceptar',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false
+                        }).then(() => {
+                            window.location.href = '/Login';
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de conexión',
+                        text: 'No se pudo validar la sesión.',
+                        confirmButtonText: 'Reintentar'
+                    });
+                });
+        }
+    </script>
+
 </body>
 </html>

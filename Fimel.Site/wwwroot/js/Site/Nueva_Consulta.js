@@ -120,12 +120,47 @@
                             $("#inputEmail").val(response.Email);
                             $("#comboNacionalidad").val(response.Nacionalidad);
                             $("#inputPrevision").val(response.Prevision);
-
-                            $("#comboReligion").val(response.Religion);
-                            $("#comboRegimenAlimenticio").val(response.RegimenAlimenticio);
+                            $("#inputAntFamiliares").val(response.AntFamiliares);
+                            $("#inputAntPersonales").val(response.AntPersonales);
+                            $("#inputAntQuirurgicos").val(response.AntQuirurgicos);
+                            $("#inputMedicamentos").val(response.Medicamentos);
 
                             $("#inputOrientacion").val(response.OrientacionSexual);
                             $("#inputIdentidad").val(response.IdentidadGenero);
+
+                            let btnTabaco = document.getElementById('radioTabaco1');
+                            let btnAlcohol = document.getElementById('radioAlcohol1');
+                            let btnDrogas = document.getElementById('radioDrogas1');
+                            let btnAlergias = document.getElementById('radioAlergias1');
+
+                            if (response.Tabaco === "SI") {
+                                btnTabaco.classList.add('active')
+                            }
+                            if (response.Alcohol === "SI") {
+                                btnAlcohol.classList.add('active')
+                            }
+                            if (response.Drogas === "SI") {
+                                btnDrogas.classList.add('active')
+                            }
+                            if (response.Alergias === "SI") {
+                                btnAlergias.classList.add('active')
+                            }
+
+                            $("#inputTabaco").val(response.DescTabaco);
+                            $("#inputAlcohol").val(response.DescAlcohol);
+                            $("#inputDrogas").val(response.DescDrogas);
+                            $("#inputAlergias").val(response.DescAlergias);
+
+                            $("#inputGesta").val(response.Gesta);
+                            $("#inputParto").val(response.Parto);
+                            $("#inputAborto").val(response.Aborto);
+                            $("#inputMenarquia").val(response.Menarquia);
+                            $("#inputMenopausia").val(response.Menopausia);
+                            $("#inputGrupoRH").val(response.GrupoRH);
+                            $("#inputInmunizaciones").val(response.Inmunizaciones);
+
+                            $("#comboReligion").val(response.Religion);
+                            $("#comboRegimenAlimenticio").val(response.RegimenAlimenticio);
 
                             $("#btnGuardarPaciente").hide();
                             $("#btnActualizarPaciente").show();
@@ -137,6 +172,8 @@
                             $('#btnGuardarConsulta').prop('disabled', false);
 
                             $("#accordionFicha-nuevaConsulta").collapse("show");
+                            $("#divNuevaConsulta").show();
+
                         }
                     } else {
                         Swal.fire({
@@ -227,8 +264,10 @@
             objDatosConsulta["Talla"] = $("#inputTalla").val() || null;
             objDatosConsulta["IMC"] = $("#inputIMC").val() || null;
 
+            objDatosConsulta["PresionArterial"] = $("#inputPresionArterial").val();
+
             if (!$("#inputEstadoNutricional").val()) {
-                Swal.fire('Haga el calculo del IMC', 'Nueva Consultae', 'warning');
+                Swal.fire('Haga el calculo del IMC', '', 'warning');
                 return null;
             }
             objDatosConsulta["EstadoNutricional"] = $("#inputEstadoNutricional").val() || null;
@@ -263,17 +302,14 @@
             }
             objDatosConsulta["Indicaciones"] = $("#inputIndicaciones").val() || null;
 
-            if (!$("#inputReceta").val()) {
-                Swal.fire('Ingrese la Receta', '', 'warning');
-                return null;
-            }
             objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
             objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val();
-            objDatosConsulta["PresionArterial"] = $("#inputPresionArterial").val();
 
-            if ($("#inputFechaConsulta").val() != "") {
-                objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val();
+            if (!$("#inputFechaConsulta").val()) {
+                Swal.fire('Ingrese la Fecha de consulta', '', 'warning');
+                return null;
             }
+            objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val();
 
             if ($("#inputFechaProximoControl").val() != "") {
                 objDatosConsulta["FechaProximoControl"] = $("#inputFechaProximoControl").val();

@@ -197,6 +197,21 @@ namespace Fimel.Site.Controllers
 
         }
 
+        [HttpGet]
+        public IActionResult PingSesion()
+        {
+            var usuario = HttpContext.Session.GetString("UsuarioConectado");
+
+            if (string.IsNullOrEmpty(usuario))
+            {
+                return Json(new { estado = "expirada" });
+            }
+
+            HttpContext.Session.SetString("UltimoPing", DateTime.Now.ToString());
+
+            return Json(new { estado = "activa" });
+        }
+
         protected string ConvertViewToString(string viewName, object model)
         {
             ViewData.Model = model;

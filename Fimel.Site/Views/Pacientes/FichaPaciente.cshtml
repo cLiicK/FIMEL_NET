@@ -59,8 +59,7 @@
                 </div>
             </div>
 
-            @* <div id="divFichaPaciente" class="collapse"> *@
-            <div id="divFichaPaciente">
+            <div id="divFichaPaciente" style="display:none;">
                 <div class="container mt-3">
                     <div class="row">
                         <div class="col-md-8">
@@ -332,7 +331,7 @@
                             </div>
                             <div class="text-center mt-4">
                                 <button class="btn btn-blue" id="btnGuardarPaciente" onclick="ModuloFichaPaciente.GrabarNuevoPaciente(this)" disabled>Guardar Paciente</button>
-                                <button class="btn btn-blue" id="btnActualizarPaciente" onclick="ModuloFichaPaciente.ActualizarPaciente(this)" style="display: none">Actualizar Paciente</button>
+                                <button class="btn btn-blue" id="btnActualizarPaciente" onclick="ModuloFichaPaciente.ActualizarPaciente(this)" style="display: none;">Actualizar Paciente</button>
                             </div>
                         </div>
                         <!--LATERAL-->
@@ -349,17 +348,17 @@
                                             <form class="row g-3">
                                                 <div class="col-md-12 position-relative">
                                                     <label for="" class="form-label">Dirección particular</label>
-                                                    <input type="text" class="form-control" id="inputDireccion">
+                                                    <input type="text" class="form-control" id="inputDireccion" maxlength="100">
                                                     <i class="fas fa-address-book icon-input-ficha"></i>
                                                 </div>
                                                 <div class="col-md-12 position-relative">
                                                     <label for="" class="form-label">Teléfono</label>
-                                                    <input type="text" class="form-control" id="inputCelular">
+                                                    <input type="text" class="form-control" id="inputCelular" maxlength="12">
                                                     <i class="fas fa-phone icon-input-ficha"></i>
                                                 </div>
                                                 <div class="col-md-12 position-relative">
                                                     <label for="" class="form-label">Email</label>
-                                                    <input type="text" class="form-control" id="inputEmail">
+                                                    <input type="text" class="form-control" id="inputEmail" maxlength="100">
                                                     <i class="fas fa-envelope icon-input-ficha"></i>
                                                 </div>
                                             </form>

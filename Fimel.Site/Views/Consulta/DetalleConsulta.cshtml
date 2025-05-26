@@ -3,11 +3,26 @@
 @{
     string rutCompleto = new Utileria().FormatearRut(Model.Paciente.Rut.Value, Model.Paciente.Dv);
     int edad = new Utileria().CalcularEdad(Model.Paciente.FechaNacimiento.Value);
+
+    string fechaConsulta = Model.Consulta.FechaConsulta.HasValue ? Model.Consulta.FechaConsulta.Value.ToString("dd-MM-yyyy") : string.Empty;
+    string fechaProximoControl = Model.Consulta.FechaProximoControl.HasValue ? Model.Consulta.FechaProximoControl.Value.ToString("dd-MM-yyyy") : string.Empty;
 }
 
 <input type="hidden" id="hdnURL_ActualizarConsulta" value='@Url.Action("ActualizarConsulta", "Consulta")' />
 
 <input type="hidden" id="idConsulta" value='@Model.Consulta.Id' />
+
+<style>
+    #accordionFicha-nuevaConsulta-head .accordion-button {
+        background-color: #fff8f8;
+        font-weight: bold;
+    }
+
+    #accordionFicha-nuevaConsulta {
+        background-color: #fff8f8;
+    }
+
+</style>
 
 <div id="content-wrapper" class="container-9">
     <!--TITULO-->
@@ -24,7 +39,8 @@
     </div>
     <!--TITULO-->
     <!--Contenido-->
-    <div class="row mt-3">
+
+     <div class="row mt-3">
         <div class="col-12 col-md-12 mt-3">
             <div class="container mt-3">
                 <div class="row">
@@ -32,14 +48,20 @@
                         <div class="accordion" id="accordionFicha">
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="accordionFicha-datosPaciente-head">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
                                         Datos Demográficos
+                                        <span class="ms-2 fw-bold" id="spanNombrePaciente"> - @Model.Paciente.Nombres @Model.Paciente.PrimerApellido @Model.Paciente.SegundoApellido</span>
                                     </button>
                                 </h2>
-                                <div id="accordionFicha-datosPaciente" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosPaciente-head">
+                                <div id="accordionFicha-datosPaciente" class="accordion-collapse collapse" aria-labelledby="accordionFicha-datosPaciente-head">
                                     <div class="accordion-body">
                                         <form class="row g-3">
-                                            <div class="col-md-6">
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Rut</label>
+                                                <input type="text" class="form-control" value="@rutCompleto" disabled>
+                                            </div>
+
+                                            <div class="col-md-3">
                                                 <label for="" class="form-label">Nombres</label>
                                                 <input type="text" class="form-control" value="@Model.Paciente.Nombres" disabled>
                                             </div>
@@ -52,16 +74,37 @@
                                                 <input type="text" class="form-control" value="@Model.Paciente.SegundoApellido" disabled>
                                             </div>
                                             <div class="col-md-3">
-                                                <label for="" class="form-label">Rut</label>
-                                                <input type="text" class="form-control" value="@rutCompleto" disabled>
-                                            </div>
-                                            <div class="col-md-3">
                                                 <label for="" class="form-label">Fecha de nacimiento</label>
                                                 <input type="text" class="form-control" value="@Model.Paciente.FechaNacimiento.Value.ToString("dd-MM-yyyy")" disabled>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-2">
                                                 <label for="" class="form-label">Edad</label>
                                                 <input type="text" class="form-control" id="inputEdad" value="@edad" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Identidad de Género</label>
+                                                <input type="text" class="form-control" value="@Model.Paciente.IdentidadGenero" disabled>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="" class="form-label d-block">Sexo Biológico</label>
+                                                @if (Model.Paciente.SexoBiologico == "M")
+                                                {
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" checked disabled>
+                                                    <label class="btn btn-radio" for="radioSexo1">Masculino</label>
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" disabled>
+                                                    <label class="btn btn-radio" for="radioSexo2">Femenino</label>
+                                                }
+                                                else if (Model.Paciente.SexoBiologico == "F")
+                                                {
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" disabled>
+                                                    <label class="btn btn-radio" for="radioSexo1">Masculino</label>
+                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" checked disabled>
+                                                    <label class="btn btn-radio" for="radioSexo2">Femenino</label>
+                                                }
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Orientación Sexual</label>
+                                                <input type="text" class="form-control" value="@Model.Paciente.OrientacionSexual" disabled>
                                             </div>
                                             <div class="col-md-3">
                                                 <label for="" class="form-label">Nacionalidad</label>
@@ -79,32 +122,7 @@
                                                 <label for="" class="form-label">Regimen alimenticio</label>
                                                 <input type="text" class="form-control" value="@Model.Paciente.RegimenAlimenticio" disabled>
                                             </div>
-                                            <div class="col-md-3">
-                                                <label for="" class="form-label">Orientación Sexual</label>
-                                                <input type="text" class="form-control" value="@Model.Paciente.OrientacionSexual" disabled>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="" class="form-label">Identidad de Género</label>
-                                                <input type="text" class="form-control" value="@Model.Paciente.IdentidadGenero" disabled>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="" class="form-label d-block">Género</label>
-                                                @if (Model.Paciente.SexoBiologico == "M")
-                                                {
-                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" checked disabled>
-                                                    <label class="btn btn-radio" for="radioSexo1">Masculino</label>
-                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" disabled>
-                                                    <label class="btn btn-radio" for="radioSexo2">Femenino</label>
-                                                }
-                                                else if (Model.Paciente.SexoBiologico == "F")
-                                                {
-                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M" disabled>
-                                                    <label class="btn btn-radio" for="radioSexo1">Masculino</label>
-                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F" checked disabled>
-                                                    <label class="btn btn-radio" for="radioSexo2">Femenino</label>
-                                                }
-
-                                            </div>
+                                          
                                         </form>
                                     </div>
                                 </div>
@@ -113,6 +131,7 @@
                                 <h2 class="accordion-header" id="accordionFicha-nuevaConsulta-head">
                                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-nuevaConsulta" aria-expanded="false" aria-controls="accordionFicha-nuevaConsulta">
                                         Datos Consulta
+                                        <span class="ms-2 fw-bold"> - @fechaConsulta - @Model.Consulta.TipoConsulta </span>
                                     </button>
                                 </h2>
                                 <div id="accordionFicha-nuevaConsulta" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-nuevaConsulta-head">
@@ -138,6 +157,10 @@
                                                 <label for="" class="form-label">Estado nutricional</label>
                                                 <input type="text" class="form-control" value="@Model.Consulta.EstadoNutricional" id="inputEstadoNutricional" disabled>
                                             </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Presión Arterial</label>
+                                                <input type="text" class="form-control" id="inputPresionArterial" value="@Model.Consulta.PresionArterial" placeholder="Ej: 110/150" maxlength="10" disabled>
+                                            </div>
                                             <div class="col-md-12">
                                                 <label for="exampleFormControlTextarea1" class="form-label">Motivo consulta</label>
                                                 <textarea class="form-control" rows="3" disabled id="inputMotivoConsulta">@Model.Consulta.MotivoConsulta</textarea>
@@ -157,6 +180,18 @@
                                             <div class="col-md-12">
                                                 <label for="exampleFormControlTextarea1" class="form-label">Indicaciones</label>
                                                 <textarea class="form-control" rows="3" id="inputIndicaciones" disabled>@Model.Consulta.Indicaciones</textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="exampleFormControlTextarea1" class="form-label">Receta</label>
+                                                <textarea class="form-control" rows="3" id="inputReceta" disabled>@Model.Consulta.Receta</textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="exampleFormControlTextarea1" class="form-label">Orden Exámenes</label>
+                                                <textarea class="form-control" rows="3" id="inputOrdenExamenes" disabled>@Model.Consulta.OrdenExamenes</textarea>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="" class="form-label">Fecha Proximo Control</label>
+                                                <input type="text" class="form-control" id="inputFechaProximoControl" value="@fechaProximoControl" disabled>
                                             </div>
                                             @* <div class="col-md-12 bg-fimel-lightblue p-4">
                                             <p><strong>Receta</strong>  <button class="btn-receta">Imprimir receta <i class="fas fa-clipboard-list"></i></button></p>
@@ -186,6 +221,11 @@
                             </div>
                         </div>
 
+                        <div class="text-center mt-4 div-flotante-centro">
+                            <button class="btn btn-blue" id="btnEditarConsulta">Editar Consulta</button>
+                            <button class="btn btn-blue" id="btnGuardarEdicion" onclick="ModuloHistorialConsultas.ActualizarConsulta(this)">Guardar Cambios</button>
+                            <button class="btn btn-blue" style="background-color: indianred" id="btnCancelarEdicion">Cancelar</button>
+                        </div>
 
 
                     </div>
@@ -221,11 +261,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-white rounded p-3 text-center">
-                            <button class="btn btn-blue" id="btnEditarConsulta">Editar Consulta</button>
-                            <button class="btn btn-blue" id="btnGuardarEdicion" onclick="ModuloHistorialConsultas.ActualizarConsulta(this)">Guardar Cambios</button>
-                            <button class="btn btn-blue" style="background-color: indianred" id="btnCancelarEdicion">Cancelar</button>
-                        </div>
+                        
                     </div>
                 </div>
             </div>

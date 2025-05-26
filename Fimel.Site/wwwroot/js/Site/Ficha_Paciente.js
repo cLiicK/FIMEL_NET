@@ -11,6 +11,7 @@
             $("#inputGesta").keypress(function (e) { onlyNumbers(e); });
             $("#inputParto").keypress(function (e) { onlyNumbers(e); });
             $("#inputAborto").keypress(function (e) { onlyNumbers(e); });
+            
 
             $("#inputRut").keyup(function () {
 
@@ -37,30 +38,30 @@
                 $("#inputRut").val(concatenar);
             });
 
-            $("#inputRutData").keyup(function () {
+            //$("#inputRutData").keyup(function () {
 
-                let cadena = $("#inputRutData").val();
-                cadena = cadena.replace(/[.]/gi, "").replace("-", "");
-                if (cadena.length > 9) {
-                    cadena = cadena.substr(0, 9);
-                }
-                let concatenar = "";
-                let i = cadena.length - 1;
-                for (; i >= 0;) {
-                    concatenar = cadena[i] + concatenar;
-                    if (i + 1 == (cadena.length) && i > 0) {
-                        concatenar = "-" + concatenar;
-                    }
-                    if (concatenar.length == 9 && cadena.length > 7) {
-                        concatenar = "." + concatenar;
-                    }
-                    if (concatenar.length == 5 && cadena.length > 4) {
-                        concatenar = "." + concatenar;
-                    }
-                    i--;
-                }
-                $("#inputRutData").val(concatenar);
-            });
+            //    let cadena = $("#inputRutData").val();
+            //    cadena = cadena.replace(/[.]/gi, "").replace("-", "");
+            //    if (cadena.length > 9) {
+            //        cadena = cadena.substr(0, 9);
+            //    }
+            //    let concatenar = "";
+            //    let i = cadena.length - 1;
+            //    for (; i >= 0;) {
+            //        concatenar = cadena[i] + concatenar;
+            //        if (i + 1 == (cadena.length) && i > 0) {
+            //            concatenar = "-" + concatenar;
+            //        }
+            //        if (concatenar.length == 9 && cadena.length > 7) {
+            //            concatenar = "." + concatenar;
+            //        }
+            //        if (concatenar.length == 5 && cadena.length > 4) {
+            //            concatenar = "." + concatenar;
+            //        }
+            //        i--;
+            //    }
+            //    $("#inputRutData").val(concatenar);
+            //});
 
             var paramValue = getUrlParameter("p");
             if (paramValue !== null) {
@@ -149,9 +150,6 @@
                                 $("#inputEdad").val(calcularEdad(response.FechaNacimiento)); 
                             }
 
-                            //$("#inputIdentidadGenero").val(response.IdentidadGenero);
-                            //$("#inputOrientacionSexual").val(response.OrientacionSexual);
-
                             $("#inputRutData").val(ObtenerRutSTR(response.Rut, response.Dv));
                             $("#inputDireccion").val(response.Direccion);
                             $("#inputCelular").val(response.Celular);
@@ -211,15 +209,27 @@
                         else {
                             Swal.fire('Nuevo paciente', 'Favor complete los datos del nuevo paciente', 'info')
 
-                            $("#btnGuardarPaciente").show();
                             $('#btnGuardarPaciente').prop('disabled', false);
+                            $("#btnGuardarPaciente").show();
                             $("#btnActualizarPaciente").hide();
 
                             $("#ListConsultasAnteriores").html('<li class="list-group-item">Sin consultas anteriores</li>');
+
+                            $("#inputRutData").val($("#inputRut").val());
                         }
                     } else {
-                        Swal.fire('Nuevo Paciente', 'Completar los datos del nuevo paciente', 'info')
+                        Swal.fire('Nuevo paciente', 'Favor complete los datos del nuevo paciente', 'info')
+
+                        $('#btnGuardarPaciente').prop('disabled', false);
+                        $("#btnGuardarPaciente").show();
+                        $("#btnActualizarPaciente").hide();
+
+                        $("#ListConsultasAnteriores").html('<li class="list-group-item">Sin consultas anteriores</li>');
+
+                        $("#inputRutData").val($("#inputRut").val());
                     }
+
+                    $("#divFichaPaciente").show();
                     
                     $(".accordion-collapse").collapse("show");
                     closeLoading(object);
@@ -326,7 +336,7 @@
 
             let validacionRut = validarRut($("#inputRutData").val());
             if (validacionRut == "01" || validacionRut == "00") {
-                Swal.fire('Ingresa un Rut válido', 'Datos Paciente', 'warning');
+                Swal.fire('Ingresa un Rut válido', '', 'warning');
                 return null;
             }
 
@@ -341,14 +351,14 @@
 
             let nombres = $("#inputNombres").val();
             if (!nombres) {
-                Swal.fire('Ingrese un Nombre', 'Datos Paciente', 'warning');
+                Swal.fire('Ingrese un Nombre', '', 'warning');
                 return null;
             }
             objDatosPaciente["Nombres"] = nombres || null;
 
             let primerApellido = $("#inputPrimerApellido").val();
             if (!primerApellido) {
-                Swal.fire('Ingrese un Apellido Paterno', 'Datos Paciente', 'warning');
+                Swal.fire('Ingrese un Apellido Paterno', '', 'warning');
                 return null;
             }
             objDatosPaciente["PrimerApellido"] = primerApellido || null;
@@ -357,14 +367,14 @@
 
             let sexoBiologico = $('input[name="generos"]:checked').val();
             if (!sexoBiologico) {
-                Swal.fire('Ingrese Género', 'Datos Paciente', 'warning');
+                Swal.fire('Ingrese Género', '', 'warning');
                 return null;
             }
             objDatosPaciente["SexoBiologico"] = sexoBiologico || null;
 
             let fechaNacimiento = $("#inputFechaNacimiento").val();
             if (!fechaNacimiento) {
-                Swal.fire('Ingrese Fecha de Nacimiento', 'Datos Paciente', 'warning');
+                Swal.fire('Ingrese Fecha de Nacimiento', '', 'warning');
                 return null;
             }
             objDatosPaciente["FechaNacimiento"] = fechaNacimiento ? new Date(fechaNacimiento).toISOString() : null;
@@ -387,7 +397,7 @@
 
             let nacionalidad = $('#comboNacionalidad').val();
             if (!nacionalidad) {
-                Swal.fire('Ingrese Nacionalidad', 'Datos Paciente', 'warning');
+                Swal.fire('Ingrese Nacionalidad', '', 'warning');
                 return null;
             }
             objDatosPaciente["Nacionalidad"] = nacionalidad || null;
