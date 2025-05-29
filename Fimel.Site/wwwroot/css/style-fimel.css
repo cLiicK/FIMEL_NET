@@ -689,3 +689,11 @@ main {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+
+.accordion-button.disabled-visual {
+    pointer-events: none; /* Desactiva clics */
+    opacity: 0.8; /* Lo hace ver grisado */
+    background-color: #e9ecef; /* Color gris claro */
+    color: #6c757d; /* Texto más apagado */
+    cursor: not-allowed; /* Cursor de prohibido */
+}

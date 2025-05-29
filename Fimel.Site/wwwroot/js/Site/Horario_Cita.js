@@ -149,8 +149,6 @@ var ModuloHorarioCita = (function () {
 
             var btnGuardar = $('#btnGuardarBloque');
 
-
-
             Swal.fire({
                 title: 'Nuevo Bloque',
                 text: '¿Esta seguro de crear este nuevo Bloque?',
@@ -206,6 +204,51 @@ var ModuloHorarioCita = (function () {
                 }
             })
         },
+
+        EliminarBloque: function (idBloque) {
+           
+            Swal.fire({
+                title: 'Eliminar Bloque',
+                text: '¿Esta seguro de eliminar este Bloque horario?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: $('#hdnURL_EliminarBloqueHorario').val(),
+                        data: {
+                            id: idBloque,
+                        },
+                        method: 'POST',
+                        success: function (response, jqXHR) {
+                            if (response.success === true) {
+                                Swal.fire({
+                                    title: response.message,
+                                    icon: 'success',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload();
+                                    }
+                                })
+                            }
+                            else {
+                                Swal.fire('Error', response.message, 'error');
+                                return;
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            Swal.fire('Error', 'Favor comuniquese con un administrador', 'error');
+                            return;
+                        }
+                    });
+                }
+                else {
+                }
+            })
+        },
+
         EliminarCitaModal: function () {
             var btnEliminar = $('#btnEliminarCitaModal');
 

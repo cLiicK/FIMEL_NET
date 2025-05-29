@@ -65,6 +65,8 @@ namespace Fimel.Site.Controllers
             try
             {
                 Pacientes paciente = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{rutPaciente}");
+                if (paciente == null) { paciente = new Pacientes(); }
+                paciente.UsuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
                 return Json(paciente);
             }
             catch (Exception ex)
@@ -79,6 +81,7 @@ namespace Fimel.Site.Controllers
             try
             {
                 Pacientes paciente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{numDoc}");
+                paciente.UsuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
                 return Json(paciente);
             }
             catch (Exception ex)

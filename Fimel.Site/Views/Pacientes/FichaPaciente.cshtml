@@ -42,7 +42,7 @@
                                     <option value="Otro">Otro</option>
                                 </select>
                             </div>
-                            @* 									<div class="col-2">
+                            @*<div class="col-2">
                             <label for="">Rut paciente</label>
                             </div> *@
                             <div class="col-3">
@@ -66,11 +66,11 @@
                             <div class="accordion" id="accordionFicha">
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="accordionFicha-datosPaciente-head">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-datosPaciente" aria-expanded="true" aria-controls="accordionFicha-datosPaciente">
                                             Datos Demográficos
                                         </button>
                                     </h2>
-                                    <div id="accordionFicha-datosPaciente" class="accordion-collapse collapse" aria-labelledby="accordionFicha-datosPaciente-head">
+                                    <div id="accordionFicha-datosPaciente" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-datosPaciente-head">
                                         <div class="accordion-body">
                                             <form class="row g-3">
                                                 <div class="col-md-6">
@@ -97,18 +97,18 @@
                                                     <label for="" class="form-label">Edad</label>
                                                     <input type="text" class="form-control" id="inputEdad" disabled maxlength="3">
                                                 </div>
-                                                <div class="col-md-3">
+                                                <div class="col-md-3" id="divIdentidadGenero">
                                                     <label for="" class="form-label">Identidad de Género</label>
                                                     <input type="text" class="form-control" id="inputIdentidad" maxlength="50">
                                                 </div>
-                                                <div class="col-md-4">
+                                                <div class="col-md-4" id="divSexoBiologico">
                                                     <label for="" class="form-label d-block">Sexo Biológico</label>
-                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo1" autocomplete="off" value="M">
+                                                    <input type="radio" class="btn-check" name="sexobiologico" id="radioSexo1" autocomplete="off" value="M">
                                                     <label class="btn btn-radio" for="radioSexo1">Masculino</label>
-                                                    <input type="radio" class="btn-check" name="generos" id="radioSexo2" autocomplete="off" value="F">
+                                                    <input type="radio" class="btn-check" name="sexobiologico" id="radioSexo2" autocomplete="off" value="F">
                                                     <label class="btn btn-radio" for="radioSexo2">Femenino</label>
                                                 </div>
-                                                <div class="col-md-3">
+                                                <div class="col-md-3" id="divOrientacionSexual">
                                                     <label for="" class="form-label">Orientación Sexual</label>
                                                     <input type="text" class="form-control" id="inputOrientacion" maxlength="50">
                                                 </div>
@@ -143,7 +143,7 @@
                                                         <option value="No Profesa">No Profesa</option>
                                                     </select>
                                                 </div>
-                                                <div class="col-md-3">
+                                                <div class="col-md-3" id="divRegimenAlimenticio">
                                                     <label for="" class="form-label">Regimen alimenticio</label>
                                                     <select class="form-select" id="comboRegimenAlimenticio">
                                                         <option value="" selected>Seleccione...</option>
@@ -159,11 +159,11 @@
                                 </div>
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="accordionFicha-antecedentes-head">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentes" aria-expanded="false" aria-controls="accordionFicha-antecedentes">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentes" aria-expanded="true" aria-controls="accordionFicha-antecedentes">
                                             Antecedentes Generales
                                         </button>
                                     </h2>
-                                    <div id="accordionFicha-antecedentes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentes-head">
+                                    <div id="accordionFicha-antecedentes" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-antecedentes-head">
                                         <div class="accordion-body">
                                             <form class="row g-3">
                                                 <div class="col-md-12">
@@ -228,11 +228,11 @@
                                 </div>
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="accordionFicha-antecedentesGine-head">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentesGine" aria-expanded="false" aria-controls="accordionFicha-antecedentesGine">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentesGine" aria-expanded="true" aria-controls="accordionFicha-antecedentesGine">
                                             Antecedentes Gineco-Obstétricos
                                         </button>
                                     </h2>
-                                    <div id="accordionFicha-antecedentesGine" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentesGine-head">
+                                    <div id="accordionFicha-antecedentesGine" class="accordion-collapse collapse show" aria-labelledby="accordionFicha-antecedentesGine-head">
                                         <div class="accordion-body">
                                             <form class="row g-3">
                                                 <div class="col-md-4 mt-0">
@@ -274,7 +274,7 @@
                                 </div>
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="accordionFicha-historial-head">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-historial" aria-expanded="false" aria-controls="accordionFicha-historial">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-historial" aria-expanded="true" aria-controls="accordionFicha-historial">
                                             Historial
                                         </button>
                                     </h2>

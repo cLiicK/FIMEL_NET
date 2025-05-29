@@ -95,7 +95,27 @@ namespace Fimel.Site.Controllers
             }
         }
 
-        public ActionResult _EliminarCita(int id)
+		public ActionResult _EliminarBloqueHorario(int id)
+		{
+			try
+			{
+				HorarioAtencion horarioAtencion = APIBase.Get<HorarioAtencion>($"HorariosAtencion/{id}");
+				horarioAtencion.Vigente = "N";
+				HorarioAtencion horarioAtencionPut = APIBase.Put<HorarioAtencion>($"HorariosAtencion/{id}", horarioAtencion);
+
+				if (horarioAtencionPut == null)
+					return Json(new { success = false, message = "Error al eliminar el Horario de Atencion" });
+
+				return Json(new { success = true, message = "Bloque de atención eliminado" });
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Error Horario _EliminarBloqueHorario: {ex}");
+				return null;
+			}
+		}
+
+		public ActionResult _EliminarCita(int id)
         {
             try
             {

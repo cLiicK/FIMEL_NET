@@ -43,6 +43,8 @@ namespace Fimel.Api.Controllers
                 if (usuario == null)
                     return NotFound();
 
+                usuario.Perfil = db.Perfiles.Where(x => x.Id == usuario.IdPerfil).FirstOrDefault();
+
                 return Ok(usuario);
             }
             catch (Exception ex)

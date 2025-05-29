@@ -2,6 +2,7 @@
 @model MiHorarioVM
 
 <input type="hidden" id="hdnURL_CrearBloqueHorario" value='@Url.Action("_CrearBloqueHorario", "Horario")' />
+<input type="hidden" id="hdnURL_EliminarBloqueHorario" value='@Url.Action("_EliminarBloqueHorario", "Horario")' />
 <input type="hidden" id="hdnURL_ObtenerCitas" value='@Url.Action("ObtenerCitas", "Horario")' />
 @if(Model.ConfiguracionUsuario != null)
 {

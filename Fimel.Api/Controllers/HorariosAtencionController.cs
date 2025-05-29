@@ -15,6 +15,25 @@ namespace Fimel.Api.Controllers
             db = context;
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            try
+            {
+                HorarioAtencion? horarioAtencion = db.HorariosAtencion.Where(x => x.Id == id && x.Vigente == "S").FirstOrDefault();
+
+                if (horarioAtencion == null)
+                    return NotFound();
+
+                return Ok(horarioAtencion);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al obtener horario atencion By Id");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpPost]
         public IActionResult Post(HorarioAtencion horario)
         {
@@ -47,7 +66,7 @@ namespace Fimel.Api.Controllers
         {
             try
             {
-                List<HorarioAtencion> horarios = db.HorariosAtencion.Where(x => x.Usuario.Id == id).ToList();
+                List<HorarioAtencion> horarios = db.HorariosAtencion.Where(x => x.Usuario.Id == id && x.Vigente == "S").ToList();
 
                 return Ok(horarios);
             }
@@ -57,5 +76,25 @@ namespace Fimel.Api.Controllers
                 return StatusCode(500, ex);
             }
         }
-    }
+
+		[HttpPut("{id}")]
+		public IActionResult Put(int id, HorarioAtencion horarioAtencion)
+		{
+			try
+			{
+				HorarioAtencion? dbHorarioAtencion = db.HorariosAtencion.Find(id);
+
+				dbHorarioAtencion.Vigente = horarioAtencion.Vigente;
+
+				db.SaveChanges();
+
+				return Ok(dbHorarioAtencion);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Error HorariosAtencion Put: {ex}");
+				return StatusCode(500, ex);
+			}
+		}
+	}
 }

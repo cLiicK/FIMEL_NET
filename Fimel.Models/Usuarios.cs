@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,5 +18,8 @@ namespace Fimel.Models
         public string? RequiereCambioClave { get; set; }
         public int IdPerfil { get; set; }
         public int? IdInstitucion { get; set; }
+
+        [NotMapped]
+        public Perfiles Perfil { get; set; } 
     }
 }

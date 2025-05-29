@@ -43,7 +43,7 @@
                         '<p class="mb-0 text-center">' + fechaSTR + '</p>' +
                             '</div>' +
                             '<div class="col-md-2 text-center">' +
-                        '<a class="btn-ico" href="' + url +'" target="_blank"><i class="fas fa-clipboard-list"></i></a>' +
+                        '<a class="btn-ico" name="linkConsultasAnteriores" href="' + url +'" target="_blank"><i class="fas fa-clipboard-list"></i></a>' +
                             '</div>'
                             + '</div>'
                         );

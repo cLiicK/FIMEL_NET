@@ -11,7 +11,7 @@
             $("#inputGesta").keypress(function (e) { onlyNumbers(e); });
             $("#inputParto").keypress(function (e) { onlyNumbers(e); });
             $("#inputAborto").keypress(function (e) { onlyNumbers(e); });
-            
+
 
             $("#inputRut").keyup(function () {
 
@@ -90,6 +90,7 @@
             var rutCompleto = $("#inputRut").val();
             let validacionRut;
             let urlBusqueda;
+            let usuarioConectado;
 
             let tipoDocto = $('#comboTipoDocumento option:selected').val();
             if (tipoDocto == "RUT") {
@@ -129,6 +130,7 @@
                 async: true,
                 success: function (response, jqXHR) {
                     if (response != null) {
+                        usuarioConectado = response.UsuarioConectado;
                         if (response.Id > 0) {
                             const nombreCompleto = response.Nombres + " " + response.PrimerApellido + " " + response.SegundoApellido;
                             $("#inputNombres").val(response.Nombres);
@@ -147,7 +149,7 @@
                                 let day = ("0" + fechaNacimiento.getDate()).slice(-2);
                                 let fechaNacimientoString = `${year}-${month}-${day}`;
                                 $("#inputFechaNacimiento").val(fechaNacimientoString);
-                                $("#inputEdad").val(calcularEdad(response.FechaNacimiento)); 
+                                $("#inputEdad").val(calcularEdad(response.FechaNacimiento));
                             }
 
                             $("#inputRutData").val(ObtenerRutSTR(response.Rut, response.Dv));
@@ -194,7 +196,7 @@
                             $("#inputMenopausia").val(response.Menopausia);
                             $("#inputGrupoRH").val(response.GrupoRH);
                             $("#inputInmunizaciones").val(response.Inmunizaciones);
-                            
+
 
                             $("#comboReligion").val(response.Religion);
                             $("#comboRegimenAlimenticio").val(response.RegimenAlimenticio);
@@ -229,9 +231,12 @@
                         $("#inputRutData").val($("#inputRut").val());
                     }
 
-                    $("#divFichaPaciente").show();
-                    
-                    $(".accordion-collapse").collapse("show");
+                    //$(".accordion-collapse").collapse("show");
+
+                    ModuloFichaPaciente.BloquearCamposSegunPerfil(usuarioConectado);
+
+                    $("#divFichaPaciente").fadeIn(500);
+
                     closeLoading(object);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -365,9 +370,9 @@
 
             objDatosPaciente["SegundoApellido"] = $("#inputSegundoApellido").val() || null;
 
-            let sexoBiologico = $('input[name="generos"]:checked').val();
+            let sexoBiologico = $('input[name="sexobiologico"]:checked').val();
             if (!sexoBiologico) {
-                Swal.fire('Ingrese Género', '', 'warning');
+                Swal.fire('Ingrese Sexo Biologico', '', 'warning');
                 return null;
             }
             objDatosPaciente["SexoBiologico"] = sexoBiologico || null;
@@ -436,6 +441,24 @@
             showLoading(object);
 
             return objDatosPaciente;
+        },
+        BloquearCamposSegunPerfil: function (object) {
+
+            if (object.IdPerfil == 3) { //Administrativo
+                $('#divIdentidadGenero').hide();
+                $('#divSexoBiologico').hide();
+                $('#divOrientacionSexual').hide();
+                $('#divRegimenAlimenticio').hide();
+
+                $('#accordionFicha-antecedentes').collapse('hide');
+                $('#accordionFicha-antecedentes-head .accordion-button').prop('disabled', true).addClass('disabled-visual');;
+
+                $('#accordionFicha-antecedentesGine').collapse('hide');
+                $('#accordionFicha-antecedentesGine-head .accordion-button').prop('disabled', true).addClass('disabled-visual');;
+
+                $('a[name="linkConsultasAnteriores"]').hide();
+            }
+
         }
     }
 })();

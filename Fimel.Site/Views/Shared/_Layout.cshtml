@@ -52,9 +52,6 @@
     <script src="~/js/Site/Shared.js?v=1.0" type="text/javascript"></script>
     <script type="text/javascript" src="~/lib/bootstrap-5/js/popper.min.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap-5/js/bootstrap.min.js"></script>
-
-
-
 </head>
 <body>
     <main>
@@ -70,6 +67,7 @@
                         <div class="info-user dropdown-toggle">
                             <p>@usuarioConectado.Nombres @usuarioConectado.ApellidoPaterno</p>
                             <p><strong>@inst.RazonSocial</strong></p>
+                            <p>Perfil: @usuarioConectado.Perfil.Descripcion</p>
                         </div>
                         <div class="ico-user"><span></span></div>
                     </div>
@@ -94,16 +92,21 @@
                     <span>Ficha Paciente</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
-                   aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">
-                    <span>Nueva Consulta</span>
-                </a>
-            </li>
+            @{
+                if (usuarioConectado.IdPerfil == 1 || usuarioConectado.IdPerfil == 2)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
+                           aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">
+                            <span>Nueva Consulta</span>
+                        </a>
+                    </li>
+                }
+            }
             <li class="nav-item">
                 <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "MiHorario" || ViewContext.RouteData.Values["action"].ToString() == "MiHorario" ? "active" : "")"
                    aria-current="page" href="@Url.Action("MiHorario", "Horario")">
-                    <span>Mi Horario</span>
+                    <span>Horario</span>
                 </a>
             </li>
             <div class="text-center footer-sidebar">

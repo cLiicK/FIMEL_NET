@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,5 +48,8 @@ namespace Fimel.Models
         public string? GrupoRH { get; set; }
         public string? Inmunizaciones { get; set; }
         public int? Talla { get; set; }
+
+        [NotMapped]
+        public Usuarios? UsuarioConectado { get; set; }
     }
 }
