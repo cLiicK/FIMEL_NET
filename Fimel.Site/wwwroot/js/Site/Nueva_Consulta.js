@@ -171,8 +171,9 @@
 
                             $('#btnGuardarConsulta').prop('disabled', false);
 
+                            $("#accordionFicha-historial").collapse("hide");
                             $("#accordionFicha-nuevaConsulta").collapse("show");
-                            $("#divNuevaConsulta").show();
+                            $("#divNuevaConsulta").fadeIn(500);
 
                         }
                     } else {
