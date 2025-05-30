@@ -111,7 +111,7 @@
                                 let day = ("0" + fechaNacimiento.getDate()).slice(-2);
                                 let fechaNacimientoString = `${year}-${month}-${day}`;
                                 $("#inputFechaNacimiento").val(fechaNacimientoString);
-                                $("#inputEdad").val(calcularEdad(response.FechaNacimiento)); 
+                                $("#inputEdad").val(calcularEdad(response.FechaNacimiento));
                             }
 
                             $("#inputRutData").val(ObtenerRutSTR(response.Rut, response.Dv));
@@ -175,6 +175,18 @@
                             $("#accordionFicha-nuevaConsulta").collapse("show");
                             $("#divNuevaConsulta").fadeIn(500);
 
+                        }
+                        else {
+                            Swal.fire({
+                                title: 'Paciente nuevo',
+                                text: 'Registra al paciente en "Ficha Paciente"',
+                                icon: 'info',
+                                confirmButtonText: 'Ir a Ficha Paciente'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.replace("/Pacientes/FichaPaciente?p=" + rutCompleto);
+                                }
+                            });
                         }
                     } else {
                         Swal.fire({
