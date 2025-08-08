@@ -82,5 +82,23 @@ namespace Fimel.Api.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [HttpGet]
+        [Route("GetByInstitucion/{idInstitucion}")]
+        public IActionResult GetByInstitucion(int idInstitucion)
+        {
+            try
+            {
+                var usuarios = db.Usuarios
+                    .Where(u => u.IdInstitucion == idInstitucion && u.Vigente == "S").ToList();
+
+                return Ok(usuarios);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al obtener usuarios por institución: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
     }
 }

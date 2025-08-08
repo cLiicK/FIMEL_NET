@@ -15,5 +15,12 @@ namespace Fimel.Models
             DNIExtranjero,
             OTRO
         }
+
+        public enum EnumPerfiles
+        {
+            Administrador = 1,
+            Especialista = 2,
+            Administrativo = 3
+        }
     }
 }

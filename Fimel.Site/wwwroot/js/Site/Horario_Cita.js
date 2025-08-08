@@ -35,6 +35,20 @@ var ModuloHorarioCita = (function () {
                 }
             });
 
+            $('#selectProfesional').off('change').on('change', function () {
+                var idUsuario = $(this).val();
+                if (idUsuario) {
+                    $.get('/Horario/ObtenerVistaAgenda', { idUsuario: idUsuario }, function (html) {
+                        $('#contenedorAgenda').html(html).show();
+                        ModuloHorarioCita.IniciarScripts();
+                    }).fail(function () {
+                        Swal.fire("Error", "No se pudo cargar la agenda del profesional", "error");
+                    });
+                } else {
+                    $('#contenedorAgenda').hide().html('');
+                }
+            });
+
         },
         IniciarCalendario: function () {
             var calendarEl = document.getElementById('calendar');
@@ -495,3 +509,26 @@ var ModuloHorarioCita = (function () {
 $(function () {
     ModuloHorarioCita.IniciarScripts();
 });
+
+
+//$(function () {
+//    const esAdministrativo = $('#esAdministrativo').val() === 'true';
+//    if (!esAdministrativo) {
+//        $('#contenedorAgenda').show();
+//        ModuloHorarioCita.IniciarScripts();
+//    } else {
+//        $('#selectProfesional').change(function () {
+//            const usuarioId = $(this).val();
+
+//            if (usuarioId) {
+//                $('#contenedorAgenda').show();
+//                ModuloHorarioCita.IniciarCalendario();
+//            } else {
+//                $('#contenedorAgenda').hide();
+//                $('#calendar').html('');
+//            }
+//        });
+//    }
+//});
+
+

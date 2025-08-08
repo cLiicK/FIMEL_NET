@@ -4,31 +4,34 @@
 <input type="hidden" id="hdnURL_CrearBloqueHorario" value='@Url.Action("_CrearBloqueHorario", "Horario")' />
 <input type="hidden" id="hdnURL_EliminarBloqueHorario" value='@Url.Action("_EliminarBloqueHorario", "Horario")' />
 <input type="hidden" id="hdnURL_ObtenerCitas" value='@Url.Action("ObtenerCitas", "Horario")' />
-@if(Model.ConfiguracionUsuario != null)
+<input type="hidden" id="hdnURL_ObtenerVistaAgenda" value='@Url.Action("ObtenerVistaAgenda", "Horario")' />
+
+@if (Model.ConfiguracionUsuario != null)
 {
-	<input type="hidden" id="ObjectConfigUsuario" value='@Html.Raw(JsonSerializer.Serialize(Model.ConfiguracionUsuario))' />
+    <input type="hidden" id="ObjectConfigUsuario" value='@Html.Raw(JsonSerializer.Serialize(Model.ConfiguracionUsuario))' />
 }
 
 <div class="container" style="margin-top: 20px;">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-        <button class="btn" data-bs-toggle="modal" data-bs-target="#modalNuevaCita"
-                style="background-color: #F89B9B; color: white;">
-            Crear Cita <i class="fas fa-calendar-plus"></i>
-        </button>
+    @* Combo solo visible para usuario administrativo *@
+    @if (Model.ListaUsuarios != null && Model.ListaUsuarios.Count > 0)
+    {
+        <div class="mb-3 col-3">
+            <label for="selectProfesional" class="form-label">Seleccionar Profesional</label>
+            <select id="selectProfesional" class="form-select">
+                <option value="">Seleccione un profesional...</option>
+                @foreach (var usuario in Model.ListaUsuarios)
+                {
+                    <option value="@usuario.Id">@usuario.NombreCompleto</option>
+                }
+            </select>
+        </div>
+    }
 
-        <button class="btn" data-bs-toggle="modal" data-bs-target="#configurarHorarioModal"
-                style="background-color: #F89B9B; color: white;">
-            Mi Horario <i class="fas fa-cog"></i>
-        </button>
+    <div id="contenedorAgenda" style="display: @(Model.ListaUsuarios != null ? "none" : "block")">
+        @Html.Partial("_PartialContenedorAgenda", Model)
     </div>
-    <div id="calendar"></div>
 </div>
 
-
-@Html.Partial("~/Views/Partials/_PartialConfiguracionHorario.cshtml", Model.HorariosAtencion)
-@Html.Partial("~/Views/Partials/_PartialNuevaCitaCalendario.cshtml")
-@Html.Partial("~/Views/Partials/_PartialNuevaCita.cshtml")
-
 @section scripts {
-	<script src="~/js/site/Horario_Cita.js?v=1.0" type="text/javascript"></script>
+    <script src="~/js/site/Horario_Cita.js?v=1.0" type="text/javascript"></script>
 }

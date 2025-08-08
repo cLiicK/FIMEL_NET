@@ -19,7 +19,6 @@ namespace Fimel.Models
         public int IdPerfil { get; set; }
         public int? IdInstitucion { get; set; }
 
-        [NotMapped]
         public Perfiles Perfil { get; set; } 
     }
 }

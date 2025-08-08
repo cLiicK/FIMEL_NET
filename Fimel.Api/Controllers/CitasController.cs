@@ -22,7 +22,10 @@ namespace Fimel.Api.Controllers
         {
             try
             {
-                Cita? cita = db.Citas.Where(x => x.Id == id && x.Vigente == "S").Include(x => x.Usuario).FirstOrDefault();
+                Cita? cita = db.Citas
+                    .Where(x => x.Id == id && x.Vigente == "S")
+                    .Include(x => x.Usuario).ThenInclude(t => t.Perfil)
+                    .FirstOrDefault();
 
                 if (cita == null)
                     return NotFound();

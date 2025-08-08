@@ -3,6 +3,7 @@ using Fimel.Models;
 using Fimel.Site.ViewModels;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
+using static Fimel.Models.Enums;
 
 namespace Fimel.Site.Controllers
 {
@@ -18,6 +19,16 @@ namespace Fimel.Site.Controllers
             MiHorarioVM vm = new MiHorarioVM();
             vm.HorariosAtencion = APIBase.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{usuario.Id}");
             vm.ConfiguracionUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuario.Id}");
+
+            if (usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+            {
+                List<Usuarios> listaUsuarios = APIBase.Get<List<Usuarios>>($"Usuarios/GetByInstitucion/{usuario.IdInstitucion}");
+                vm.ListaUsuarios = listaUsuarios.Where(t => t.IdPerfil == (int)EnumPerfiles.Especialista).Select(u => new UsuarioVM
+                                                    {
+                                                        Id = u.Id,
+                                                        NombreCompleto = u.Nombres + " " + u.ApellidoPaterno + " " + u.ApellidoMaterno
+                                                    }).ToList();
+            }
 
             HttpContext.Session.SetString("HorarioUser", JsonSerializer.Serialize(vm.HorariosAtencion));
 
@@ -95,27 +106,27 @@ namespace Fimel.Site.Controllers
             }
         }
 
-		public ActionResult _EliminarBloqueHorario(int id)
-		{
-			try
-			{
-				HorarioAtencion horarioAtencion = APIBase.Get<HorarioAtencion>($"HorariosAtencion/{id}");
-				horarioAtencion.Vigente = "N";
-				HorarioAtencion horarioAtencionPut = APIBase.Put<HorarioAtencion>($"HorariosAtencion/{id}", horarioAtencion);
+        public ActionResult _EliminarBloqueHorario(int id)
+        {
+            try
+            {
+                HorarioAtencion horarioAtencion = APIBase.Get<HorarioAtencion>($"HorariosAtencion/{id}");
+                horarioAtencion.Vigente = "N";
+                HorarioAtencion horarioAtencionPut = APIBase.Put<HorarioAtencion>($"HorariosAtencion/{id}", horarioAtencion);
 
-				if (horarioAtencionPut == null)
-					return Json(new { success = false, message = "Error al eliminar el Horario de Atencion" });
+                if (horarioAtencionPut == null)
+                    return Json(new { success = false, message = "Error al eliminar el Horario de Atencion" });
 
-				return Json(new { success = true, message = "Bloque de atención eliminado" });
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"Error Horario _EliminarBloqueHorario: {ex}");
-				return null;
-			}
-		}
+                return Json(new { success = true, message = "Bloque de atención eliminado" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Horario _EliminarBloqueHorario: {ex}");
+                return null;
+            }
+        }
 
-		public ActionResult _EliminarCita(int id)
+        public ActionResult _EliminarCita(int id)
         {
             try
             {
@@ -123,7 +134,7 @@ namespace Fimel.Site.Controllers
                 cita.Vigente = "N";
                 Cita citaPut = APIBase.Put<Cita>($"Citas/{id}", cita);
 
-                if(citaPut == null)
+                if (citaPut == null)
                     return Json(new { success = false, message = "Error al eliminar cita" });
 
                 return Json(new { success = true, message = "Cita eliminada" });
@@ -159,10 +170,52 @@ namespace Fimel.Site.Controllers
 
                 return Json(new { success = true, message = "Cita creada" });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.Log($"Error Horario _GuardarCita: {ex}");
                 return null;
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ObtenerVistaAgenda(int idUsuario)
+        {
+            try
+            {
+                var horarios = APIBase.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{idUsuario}");
+                var configUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{idUsuario}");
+
+                var vm = new MiHorarioVM
+                {
+                    HorariosAtencion = horarios,
+                    ConfiguracionUsuario = configUsuario
+                };
+
+                // Este usuario viene del combo, así que hay que recuperar su info completa
+                //var usuario = APIBase.Get<Usuarios>($"Usuarios/{idUsuario}");
+
+                //if (usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+                //{
+                //    var listaUsuarios = APIBase.Get<List<Usuarios>>($"Usuarios/GetByInstitucion/{usuario.IdInstitucion}");
+                //    vm.ListaUsuarios = listaUsuarios
+                //        .Where(t => t.IdPerfil == (int)EnumPerfiles.Especialista)
+                //        .Select(u => new UsuarioVM
+                //        {
+                //            Id = u.Id,
+                //            NombreCompleto = u.Nombres + " " + u.ApellidoPaterno + " " + u.ApellidoMaterno
+                //        })
+                //        .ToList();
+                //}
+
+                //HttpContext.Session.SetString("HorarioUser", JsonSerializer.Serialize(horarios));
+                //HttpContext.Session.SetString("UsuarioConectado", JsonSerializer.Serialize(new Usuarios { Id = idUsuario }));
+
+                return PartialView("_PartialContenedorAgenda", vm);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ObtenerVistaAgenda: {ex}");
+                return StatusCode(500);
             }
         }
 

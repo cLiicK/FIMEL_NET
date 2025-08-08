@@ -1,0 +1,22 @@
+﻿@using System.Text.Json
+@model MiHorarioVM
+
+<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+    <div id="accionesCita" style="display: block;">
+        <button class="btn" data-bs-toggle="modal" data-bs-target="#modalNuevaCita"
+                style="background-color: #F89B9B; color: white;">
+            Crear Cita <i class="fas fa-calendar-plus"></i>
+        </button>
+
+        <button class="btn" data-bs-toggle="modal" data-bs-target="#configurarHorarioModal"
+                style="background-color: #F89B9B; color: white;">
+            Mi Horario <i class="fas fa-cog"></i>
+        </button>
+    </div>
+</div>
+
+<div id="calendar"></div>
+
+@Html.Partial("~/Views/Partials/_PartialConfiguracionHorario.cshtml", Model.HorariosAtencion)
+@Html.Partial("~/Views/Partials/_PartialNuevaCitaCalendario.cshtml")
+@Html.Partial("~/Views/Partials/_PartialNuevaCita.cshtml")

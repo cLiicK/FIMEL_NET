@@ -32,6 +32,13 @@ namespace Fimel.Models
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
             modelBuilder.Entity<Pacientes>().ToTable("Pacientes");
             modelBuilder.Entity<Usuarios>().ToTable("Usuarios", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<Usuarios>()
+                 .HasOne(u => u.Perfil)
+                 .WithMany() // Si Perfiles no tiene ICollection<Usuarios>
+                 .HasForeignKey(u => u.IdPerfil)
+                 .HasPrincipalKey(p => p.Id);
+
             modelBuilder.Entity<Reservas>().ToTable("Reservas", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<parExamenes>().ToTable("parExamenes", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<parEspecialidades>().ToTable("parEspecialidades", t => t.ExcludeFromMigrations());
@@ -45,6 +52,8 @@ namespace Fimel.Models
             modelBuilder.Entity<HorarioAtencion>().ToTable("HorariosAtencion", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<Cita>().ToTable("Citas");
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario", t => t.ExcludeFromMigrations());
+
+     
         }
     }
 }
