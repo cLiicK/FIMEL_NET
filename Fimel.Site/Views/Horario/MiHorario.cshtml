@@ -1,10 +1,13 @@
 ﻿@using System.Text.Json
+@using Fimel.Utils
 @model MiHorarioVM
 
 <input type="hidden" id="hdnURL_CrearBloqueHorario" value='@Url.Action("_CrearBloqueHorario", "Horario")' />
 <input type="hidden" id="hdnURL_EliminarBloqueHorario" value='@Url.Action("_EliminarBloqueHorario", "Horario")' />
 <input type="hidden" id="hdnURL_ObtenerCitas" value='@Url.Action("ObtenerCitas", "Horario")' />
 <input type="hidden" id="hdnURL_ObtenerVistaAgenda" value='@Url.Action("ObtenerVistaAgenda", "Horario")' />
+<input type="hidden" id="hdnURL_CrearCita" value='@Url.Action("_GuardarCita", "Horario")' />
+<input type="hidden" id="hdnUsuarioSeleccionado" value="" />
 
 @if (Model.ConfiguracionUsuario != null)
 {
@@ -30,6 +33,19 @@
     <div id="contenedorAgenda" style="display: @(Model.ListaUsuarios != null ? "none" : "block")">
         @Html.Partial("_PartialContenedorAgenda", Model)
     </div>
+    
+    <script>
+        // Si no hay combo (especialista), establecer su propio ID
+        @if (Model.ListaUsuarios == null || Model.ListaUsuarios.Count == 0)
+        {
+            <text>
+            $(document).ready(function() {
+                var usuarioConectado = @Html.Raw(Json.Serialize(new Utileria().ObtenerSesion(Context.Session.GetString("UsuarioConectado"))));
+                $('#hdnUsuarioSeleccionado').val(usuarioConectado.Id);
+            });
+            </text>
+        }
+    </script>
 </div>
 
 @section scripts {

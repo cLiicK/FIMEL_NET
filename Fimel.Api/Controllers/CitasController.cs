@@ -73,7 +73,7 @@ namespace Fimel.Api.Controllers
                     query = query.Where(x => x.FechaHoraFinal <= q.FechaTermino.Value);
 
                 if(q.UsuarioId.HasValue)
-                    query = query.Where(x => x.Usuario.Id <= q.UsuarioId.Value);
+                    query = query.Where(x => x.Usuario.Id == q.UsuarioId.Value);
 
                 List<Cita> citas = query.Include(x => x.Usuario).ToList();
 

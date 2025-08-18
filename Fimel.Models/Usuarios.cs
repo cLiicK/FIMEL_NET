@@ -19,6 +19,6 @@ namespace Fimel.Models
         public int IdPerfil { get; set; }
         public int? IdInstitucion { get; set; }
 
-        public Perfiles Perfil { get; set; } 
+        public Perfiles? Perfil { get; set; } 
     }
 }

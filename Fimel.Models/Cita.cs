@@ -17,7 +17,7 @@ namespace Fimel.Models
         public string? Telefono { get; set; }
         public string? Nota { get; set; }
 
-        public Usuarios Usuario { get; set; }
+        public Usuarios? Usuario { get; set; }
 
     }
 }

@@ -1,11 +1,11 @@
 ﻿<input type="hidden" id="hdnURL_ObtenerHistorial" value='@Url.Action("ObtenerHistorial", "Pacientes")' />
 <input type="hidden" id="hdnURL_EliminarPaciente" value='@Url.Action("EliminarPaciente", "Pacientes")' />
 
-<div id="content-wrapper" class="container-9">
+<div id="content-wrapper" class="container-9 w-100">
     <!--TITULO-->
     <div class="row">
         <div class="col-12">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row">
                     <div class="col-12">
                         <h2 class="colorfimel-blue"><a class="colorfimel-rosa" href="@Url.Action("FichaPaciente", "Pacientes")"><i class="fas fa-angle-left me-3"></i></a> Historial de Pacientes</h2>
@@ -54,27 +54,25 @@
             </div>
             <div class="container mt-4">
                 <div class="row">
-                    <div class="col-md-12">
-                        <table class="table" id="HistorialTable">
-                            <thead class="thead-rosa">
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Rut</th>
-                                    <th>Celular</th>
-                                    <th>Email</th>
-                                    <th>Nacionalidad</th>
-                                    <th>Fecha Creacion</th>
-                                    <th>N° Doc</th>
-                                    <th>&nbsp;</th>
-                                    <th>&nbsp;</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <table class="table w-100" id="HistorialTable">
+                        <thead class="thead-rosa">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Rut</th>
+                                <th>Celular</th>
+                                <th>Email</th>
+                                <th>Nacionalidad</th>
+                                <th>Fecha Creacion</th>
+                                <th>N° Doc</th>
+                                <th>&nbsp;</th>
+                                @* <th>&nbsp;</th> *@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -83,6 +81,6 @@
     <!--Contenido-->
 </div>
 
-@section scripts{
+@section scripts {
     <script src="~/js/Site/Historial_Pacientes.js?v=1.0"></script>
 }

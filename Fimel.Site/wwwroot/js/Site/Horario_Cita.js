@@ -38,6 +38,9 @@ var ModuloHorarioCita = (function () {
             $('#selectProfesional').off('change').on('change', function () {
                 var idUsuario = $(this).val();
                 if (idUsuario) {
+                    // Guardar el ID del usuario seleccionado
+                    $('#hdnUsuarioSeleccionado').val(idUsuario);
+                    
                     $.get('/Horario/ObtenerVistaAgenda', { idUsuario: idUsuario }, function (html) {
                         $('#contenedorAgenda').html(html).show();
                         ModuloHorarioCita.IniciarScripts();
@@ -46,6 +49,7 @@ var ModuloHorarioCita = (function () {
                     });
                 } else {
                     $('#contenedorAgenda').hide().html('');
+                    $('#hdnUsuarioSeleccionado').val('');
                 }
             });
 
@@ -71,7 +75,25 @@ var ModuloHorarioCita = (function () {
                     list: 'Lista'
                 },
                 allDaySlot: false,
-                events: $('#hdnURL_ObtenerCitas').val(),
+                events: function(info, successCallback, failureCallback) {
+                    var url = $('#hdnURL_ObtenerCitas').val();
+                    var idUsuario = $('#hdnUsuarioSeleccionado').val();
+                    
+                    if (idUsuario) {
+                        url += '?idUsuario=' + idUsuario;
+                    }
+                    
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        success: function(data) {
+                            successCallback(data);
+                        },
+                        error: function() {
+                            failureCallback('Error al cargar eventos');
+                        }
+                    });
+                },
                 eventTimeFormat: {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -183,7 +205,8 @@ var ModuloHorarioCita = (function () {
                                 DiaSemana: $('#diaSemanaNuevoBloque').val(),
                                 HoraFin: $('#horaFinNuevoBloque').val(),
                                 HoraInicio: $('#horaInicioNuevoBloque').val(),
-                            }
+                            },
+                            idUsuarioDestino: $('#hdnUsuarioSeleccionado').val() || null
                         },
                         method: 'POST',
                         success: function (response, jqXHR) {
@@ -375,7 +398,8 @@ var ModuloHorarioCita = (function () {
                     $.ajax({
                         url: $('#hdnURL_CrearCita').val(),
                         data: {
-                            cita: cita
+                            cita: cita,
+                            idUsuarioDestino: $('#hdnUsuarioSeleccionado').val() || null
                         },
                         method: 'POST',
                         success: function (response, jqXHR) {
@@ -468,7 +492,8 @@ var ModuloHorarioCita = (function () {
                     $.ajax({
                         url: $('#hdnURL_CrearCita').val(),
                         data: {
-                            cita: cita
+                            cita: cita,
+                            idUsuarioDestino: $('#hdnUsuarioSeleccionado').val() || null
                         },
                         method: 'POST',
                         success: function (response, jqXHR) {

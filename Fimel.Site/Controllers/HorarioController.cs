@@ -35,11 +35,24 @@ namespace Fimel.Site.Controllers
             return View(vm);
         }
 
-        public ActionResult ObtenerCitas()
+        public ActionResult ObtenerCitas(int? idUsuario = null)
         {
             Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+            
+            // Determinar de qué usuario obtener las citas
+            int idUsuarioFinal;
+            if (idUsuario.HasValue && usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+            {
+                // Si es administrativo y se especifica un usuario, usar ese
+                idUsuarioFinal = idUsuario.Value;
+            }
+            else
+            {
+                // Si es especialista o no se especifica, usar el usuario conectado
+                idUsuarioFinal = usuario.Id;
+            }
 
-            List<Cita> citas = APIBase.Get<List<Cita>>($"Citas/GetByUser/{usuario.Id}");
+            List<Cita> citas = APIBase.Get<List<Cita>>($"Citas/GetByUser/{idUsuarioFinal}");
 
             var jsonEventos = new List<object>();
 
@@ -67,7 +80,8 @@ namespace Fimel.Site.Controllers
                 });
             }
 
-            List<HorarioAtencion> horarios = new Utileria().ObtenerData<List<HorarioAtencion>>(HttpContext.Session.GetString("HorarioUser"));
+            // Obtener horarios del usuario correspondiente
+            List<HorarioAtencion> horarios = APIBase.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{idUsuarioFinal}");
 
             foreach (var horario in horarios)
             {
@@ -85,17 +99,33 @@ namespace Fimel.Site.Controllers
             return Json(jsonEventos);
         }
 
-        public ActionResult _CrearBloqueHorario(HorarioAtencion horario)
+        public ActionResult _CrearBloqueHorario(HorarioAtencion horario, int? idUsuarioDestino = null)
         {
             try
             {
                 Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
-                horario.Usuario = usuario;
+                
+                // Determinar para qué usuario se crea el bloque de horario
+                int idUsuarioFinal;
+                if (idUsuarioDestino.HasValue && usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+                {
+                    // Si es administrativo y se especifica un usuario destino, usar ese
+                    idUsuarioFinal = idUsuarioDestino.Value;
+                }
+                else
+                {
+                    // Si es especialista o no se especifica destino, usar el usuario conectado
+                    idUsuarioFinal = usuario.Id;
+                }
+
+                // Obtener el usuario destino completo para asignarlo al horario
+                Usuarios usuarioDestino = APIBase.Get<Usuarios>($"Usuarios/{idUsuarioFinal}");
+                horario.Usuario = usuarioDestino;
 
                 HorarioAtencion? horarioPost = APIBase.Post<HorarioAtencion>($"HorariosAtencion", horario);
 
                 if (horarioPost == null)
-                    return Json(new { success = true, message = "Error interno al guardar Bloque..." });
+                    return Json(new { success = false, message = "Error interno al guardar Bloque..." });
 
                 return Json(new { success = true, message = "Bloque Guardado!" });
             }
@@ -146,23 +176,39 @@ namespace Fimel.Site.Controllers
             }
         }
 
-        public ActionResult _GuardarCita(Cita cita)
+        public ActionResult _GuardarCita(Cita cita, int? idUsuarioDestino = null)
         {
             try
             {
                 Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                
+                // Determinar para qué usuario se crea la cita
+                int idUsuarioFinal;
+                if (idUsuarioDestino.HasValue && usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+                {
+                    // Si es administrativo y se especifica un usuario destino, usar ese
+                    idUsuarioFinal = idUsuarioDestino.Value;
+                }
+                else
+                {
+                    // Si es especialista o no se especifica destino, usar el usuario conectado
+                    idUsuarioFinal = usuario.Id;
+                }
 
                 List<Cita> dbCita = APIBase.Get<List<Cita>>($"Citas/GetByCriteria", new
                 {
                     FechaInicio = cita.FechaHoraInicio,
                     FechaTermino = cita.FechaHoraFinal,
-                    UsuarioId = usuario.Id
+                    UsuarioId = idUsuarioFinal
                 });
 
                 if (dbCita.Count > 0)
                     return Json(new { success = false, message = "Ya existe una cita agendada que topa con el Día y Hora" });
 
-                cita.Usuario = usuario;
+                // Obtener el usuario destino completo para asignarlo a la cita
+                Usuarios usuarioDestino = APIBase.Get<Usuarios>($"Usuarios/{idUsuarioFinal}");
+                cita.Usuario = usuarioDestino;
+                
                 Cita citaPost = APIBase.Post<Cita>($"Citas", cita);
 
                 if (citaPost == null)
@@ -191,24 +237,8 @@ namespace Fimel.Site.Controllers
                     ConfiguracionUsuario = configUsuario
                 };
 
-                // Este usuario viene del combo, así que hay que recuperar su info completa
-                //var usuario = APIBase.Get<Usuarios>($"Usuarios/{idUsuario}");
-
-                //if (usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
-                //{
-                //    var listaUsuarios = APIBase.Get<List<Usuarios>>($"Usuarios/GetByInstitucion/{usuario.IdInstitucion}");
-                //    vm.ListaUsuarios = listaUsuarios
-                //        .Where(t => t.IdPerfil == (int)EnumPerfiles.Especialista)
-                //        .Select(u => new UsuarioVM
-                //        {
-                //            Id = u.Id,
-                //            NombreCompleto = u.Nombres + " " + u.ApellidoPaterno + " " + u.ApellidoMaterno
-                //        })
-                //        .ToList();
-                //}
-
-                //HttpContext.Session.SetString("HorarioUser", JsonSerializer.Serialize(horarios));
-                //HttpContext.Session.SetString("UsuarioConectado", JsonSerializer.Serialize(new Usuarios { Id = idUsuario }));
+                // Guardar el ID del usuario seleccionado en la sesión para usar en las operaciones
+                HttpContext.Session.SetString("UsuarioSeleccionado", idUsuario.ToString());
 
                 return PartialView("_PartialContenedorAgenda", vm);
             }

@@ -113,15 +113,15 @@
                             const url = `/Pacientes/DetallePaciente?idEncrypted=${encryptedId}`;
                             return `<a href="${url}" class="btn btn-ico" target="_blank"><i class="fas fa-clipboard-list"></i></a>`;
                         }
-                    },
-                    {
-                        data: null,
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return `<a class="btn btn-ico" onclick="ModuloHistorialPaciente.EliminarPaciente(${data.Id})"><i class="fas fa-trash-alt" title="Eliminar"></i></a>`;
-                        }
-
                     }
+                    //{
+                    //    data: null,
+                    //    orderable: false,
+                    //    render: function (data, type, row) {
+                    //        return `<a class="btn btn-ico" onclick="ModuloHistorialPaciente.EliminarPaciente(${data.Id})"><i class="fas fa-trash-alt" title="Eliminar"></i></a>`;
+                    //    }
+
+                    //}
                 ],
                 language: {
                     "decimal": "",
