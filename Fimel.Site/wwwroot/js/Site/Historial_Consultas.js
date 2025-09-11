@@ -111,7 +111,7 @@
                             const url = `/Consulta/DetalleConsulta?idEncrypted=${encryptedId}`;
                             return `<a href="${url}" class="btn btn-ico" target="_blank"><i class="fas fa-clipboard-list"></i></a>`;
                         }
-                    }
+                    },
                     {
                         data: null,
                         orderable: false,
@@ -149,7 +149,7 @@
 
         },
         CambiarAccesoCampos: function (bool) {
-            //$('#comboTipoConsulta').prop('disabled', bool);
+            $('#Consulta_TipoConsulta').prop('disabled', bool);
             $('#inputPeso').prop('disabled', bool);
             $('#inputTalla').prop('disabled', bool);
             //$('#inputIMC').prop('disabled', bool);
@@ -162,6 +162,8 @@
             $('#inputIndicaciones').prop('disabled', bool);
             $('#inputReceta').prop('disabled', bool);
             $('#inputOrdenExamenes').prop('disabled', bool);
+            //$('#inputFechaProximoControl').prop('disabled', bool);
+            //$('#inputFechaConsulta').prop('disabled', bool);
             //$('#inputReceta').prop('disabled', bool);
         },
         ActualizarConsulta: function (object) {
@@ -213,11 +215,11 @@
 
             objDatosConsulta["Id"] = $("#idConsulta").val()
 
-            if (!$("#comboTipoConsulta").val()) {
+            if (!$("#Consulta_TipoConsulta").val()) {
                 Swal.fire('Ingrese el Tipo de Consulta', '', 'warning');
                 return null;
             }
-            objDatosConsulta["TipoConsulta"] = $("#comboTipoConsulta").val() || null;
+            objDatosConsulta["TipoConsulta"] = $('#Consulta_TipoConsulta option:selected').val();
 
             if (!$("#inputPeso").val()) {
                 Swal.fire('Ingrese el Peso', '', 'warning');
@@ -277,6 +279,8 @@
 
             objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
             objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val() || null;
+            objDatosConsulta["FechaProximoControl"] = $("#inputFechaProximoControl").val() || null;
+            objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val() || null;
 
             showLoading(object);
             return objDatosConsulta;

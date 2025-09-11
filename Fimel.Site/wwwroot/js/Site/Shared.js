@@ -51,7 +51,7 @@
                 }
             }
             else {
-                $("#ListConsultasAnteriores").html('<li class="list-group-item">Sin consultas anteriores</li>');
+                $("#ListConsultasAnteriores").html('<div class="text-center p-3"><p class="mb-0 text-muted">Sin consultas anteriores</p></div>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -78,7 +78,7 @@ function MostrarDetalleConsulta(idConsulta, object) {
                 let fecha = new Date(parseInt(response.FechaCreacion.replace("Date", "").replace("/", "").replace("(", "").replace(")", "").replace("/", "")));
                 var day = ("0" + fecha.getDate()).slice(-2);
                 var month = ("0" + (fecha.getMonth() + 1)).slice(-2);
-                var fechaString = day + " de " + fecha.toLocaleString('default', { month: 'long' }) + " del " + fecha.getFullYear()
+                var fechaString = day + " de " + fecha.toLocaleString('es-CL', { month: 'long' }) + " del " + fecha.getFullYear()
 
                 $("#lblFechaConsulta").html(fechaString + " - " + response.TipoConsulta);
 

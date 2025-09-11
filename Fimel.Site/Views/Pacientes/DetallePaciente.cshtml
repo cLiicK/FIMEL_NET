@@ -1,9 +1,27 @@
 ﻿@model Pacientes
 
 @{
-    string rutCompleto = new Utileria().FormatearRut(Model.Rut.Value, Model.Dv);
-    int edad = new Utileria().CalcularEdad(Model.FechaNacimiento.Value);
+    string rutCompleto = "";
+    if (Model.Rut.HasValue && !string.IsNullOrEmpty(Model.Dv))
+    {
+        rutCompleto = new Utileria().FormatearRut(Model.Rut.Value, Model.Dv);
+    }
+    else if (!string.IsNullOrEmpty(Model.NumeroDocumento))
+    {
+        rutCompleto = Model.NumeroDocumento;
+    }
+    else
+    {
+        rutCompleto = "S/I";
+    }
+    
+    int edad = Model.FechaNacimiento.HasValue ? new Utileria().CalcularEdad(Model.FechaNacimiento.Value) : 0;
 }
+
+<input type="hidden" id="hdnURL_ObtenerConsultasAnteriores" value='@Url.Action("ObtenerConsultasAnteriores", "Consulta")' />
+<input type="hidden" id="hiddenRutPaciente" value="@(Model.Rut.HasValue ? Model.Rut.Value.ToString() : "")" />
+<input type="hidden" id="hiddenNumDocumento" value="@(Model.NumeroDocumento ?? "")" />
+<input type="hidden" id="hiddenTipoDocumento" value="@(Model.TipoDocumento ?? "")" />
 
 
 <div id="content-wrapper" class="container-9">
@@ -49,13 +67,13 @@
                                                 <input type="text" class="form-control" value="@Model.SegundoApellido" disabled>
                                             </div>
                                             <div class="col-md-3">
-                                                <label for="" class="form-label">Rut</label>
+                                                <label for="" class="form-label">@(Model.Rut.HasValue ? "RUT" : "N° Documento")</label>
                                                 <input type="text" class="form-control" value="@rutCompleto" disabled>
                                             </div>
-                                            <div class="col-md-3">
-                                                <label for="" class="form-label">Fecha de nacimiento</label>
-                                                <input type="text" class="form-control" value="@Model.FechaNacimiento.Value.ToString("dd-MM-yyyy")" disabled>
-                                            </div>
+                                                                                         <div class="col-md-3">
+                                                 <label for="" class="form-label">Fecha de nacimiento</label>
+                                                 <input type="text" class="form-control" value="@(Model.FechaNacimiento.HasValue ? Model.FechaNacimiento.Value.ToString("dd-MM-yyyy") : "S/I")" disabled>
+                                             </div>
                                             <div class="col-md-3">
                                                 <label for="" class="form-label">Edad</label>
                                                 <input type="text" class="form-control" value="@edad" disabled>
@@ -211,7 +229,7 @@
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="accordionFicha-antecedentesGine-head">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-antecedentesGine" aria-expanded="false" aria-controls="accordionFicha-antecedentesGine">
-                                        Antecedentes ginecologicos
+                                        Antecedentes Gineco-Obstétricos
                                     </button>
                                 </h2>
                                 <div id="accordionFicha-antecedentesGine" class="accordion-collapse collapse" aria-labelledby="accordionFicha-antecedentesGine-head">
@@ -220,18 +238,18 @@
                                             <div class="col-md-4 mt-0">
                                                 <label for="" class="form-label">Paridad</label>
                                                 <div class="row">
-                                                    <div class="col text-center f-14">
-                                                        <label for="" class="form-label">G</label>
-                                                        <input type="text" class="form-control" value="@Model.Gesta" disabled>
-                                                    </div>
-                                                    <div class="col text-center f-14">
-                                                        <label for="" class="form-label">P</label>
-                                                        <input type="text" class="form-control" value="@Model.Parto" disabled>
-                                                    </div>
-                                                    <div class="col text-center f-14">
-                                                        <label for="" class="form-label">A</label>
-                                                        <input type="text" class="form-control" value="@Model.Aborto" disabled>
-                                                    </div>
+                                                                                                         <div class="col text-center f-14">
+                                                         <label for="" class="form-label">G</label>
+                                                         <input type="text" class="form-control" value="@(Model.Gesta?.ToString() ?? "")" disabled>
+                                                     </div>
+                                                     <div class="col text-center f-14">
+                                                         <label for="" class="form-label">P</label>
+                                                         <input type="text" class="form-control" value="@(Model.Parto?.ToString() ?? "")" disabled>
+                                                     </div>
+                                                     <div class="col text-center f-14">
+                                                         <label for="" class="form-label">A</label>
+                                                         <input type="text" class="form-control" value="@(Model.Aborto?.ToString() ?? "")" disabled>
+                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-4 mt-1-8">
@@ -242,57 +260,25 @@
                                                 <label for="" class="form-label">Menopausia</label>
                                                 <input type="text" class="form-control" value="@Model.Menopausia" disabled>
                                             </div>
+                                            <div class="col-md-4 mt-1-8">
+                                                <label for="" class="form-label">Grupo y RH</label>
+                                                <input type="text" class="form-control" value="@Model.GrupoRH" disabled>
+                                            </div>
+                                            <div class="col-md-8 mt-1-8">
+                                                <label for="" class="form-label">Inmunizaciones</label>
+                                                <input type="text" class="form-control" value="@Model.Inmunizaciones" disabled>
+                                            </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                             <div class="accordion-item">
-                                <h2 class="accordion-header" id="accordionFicha-examenes-head">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenes" aria-expanded="false" aria-controls="accordionFicha-examenes">
-                                        Examenes
+                                <h2 class="accordion-header" id="accordionFicha-historial-head">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-historial" aria-expanded="false" aria-controls="accordionFicha-historial">
+                                        Historial
                                     </button>
                                 </h2>
-                                <div id="accordionFicha-examenes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenes-head">
-                                    <div class="accordion-body">
-                                        <div class="col-md-12 px-4 my-2">
-                                            <div class="row d-flex justify-content-between align-items-end">
-                                                <div class="col">
-                                                    <p class="mb-0">Tipo de examen</p>
-                                                </div>
-                                                <div class="col">
-                                                    <p class="mb-0 text-center">Fecha</p>
-                                                </div>
-                                                <div class="col-md-3 text-center">
-                                                    <p class="mb-0 text-center">Adjunto</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12 bg-fimel-lightblue p-4">
-                                            <div class="row d-flex justify-content-between align-items-end mb-2">
-                                                <div class="col">
-                                                    <p class="mb-0">Ecografía bilateral</p>
-                                                </div>
-                                                <div class="col">
-                                                    <p class="mb-0 text-center">15/05/2022</p>
-                                                </div>
-                                                <div class="col-md-3 text-center">
-                                                    <button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
-                                                </div>
-                                            </div>
-                                            <div class="row d-flex justify-content-between align-items-end mb-2">
-                                                <div class="col">
-                                                    <p class="mb-0">Ecografía bilateral</p>
-                                                </div>
-                                                <div class="col">
-                                                    <p class="mb-0 text-center">15/05/2022</p>
-                                                </div>
-                                                <div class="col-md-3 text-center">
-                                                    <button class="btn-receta">ver documento <i class="fas fa-clipboard-list"></i></button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                @Html.Partial("~/Views/Partials/_PartialConsultasAnteriores.cshtml")
                             </div>
                         </div>
 
@@ -316,11 +302,11 @@
                                                 <input type="text" class="form-control" value="@Model.Direccion" disabled>
                                                 <i class="fas fa-address-book icon-input-ficha"></i>
                                             </div>
-                                            <div class="col-md-12 position-relative">
-                                                <label for="" class="form-label">Teléfono</label>
-                                                <input type="text" class="form-control" value="@Model.Celular" disabled>
-                                                <i class="fas fa-phone icon-input-ficha"></i>
-                                            </div>
+                                                                                         <div class="col-md-12 position-relative">
+                                                 <label for="" class="form-label">Teléfono</label>
+                                                 <input type="text" class="form-control" value="@(Model.Celular?.ToString() ?? "")" disabled>
+                                                 <i class="fas fa-phone icon-input-ficha"></i>
+                                             </div>
                                             <div class="col-md-12 position-relative">
                                                 <label for="" class="form-label">Email</label>
                                                 <input type="text" class="form-control" value="@Model.Email" disabled>
@@ -340,7 +326,11 @@
 
 </div>
 
+@Html.Partial("~/Views/Partials/_PartialModalDetalleConsulta.cshtml")
+
 @section scripts {
+    <script src="~/js/site/Utils.js?v=1.0" type="text/javascript"></script>
+    <script src="~/js/site/Shared.js?v=1.0" type="text/javascript"></script>
     <script>
         $(".btn-toggle").click(function () {
             if ($(this).hasClass("active")) {
@@ -349,6 +339,19 @@
             else {
                 $(".btn-toggle").removeClass("active");
                 $(this).addClass("active");
+            }
+        });
+        
+        // Cargar consultas anteriores automáticamente al cargar la página
+        $(document).ready(function() {
+            var rutPaciente = $('#hiddenRutPaciente').val();
+            var numDocumento = $('#hiddenNumDocumento').val();
+            var tipoDocumento = $('#hiddenTipoDocumento').val();
+            
+            if (rutPaciente && tipoDocumento === "RUT") {
+                ObtenerConsultasAnteriores(rutPaciente, "RUT");
+            } else if (numDocumento && tipoDocumento !== "RUT") {
+                ObtenerConsultasAnteriores(numDocumento, tipoDocumento);
             }
         });
     </script>

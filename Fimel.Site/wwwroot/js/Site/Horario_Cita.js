@@ -35,6 +35,52 @@ var ModuloHorarioCita = (function () {
                 }
             });
 
+            // Validaciones para el input RUT del modal Iniciar Cita
+            $("#inputRutIniciarCita").keypress(function (e) { 
+                onlyNumbersWithK(e); 
+            });
+            
+            $("#inputRutIniciarCita").keyup(function () {
+                let tipoDocto = $('#comboTipoDocumentoIniciarCita option:selected').val();
+                if (tipoDocto != "RUT") {
+                    return;
+                }
+
+                let cadena = $("#inputRutIniciarCita").val();
+                cadena = cadena.replace(/[.]/gi, "").replace("-", "");
+                if (cadena.length > 9) {
+                    cadena = cadena.substr(0, 9);
+                }
+                let concatenar = "";
+                let i = cadena.length - 1;
+                for (; i >= 0;) {
+                    concatenar = cadena[i] + concatenar;
+                    if (i + 1 == (cadena.length) && i > 0) {
+                        concatenar = "-" + concatenar;
+                    }
+                    if (concatenar.length == 9 && cadena.length > 7) {
+                        concatenar = "." + concatenar;
+                    }
+                    if (concatenar.length == 5 && cadena.length > 4) {
+                        concatenar = "." + concatenar;
+                    }
+                    i--;
+                }
+                $("#inputRutIniciarCita").val(concatenar);
+            });
+
+            $('#comboTipoDocumentoIniciarCita').on('change', function (e) {
+                let tipoDocto = $('#comboTipoDocumentoIniciarCita option:selected').val();
+                if (tipoDocto == "RUT") {
+                    $("#inputRutIniciarCita").show();
+                    $("#inputNumDocumentoIniciarCita").hide();
+                }
+                else {
+                    $("#inputRutIniciarCita").hide();
+                    $("#inputNumDocumentoIniciarCita").show();
+                }
+            });
+
             $('#selectProfesional').off('change').on('change', function () {
                 var idUsuario = $(this).val();
                 if (idUsuario) {
@@ -128,6 +174,10 @@ var ModuloHorarioCita = (function () {
                     $('#idCitaModal').val(info.event.extendedProps.idCita);
 
                     $('#modalEvento').modal('show');
+                },
+                eventDidMount: function (info) {
+                    // Cambiar el cursor cuando hay una cita agendada
+                    info.el.style.cursor = 'pointer';
                 },
                 select: function (info) {
                     let fechaSeleccionada = new Date(info.startStr);
@@ -527,6 +577,112 @@ var ModuloHorarioCita = (function () {
                     btnGuardar.text('Guardar');
                 }
             })
+        },
+
+        IniciarCitaModal: function () {
+            // Cerrar el modal de detalles de la cita
+            $('#modalEvento').modal('hide');
+            
+            // Limpiar el campo RUT
+            $('#inputRutIniciarCita').val('');
+            
+            // Mostrar el modal para ingresar RUT
+            $('#modalIniciarCita').modal('show');
+        },
+
+        ValidarRutIniciarCita: function () {
+            var tipoDocumento = $('#comboTipoDocumentoIniciarCita option:selected').val();
+            var numeroDocumento = '';
+            var urlBusqueda = '';
+            var documentoOriginal = '';
+            
+            if (tipoDocumento == "RUT") {
+                var rutCompleto = $("#inputRutIniciarCita").val();
+                
+                if (rutCompleto.length == 0) {
+                    Swal.fire('Ingresa un RUT válido', '', 'warning');
+                    return;
+                }
+
+                let validacionRut = validarRut(rutCompleto);
+                if (validacionRut == "01" || validacionRut == "00") {
+                    Swal.fire('Ingresa un RUT válido', '', 'warning');
+                    return;
+                }
+                
+                numeroDocumento = validacionRut;
+                documentoOriginal = rutCompleto;
+                urlBusqueda = '/Pacientes/BuscarPaciente';
+            } else {
+                numeroDocumento = $('#inputNumDocumentoIniciarCita').val();
+                
+                if (numeroDocumento.length == 0) {
+                    Swal.fire('Ingresa un número de documento válido', '', 'warning');
+                    return;
+                }
+                
+                documentoOriginal = numeroDocumento;
+                urlBusqueda = '/Pacientes/BuscarPacientePorNumDocumento';
+            }
+
+            // Buscar el paciente
+            $.ajax({
+                url: urlBusqueda,
+                data: tipoDocumento == "RUT" ? {
+                    rutPaciente: numeroDocumento
+                } : {
+                    numDoc: numeroDocumento
+                },
+                method: 'GET',
+                success: function (response) {
+                    if (response && response.Id && response.Id > 0) {
+                        // El paciente existe, ir a Nueva Consulta
+                        Swal.fire({
+                            title: 'Paciente encontrado',
+                            text: '¿Desea iniciar una nueva consulta?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ir a Nueva Consulta',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Cerrar el modal
+                                $('#modalIniciarCita').modal('hide');
+                                // Redirigir a Nueva Consulta
+                                if (tipoDocumento == "RUT") {
+                                    window.location.href = '/Consulta/NuevaConsulta?rut=' + encodeURIComponent(documentoOriginal);
+                                } else {
+                                    window.location.href = '/Consulta/NuevaConsulta?numDoc=' + encodeURIComponent(numeroDocumento) + '&tipo=' + encodeURIComponent(tipoDocumento);
+                                }
+                            }
+                        });
+                    } else {
+                        // El paciente no existe, ir a Ficha Paciente
+                        Swal.fire({
+                            title: 'Paciente no encontrado',
+                            text: '¿Desea crear una nueva ficha clínica?',
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'Crear Ficha',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Cerrar el modal
+                                $('#modalIniciarCita').modal('hide');
+                                // Redirigir a Ficha Paciente
+                                if (tipoDocumento == "RUT") {
+                                    window.location.href = '/Pacientes/FichaPaciente?p=' + encodeURIComponent(documentoOriginal);
+                                } else {
+                                    window.location.href = '/Pacientes/FichaPaciente?numDoc=' + encodeURIComponent(numeroDocumento) + '&tipo=' + encodeURIComponent(tipoDocumento);
+                                }
+                            }
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Ha ocurrido un error al validar el documento', 'error');
+                }
+            });
         }
     }
 })();

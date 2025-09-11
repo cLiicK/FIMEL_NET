@@ -42,7 +42,46 @@
                 <p><strong>Nota</strong> <input class="form-control" id="notaCita" disabled /></p>
             </div>
             <div class="modal-footer">
+                @if (ViewBag.IdPerfilUsuario == (int)Fimel.Models.Enums.EnumPerfiles.Especialista)
+                {
+                    <button class="btn btn-success" id="btnIniciarCitaModal" onclick="ModuloHorarioCita.IniciarCitaModal()">Iniciar Cita</button>
+                }
                 <button class="btn btn-danger" id="btnEliminarCitaModal" onclick="ModuloHorarioCita.EliminarCitaModal()">Eliminar Cita</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ingresar RUT al iniciar cita -->
+<div class="modal fade" id="modalIniciarCita" tabindex="-1" aria-labelledby="modalIniciarCitaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal">
+            <div class="modal-header">
+                <center><strong><h5 class="modal-title" id="modalIniciarCitaLabel">Iniciar Cita</h5></strong></center>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Ingrese los datos del paciente</strong></p>
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label">Tipo de Documento</label>
+                        <select class="form-select" id="comboTipoDocumentoIniciarCita">
+                            <option value="RUT" selected="selected">RUT</option>
+                            <option value="Pasaporte">Pasaporte</option>
+                            <option value="DNIExtranjero">DNI Extranjero</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Número de Documento</label>
+                        <input class="form-control" type="text" id="inputRutIniciarCita" placeholder="Ej. 12.325.369-9" maxlength="12" />
+                        <input class="form-control" type="text" id="inputNumDocumentoIniciarCita" placeholder="N° Documento" style="display:none" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-success" id="btnValidarRutIniciarCita" onclick="ModuloHorarioCita.ValidarRutIniciarCita()">Validar</button>
             </div>
         </div>
     </div>

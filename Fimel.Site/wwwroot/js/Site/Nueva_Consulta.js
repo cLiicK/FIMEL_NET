@@ -73,7 +73,7 @@
             }
             else {
                 validacionRut = $("#inputNumDocumento").val();
-                $("#hiddenRutPaciente").val(validacionRut);
+                $("#hiddenNumDocumento").val(validacionRut);
                 $("#inputRut").val("");
                 urlBusqueda = $('#hdnURL_BuscarPacientePorNumDocumento').val();
             }
@@ -84,8 +84,10 @@
 
             $.ajax({
                 url: urlBusqueda,
-                data: {
+                data: tipoDocto == "RUT" ? {
                     rutPaciente: validacionRut
+                } : {
+                    numDoc: validacionRut
                 },
                 method: 'POST',
                 cache: false,
@@ -114,7 +116,7 @@
                                 $("#inputEdad").val(calcularEdad(response.FechaNacimiento));
                             }
 
-                            $("#inputRutData").val(ObtenerRutSTR(response.Rut, response.Dv));
+
                             $("#inputDireccion").val(response.Direccion);
                             $("#inputCelular").val(response.Celular);
                             $("#inputEmail").val(response.Email);
@@ -239,6 +241,8 @@
                                     icon: 'success',
                                 }).then((result) => {
                                     if (result.isConfirmed) {
+                                        // Limpiar la URL antes de recargar
+                                        window.history.replaceState({}, document.title, window.location.pathname);
                                         location.reload();
                                     }
                                 })

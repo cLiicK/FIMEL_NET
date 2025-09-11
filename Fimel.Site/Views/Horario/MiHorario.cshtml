@@ -8,6 +8,8 @@
 <input type="hidden" id="hdnURL_ObtenerVistaAgenda" value='@Url.Action("ObtenerVistaAgenda", "Horario")' />
 <input type="hidden" id="hdnURL_CrearCita" value='@Url.Action("_GuardarCita", "Horario")' />
 <input type="hidden" id="hdnUsuarioSeleccionado" value="" />
+<input type="hidden" id="hdnURL_BuscarPaciente" value='@Url.Action("BuscarPaciente", "Pacientes")' />
+<input type="hidden" id="hdnURL_BuscarPacientePorNumDocumento" value='@Url.Action("BuscarPacientePorNumDocumento", "Pacientes")' />
 
 @if (Model.ConfiguracionUsuario != null)
 {
@@ -49,5 +51,6 @@
 </div>
 
 @section scripts {
+    <script src="~/js/site/Utils.js?v=1.0" type="text/javascript"></script>
     <script src="~/js/site/Horario_Cita.js?v=1.0" type="text/javascript"></script>
 }

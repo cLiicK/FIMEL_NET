@@ -1,4 +1,7 @@
-﻿var ModuloFichaPaciente = (function () {
+﻿
+var idPerfil = 0;
+
+var ModuloFichaPaciente = (function () {
     return {
         IniciarScripts: function () {
             //$("#navLinkFichaPaciente").addClass("active");
@@ -122,8 +125,10 @@
 
             $.ajax({
                 url: urlBusqueda,
-                data: {
+                data: tipoDocto == "RUT" ? {
                     rutPaciente: validacionRut
+                } : {
+                    numDoc: validacionRut
                 },
                 method: 'POST',
                 cache: false,
@@ -152,7 +157,11 @@
                                 $("#inputEdad").val(calcularEdad(response.FechaNacimiento));
                             }
 
-                            $("#inputRutData").val(ObtenerRutSTR(response.Rut, response.Dv));
+                            if (tipoDocto == "RUT") {
+                                $("#inputRutData").val(ObtenerRutSTR(response.Rut, response.Dv));
+                            } else {
+                                $("#inputRutData").val(response.NumeroDocumento)
+                            }
                             $("#inputDireccion").val(response.Direccion);
                             $("#inputCelular").val(response.Celular);
                             $("#inputEmail").val(response.Email);
@@ -267,9 +276,29 @@
                                 Swal.fire({
                                     title: 'Paciente Guardado!',
                                     icon: 'success',
+                                        showCancelButton: true,
+                                    confirmButtonText: 'OK',
+                                    cancelButtonText: 'Iniciar Consulta',
+                                    reverseButtons: true
                                 }).then((result) => {
                                     if (result.isConfirmed) {
+                                        // Limpiar la URL antes de recargar
+                                        window.history.replaceState({}, document.title, window.location.pathname);
                                         location.reload();
+                                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                        // Obtener el RUT del paciente recién creado
+                                        let rutPaciente = '';
+                                        let tipoDocumento = $('#comboTipoDocumento option:selected').val();
+                                        
+                                        if (tipoDocumento == "RUT") {
+                                            rutPaciente = $("#inputRutData").val();
+                                        } else {
+                                            rutPaciente = $("#inputNumDocumento").val();
+                                        }
+                                        
+                                        // Redirigir a nueva consulta con el RUT precargado
+                                        let url = '/Consulta/NuevaConsulta?rut=' + encodeURIComponent(rutPaciente) + '&tipo=' + encodeURIComponent(tipoDocumento);
+                                        window.location.href = url;
                                     }
                                 })
                             }
@@ -339,13 +368,16 @@
 
             objDatosPaciente["TipoDocumento"] = $('#comboTipoDocumento option:selected').val() || null;
 
-            let validacionRut = validarRut($("#inputRutData").val());
-            if (validacionRut == "01" || validacionRut == "00") {
-                Swal.fire('Ingresa un Rut válido', '', 'warning');
-                return null;
-            }
-
             let tipoDocto = $('#comboTipoDocumento option:selected').val();
+
+            // Solo validar RUT si el tipo de documento es RUT
+            if (tipoDocto == "RUT") {
+                let validacionRut = validarRut($("#inputRutData").val());
+                if (validacionRut == "01" || validacionRut == "00") {
+                    Swal.fire('Ingresa un Rut válido', '', 'warning');
+                    return null;
+                }
+            }
             if (tipoDocto == "RUT") {
                 const rutData = $("#inputRutData").val();
                 objDatosPaciente["Rut"] = rutData ? rutData.split("-")[0].replace(/\./g, "") : null;
@@ -370,12 +402,14 @@
 
             objDatosPaciente["SegundoApellido"] = $("#inputSegundoApellido").val() || null;
 
-            let sexoBiologico = $('input[name="sexobiologico"]:checked').val();
-            if (!sexoBiologico) {
-                Swal.fire('Ingrese Sexo Biologico', '', 'warning');
-                return null;
+            if (idPerfil != 3) { //Administrativo
+                let sexoBiologico = $('input[name="sexobiologico"]:checked').val();
+                if (!sexoBiologico) {
+                    Swal.fire('Ingrese Sexo Biologico', '', 'warning');
+                    return null;
+                }
+                objDatosPaciente["SexoBiologico"] = sexoBiologico || null;
             }
-            objDatosPaciente["SexoBiologico"] = sexoBiologico || null;
 
             let fechaNacimiento = $("#inputFechaNacimiento").val();
             if (!fechaNacimiento) {
@@ -443,7 +477,7 @@
             return objDatosPaciente;
         },
         BloquearCamposSegunPerfil: function (object) {
-
+            idPerfil = object.IdPerfil;
             if (object.IdPerfil == 3) { //Administrativo
                 $('#divIdentidadGenero').hide();
                 $('#divSexoBiologico').hide();

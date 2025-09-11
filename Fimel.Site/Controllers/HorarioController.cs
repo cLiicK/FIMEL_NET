@@ -1,8 +1,10 @@
-﻿using System.Text.Json;
-using Fimel.Models;
+﻿using Fimel.Models;
+using Fimel.Models.Integraciones;
 using Fimel.Site.ViewModels;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Text.Json;
 using static Fimel.Models.Enums;
 
 namespace Fimel.Site.Controllers
@@ -29,6 +31,9 @@ namespace Fimel.Site.Controllers
                                                         NombreCompleto = u.Nombres + " " + u.ApellidoPaterno + " " + u.ApellidoMaterno
                                                     }).ToList();
             }
+
+            // Pasar el perfil del usuario a la vista
+            ViewBag.IdPerfilUsuario = usuario.IdPerfil;
 
             HttpContext.Session.SetString("HorarioUser", JsonSerializer.Serialize(vm.HorariosAtencion));
 
@@ -214,6 +219,8 @@ namespace Fimel.Site.Controllers
                 if (citaPost == null)
                     return Json(new { success = false, message = "Error al crear cita" });
 
+                EnviarCorreoCita(citaPost);
+
                 return Json(new { success = true, message = "Cita creada" });
             }
             catch (Exception ex)
@@ -221,6 +228,32 @@ namespace Fimel.Site.Controllers
                 Logger.Log($"Error Horario _GuardarCita: {ex}");
                 return null;
             }
+        }
+
+        private void EnviarCorreoCita(Cita cita)
+        {
+            string cuerpoCorreo = System.IO.File.ReadAllText("wwwroot/mails/correo-confirmacion-cita.html");
+
+            var dataHtml = new Dictionary<string, string>
+            {
+                ["{{paciente}}"] = cita.NombrePaciente,
+                ["{{profesional}}"] = $"{cita.Usuario!.Nombres} {cita.Usuario.ApellidoPaterno}",
+                ["{{fecha_cita}}"] = cita.FechaHoraInicio.ToString("dd/MM/yyyy"),
+                ["{{hora_cita}}"] = cita.FechaHoraInicio.ToString("HH:mm"),
+                ["{{direccion}}"] = "direccion institucion"
+            };
+
+            List<string> destinatarios = new List<string>();
+            destinatarios.Add(cita.CorreoPaciente);
+
+            EnvioCorreo correo = new EnvioCorreo()
+            {
+                Asunto = "Confirmacion Cita - FIMEL",
+                CuerpoCorreo = cuerpoCorreo,
+                Destinatarios = destinatarios
+            };
+
+            new Utileria().EnviarCorreo(correo);
         }
 
         [HttpGet]

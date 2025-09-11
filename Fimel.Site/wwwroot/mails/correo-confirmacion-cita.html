@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fimel - Cita</title>
+  <style>
+    @media only screen and (max-width:620px){
+      .container{width:100% !important; padding:0 16px !important;}
+      .btn{display:block !important; width:100% !important; margin:8px 0 !important;}
+      .btn-wrap{display:block !important;}
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background:#f7f7f9;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center" style="padding:24px 10px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" width="600" class="container" style="width:600px; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #eef0f3;">
+          
+          <!-- Header blanco -->
+          <tr>
+            <td style="padding-top:22px; background:#ffffff;">
+              <table role="presentation" width="100%">
+                <tr>
+                  <td align="center">
+                    <img src="http://testing.fimel.cl/img/logo1.svg" width="180" alt="FIMEL">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Línea coral -->
+          <tr>
+            <td style="height:6px; background:#f78a8a;"></td>
+          </tr>
+
+          <!-- Contenido -->
+          <tr>
+            <td style="padding:26px; font-family:Arial,Helvetica,sans-serif; color:#333;">
+              <h1 style="margin:0 0 10px 0; color:#0d86b3;">Cita Agendada</h1>
+
+              <!-- Datos de la cita -->
+              <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="font-size:14px; margin:6px 0 12px 0;">
+                <tr><td style="padding:4px 0;"><strong>Paciente:</strong> {{paciente}}</td></tr>
+                <tr><td style="padding:4px 0;"><strong>Profesional:</strong> {{profesional}}</td></tr>
+                <tr><td style="padding:4px 0;"><strong>Fecha:</strong> {{fecha_cita}}</td></tr>
+                <tr><td style="padding:4px 0;"><strong>Hora:</strong> {{hora_cita}}</td></tr>
+                <tr><td style="padding:4px 0;"><strong>Ubicación:</strong> {{direccion}}</td></tr>
+              </table>
+
+              <!--<p style="margin:10px 0 16px 0; font-size:14px; line-height:1.55;">
+                Hola {{nombre}}, por favor confirma o anula tu cita. Si no realizas ninguna acción, podríamos reasignar el horario.
+              </p>-->
+
+              <!-- Botones -->
+              <!--<table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin:8px 0 4px 0;">
+                <tr class="btn-wrap">
+                  <td align="left" style="padding:4px 0;">
+                    <a class="btn" href="{{url_confirmar}}" target="_blank"
+                       style="background:#0d86b3; color:#ffffff; text-decoration:none; padding:12px 20px; border-radius:8px; font-weight:700; display:inline-block;">
+                      Confirmar cita
+                    </a>
+                  </td>
+                  <td align="right" style="padding:4px 0;">
+                    <a class="btn" href="{{url_anular}}" target="_blank"
+                       style="background:#f78a8a; color:#ffffff; text-decoration:none; padding:12px 20px; border-radius:8px; font-weight:700; display:inline-block;">
+                      Anular cita
+                    </a>
+                  </td>
+                </tr>
+              </table>-->
+
+              <!-- Fallback de enlaces -->
+              <!--<p style="margin:14px 0 0 0; font-size:12px; color:#7a8794;">
+                Si los botones no funcionan, usa estos enlaces:<br>
+                Confirmar: <a href="{{url_confirmar}}" style="color:#0d86b3; word-break:break-all;">{{url_confirmar}}</a><br>
+                Anular: <a href="{{url_anular}}" style="color:#0d86b3; word-break:break-all;">{{url_anular}}</a>
+              </p>
+            </td>-->
+          </tr>
+
+          <tr><td style="height:1px; background:#eef0f3;"></td></tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:18px 26px 24px 26px; font-family:Arial,Helvetica,sans-serif; font-size:12px; color:#7a8794;">
+              <table role="presentation" width="100%">
+                <tr>
+                  <td valign="top">
+                    <strong style="color:#0d86b3;">FIMEL S.A.</strong><br>
+                    <!-- {{direccion}} · {{ciudad}}, Chile ·  -->
+                    <!-- Móvil: <a href="tel:+56xxxxxxxxx" style="color:#0d86b3; text-decoration:none;">+56 9 1234 5678</a> · -->
+                    Web: <a href="https://fimel.cl/landing" style="color:#0d86b3; text-decoration:none;">fimel.cl</a>
+                  </td>
+                  <!-- <td align="right" valign="top"> -->
+                    <!-- <a href="https://www.instagram.com/tu_cuenta" style="color:#0d86b3; text-decoration:none;">Instagram</a> · -->
+                    <!-- <a href="https://www.tiktok.com/@tu_cuenta" style="color:#0d86b3; text-decoration:none;">TikTok</a> · -->
+                    <!-- <a href="https://www.facebook.com/tu_cuenta" style="color:#0d86b3; text-decoration:none;">Facebook</a> -->
+                  <!-- </td> -->
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding-top:10px; color:#9aa1a7;">
+                    Este correo fue enviado automáticamente por FIMEL. No respondas a este mensaje.  
+                    <!-- Ayuda: <a href="mailto:soporte@fimel.cl" style="color:#0d86b3;">soporte@fimel.cl</a>. -->
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

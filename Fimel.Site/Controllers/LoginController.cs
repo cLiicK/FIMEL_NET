@@ -200,16 +200,37 @@ namespace Fimel.Site.Controllers
         [HttpGet]
         public IActionResult PingSesion()
         {
-            var usuario = HttpContext.Session.GetString("UsuarioConectado");
-
-            if (string.IsNullOrEmpty(usuario))
+            try
             {
+                var usuario = HttpContext.Session.GetString("UsuarioConectado");
+
+                if (string.IsNullOrEmpty(usuario))
+                {
+                    return Json(new { estado = "expirada" });
+                }
+
+                // Validar que el usuario se pueda deserializar correctamente
+                var usuarioObj = new Utileria().ObtenerData<Usuarios>(usuario);
+                if (usuarioObj == null)
+                {
+                    // Limpiar sesión corrupta
+                    HttpContext.Session.Remove("UsuarioConectado");
+                    HttpContext.Session.Remove("InstitucionSesion");
+                    return Json(new { estado = "expirada" });
+                }
+
+                HttpContext.Session.SetString("UltimoPing", DateTime.Now.ToString());
+
+                return Json(new { estado = "activa" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error en PingSesion: {ex.Message}");
+                // En caso de error, limpiar sesión y reportar como expirada
+                HttpContext.Session.Remove("UsuarioConectado");
+                HttpContext.Session.Remove("InstitucionSesion");
                 return Json(new { estado = "expirada" });
             }
-
-            HttpContext.Session.SetString("UltimoPing", DateTime.Now.ToString());
-
-            return Json(new { estado = "activa" });
         }
 
         protected string ConvertViewToString(string viewName, object model)

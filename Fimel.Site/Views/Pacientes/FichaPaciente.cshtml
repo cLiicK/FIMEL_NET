@@ -52,7 +52,7 @@
                             </div>
                             <div class="col-1 text-center">
                                 <label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
-                                <button class="btn btn-blue" onclick="ModuloFichaPaciente.BuscarPaciente(this)">Buscar</button>
+                                <button class="btn btn-blue" id="btnBuscarPaciente" onclick="ModuloFichaPaciente.BuscarPaciente(this)">Buscar</button>
                             </div>
                         </div>
                     </div>
@@ -381,10 +381,31 @@
 @Html.Partial("~/Views/Partials/_PartialModalDetalleConsulta.cshtml")
 
 @section scripts {
+    <script src="~/js/site/Utils.js?v=1.0" type="text/javascript"></script>
     <script>
         $(".btn-toggle").click(function () {
             $(this).toggleClass("active");
         });
     </script>
     <script src="~/js/Site/Ficha_Paciente.js?v=1.0" type="text/javascript"></script>
+    <script>
+        // Manejar parámetros de la URL
+        $(document).ready(function() {
+            var rutParam = getUrlParameter('p');
+            var numDocParam = getUrlParameter('numDoc');
+            var tipoParam = getUrlParameter('tipo');
+            
+            if (rutParam) {
+                $('#inputRut').val(rutParam);
+                // Buscar automáticamente el paciente
+                ModuloFichaPaciente.BuscarPaciente($('#btnBuscarPaciente'));
+            } else if (numDocParam && tipoParam) {
+                // Configurar el combo para el tipo de documento
+                $('#comboTipoDocumento').val(tipoParam).trigger('change');
+                $('#inputNumDocumento').val(numDocParam);
+                // Buscar automáticamente el paciente
+                ModuloFichaPaciente.BuscarPaciente($('#btnBuscarPaciente'));
+            }
+        });
+    </script>
 }

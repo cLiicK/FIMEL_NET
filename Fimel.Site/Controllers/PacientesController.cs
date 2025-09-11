@@ -81,6 +81,7 @@ namespace Fimel.Site.Controllers
             try
             {
                 Pacientes paciente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{numDoc}");
+                if (paciente == null) { paciente = new Pacientes(); }
                 paciente.UsuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
                 return Json(paciente);
             }

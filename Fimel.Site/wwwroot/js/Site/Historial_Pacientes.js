@@ -2,52 +2,12 @@
     return {
         IniciarScripts: function () {
             ModuloHistorialPaciente.CargarHistorialFull();
-
-
-            $("#inputRutBusq").keypress(function (e) { onlyNumbersWithK(e); });
-            $("#inputRutBusq").keyup(function () {
-
-                let cadena = $("#inputRutBusq").val();
-                cadena = cadena.replace(/[.]/gi, "").replace("-", "");
-                if (cadena.length > 9) {
-                    cadena = cadena.substr(0, 9);
-                }
-                let concatenar = "";
-                let i = cadena.length - 1;
-                for (; i >= 0;) {
-                    concatenar = cadena[i] + concatenar;
-                    if (i + 1 == (cadena.length) && i > 0) {
-                        concatenar = "-" + concatenar;
-                    }
-                    if (concatenar.length == 9 && cadena.length > 7) {
-                        concatenar = "." + concatenar;
-                    }
-                    if (concatenar.length == 5 && cadena.length > 4) {
-                        concatenar = "." + concatenar;
-                    }
-                    i--;
-                }
-                $("#inputRutBusq").val(concatenar);
-            });
-
-            var paramValue = getUrlParameter("p");
-            if (paramValue !== null) {
-                $("#inputRutBusq").val(paramValue);
-            };
-
-            $('#comboTipoDocumentoHist').on('change', function (e) {
-                let tipoDocto = $('#comboTipoDocumentoHist option:selected').val();
-                if (tipoDocto == "RUT") {
-                    $("#inputRutBusq").show();
-                    $("#inputNumDocumentoBusq").hide();
-                }
-                else {
-                    $("#inputRutBusq").hide();
-                    $("#inputNumDocumentoBusq").show();
-                }
-            });
         },
+        
         CargarHistorialFull: function () {
+            // Limpiar filtros de fecha
+            $('#inputBusqFechaDesde').val('');
+            $('#inputBusqFechaHasta').val('');
 
             if ($.fn.DataTable.isDataTable('#HistorialTable')) {
                 $('#HistorialTable').DataTable().destroy();
@@ -77,7 +37,9 @@
                         data: null,
                         render: function (data, type, row) {
                             let result = "S/I";
-                            if (row.Rut && row.Dv) { result = ObtenerRutSTR(row.Rut, row.Dv) }
+                            if (row.Rut && row.Dv) { 
+                                result = ObtenerRutSTR(row.Rut, row.Dv); 
+                            }
                             return `${result}`;
                         }
                     },
@@ -103,25 +65,16 @@
                             return `${day}-${month}-${year} ${hours}:${minutes}`;
                         }
                     },
-
                     { data: "NumeroDocumento" },
                     {
                         data: null,
                         orderable: false,
                         render: function (data, type, row) {
-                            const encryptedId = btoa(data.Id.toString());
+                            const encryptedId = btoa(row.Id.toString());
                             const url = `/Pacientes/DetallePaciente?idEncrypted=${encryptedId}`;
                             return `<a href="${url}" class="btn btn-ico" target="_blank"><i class="fas fa-clipboard-list"></i></a>`;
                         }
                     }
-                    //{
-                    //    data: null,
-                    //    orderable: false,
-                    //    render: function (data, type, row) {
-                    //        return `<a class="btn btn-ico" onclick="ModuloHistorialPaciente.EliminarPaciente(${data.Id})"><i class="fas fa-trash-alt" title="Eliminar"></i></a>`;
-                    //    }
-
-                    //}
                 ],
                 language: {
                     "decimal": "",
@@ -145,12 +98,11 @@
                 },
                 order: [[5, 'desc']]
             });
-
         },
+        
         CargarHistorial: function (object) {
-
-            if (!$('#inputBusqFechaDesde').val() && !$('#inputRutBusq').val() && !$('#inputNumDocumentoBusq').val()) {
-                Swal.fire('Ingrese algún criterio válido', 'Busqueda', 'warning');
+            if (!$('#inputBusqFechaDesde').val() && !$('#inputBusqFechaHasta').val()) {
+                Swal.fire('Ingrese al menos una fecha para filtrar', 'Búsqueda', 'warning');
                 return;
             }
 
@@ -164,8 +116,6 @@
                 ajax: {
                     url: $('#hdnURL_ObtenerHistorial').val(),
                     data: {
-                        Rut: $('#inputRutBusq').val().split("-")[0].replace(/\./g, "") || null,
-                        NumDoc: $('#inputNumDocumentoBusq').val() || null,
                         FechaConsultaDesde: $('#inputBusqFechaDesde').val() ? new Date($('#inputBusqFechaDesde').val()).toISOString() : null,
                         FechaConsultaHasta: $('#inputBusqFechaHasta').val() ? new Date($('#inputBusqFechaHasta').val()).toISOString() : null,
                     },
@@ -184,12 +134,15 @@
                         data: null,
                         render: function (data, type, row) {
                             return `${row.Nombres} ${row.PrimerApellido}`;
-                        } },
+                        }
+                    },
                     {
                         data: null,
                         render: function (data, type, row) {
                             let result = "S/I";
-                            if (row.Rut && row.Dv) { result = ObtenerRutSTR(row.Rut, row.Dv) }
+                            if (row.Rut && row.Dv) { 
+                                result = ObtenerRutSTR(row.Rut, row.Dv); 
+                            }
                             return `${result}`;
                         }
                     },
@@ -215,24 +168,15 @@
                             return `${day}-${month}-${year} ${hours}:${minutes}`;
                         }
                     },
-
                     { data: "NumeroDocumento" },
                     {
                         data: null,
                         orderable: false,
                         render: function (data, type, row) {
-                            const encryptedId = btoa(data.Id.toString());
+                            const encryptedId = btoa(row.Id.toString());
                             const url = `/Pacientes/DetallePaciente?idEncrypted=${encryptedId}`;
                             return `<a href="${url}" class="btn btn-ico" target="_blank"><i class="fas fa-clipboard-list"></i></a>`;
                         }
-                    },
-                    {
-                        data: null,
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return `<a class="btn btn-ico" onclick="ModuloHistorialPaciente.EliminarPaciente(${data.Id})"><i class="fas fa-trash-alt" title="Eliminar"></i></a>`;
-                        }
-
                     }
                 ],
                 language: {
@@ -260,8 +204,8 @@
                     closeLoading(object);
                 }
             });
-
         },
+        
         EliminarPaciente: function (idPaciente) {
             Swal.fire({
                 title: 'Eliminar Paciente',
@@ -296,8 +240,6 @@
                             Swal.fire('Error', 'Favor comuniquese con un administrador', 'error');
                         }
                     });
-                }
-                else {
                 }
             })
         },

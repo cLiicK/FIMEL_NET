@@ -3,14 +3,25 @@
 <!DOCTYPE html>
 
 @{
-    Usuarios usuarioConectado = new Usuarios();
-    Instituciones inst = new Instituciones();
+    Usuarios usuarioConectado = null;
+    Instituciones inst = null;
+    bool sesionValida = false;
+    
     if (Context.Session.GetString("UsuarioConectado") != null)
     {
         usuarioConectado = new Utileria().ObtenerData<Usuarios>(Context.Session.GetString("UsuarioConectado"));
-        if (usuarioConectado == null) { new Fimel.Site.Controllers.LoginController().Login(); }
-
-        inst = new Utileria().ObtenerData<Instituciones>(Context.Session.GetString("InstitucionSesion"));
+        if (usuarioConectado != null)
+        {
+            sesionValida = true;
+            inst = new Utileria().ObtenerData<Instituciones>(Context.Session.GetString("InstitucionSesion"));
+        }
+    }
+    
+    // Si no hay sesión válida, redirigir al login
+    if (!sesionValida)
+    {
+        Context.Response.Redirect("/Login/Login");
+        return;
     }
 }
 
@@ -65,9 +76,9 @@
                 <div class="dropdown">
                     <div class="div-usuario" id="dropdownMenuCerrarS" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="info-user dropdown-toggle">
-                            <p>@usuarioConectado.Nombres @usuarioConectado.ApellidoPaterno</p>
-                            <p><strong>@inst.RazonSocial</strong></p>
-                            <p>Perfil: @usuarioConectado.Perfil.Descripcion</p>
+                            <p>@(usuarioConectado?.Nombres ?? "") @(usuarioConectado?.ApellidoPaterno ?? "")</p>
+                            <p><strong>@(inst?.RazonSocial ?? "")</strong></p>
+                            <p>Perfil: @(usuarioConectado?.Perfil?.Descripcion ?? "")</p>
                         </div>
                         <div class="ico-user"><span></span></div>
                     </div>
@@ -93,7 +104,7 @@
                 </a>
             </li>
             @{
-                if (usuarioConectado.IdPerfil == 1 || usuarioConectado.IdPerfil == 2)
+                if (usuarioConectado != null && (usuarioConectado.IdPerfil == 1 || usuarioConectado.IdPerfil == 2))
                 {
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
@@ -150,30 +161,58 @@
 
         // Función para validar sesión y mostrar alerta si expiró
         function validarSesion() {
-            fetch('/Login/PingSesion', { cache: 'no-store' })
-                .then(resp => resp.json())
-                .then(data => {
-                    if (data.estado === 'expirada') {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Sesión expirada',
-                            text: 'Tu sesión ha expirado. Serás redirigido al login.',
-                            confirmButtonText: 'Aceptar',
-                            allowOutsideClick: false,
-                            allowEscapeKey: false
-                        }).then(() => {
-                            window.location.href = '/Login';
-                        });
-                    }
-                })
-                .catch(() => {
+            fetch('/Login/PingSesion', { 
+                cache: 'no-store',
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(resp => {
+                if (!resp.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return resp.json();
+            })
+            .then(data => {
+                if (data.estado === 'expirada') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sesión expirada',
+                        text: 'Tu sesión ha expirado. Serás redirigido al login.',
+                        confirmButtonText: 'Aceptar',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: true
+                    }).then(() => {
+                        // Limpiar cualquier dato de sesión en el cliente
+                        sessionStorage.clear();
+                        localStorage.clear();
+                        window.location.href = '/Login/Login';
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('Error al validar sesión:', error);
+                // Solo mostrar error si no estamos ya en proceso de redirección
+                if (!window.location.href.includes('/Login')) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error de conexión',
-                        text: 'No se pudo validar la sesión.',
-                        confirmButtonText: 'Reintentar'
+                        text: 'No se pudo validar la sesión. Verificando conexión...',
+                        confirmButtonText: 'Reintentar',
+                        showCancelButton: true,
+                        cancelButtonText: 'Ir al Login'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Reintentar después de un breve delay
+                            setTimeout(validarSesion, 2000);
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            window.location.href = '/Login/Login';
+                        }
                     });
-                });
+                }
+            });
         }
     </script>
 

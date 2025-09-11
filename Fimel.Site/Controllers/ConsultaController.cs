@@ -131,11 +131,11 @@ namespace Fimel.Site.Controllers
             }
         }
 
-        public ActionResult ObtenerConsultasAnterioresPorNumDocumento(string numDocumento)
+        public ActionResult ObtenerConsultasAnterioresPorNumDocumento(string rutPaciente)
         {
             try
             {
-                Pacientes pacienteConsultado = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{numDocumento}");
+                Pacientes pacienteConsultado = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{rutPaciente}");
                 List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
                 return Json(consultasAnteriores);
             }
@@ -170,6 +170,7 @@ namespace Fimel.Site.Controllers
             {
                 _consulta = APIBase.Get<Consultas>($"Consultas/{_datosConsulta.Id}");
 
+                _consulta.TipoConsulta = _datosConsulta.TipoConsulta;
                 _consulta.Peso = _datosConsulta.Peso;
                 _consulta.Talla = _datosConsulta.Talla;
                 _consulta.IMC = _datosConsulta.IMC;
@@ -182,6 +183,23 @@ namespace Fimel.Site.Controllers
                 _consulta.Indicaciones = _datosConsulta.Indicaciones;
                 _consulta.Receta = _datosConsulta.Receta;
                 _consulta.OrdenExamenes = _datosConsulta.OrdenExamenes;
+                
+                // Convertir fechas de string a DateTime
+                if (!string.IsNullOrEmpty(_datosConsulta.FechaProximoControl?.ToString()))
+                {
+                    if (DateTime.TryParse(_datosConsulta.FechaProximoControl.ToString(), out DateTime fechaProximoControl))
+                    {
+                        _consulta.FechaProximoControl = fechaProximoControl;
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(_datosConsulta.FechaConsulta?.ToString()))
+                {
+                    if (DateTime.TryParse(_datosConsulta.FechaConsulta.ToString(), out DateTime fechaConsulta))
+                    {
+                        _consulta.FechaConsulta = fechaConsulta;
+                    }
+                    }
                 Consultas actualizada = APIBase.Put<Consultas>($"Consultas/{_datosConsulta.Id}", _consulta);
                 if (actualizada != null)
                 {

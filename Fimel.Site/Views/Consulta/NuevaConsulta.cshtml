@@ -1,6 +1,8 @@
 ﻿<input type="hidden" id="hdnURL_BuscarPaciente" value='@Url.Action("BuscarPaciente", "Pacientes")' />
 <input type="hidden" id="hdnURL_GrabarConsulta" value='@Url.Action("GrabarConsulta", "Consulta")' />
 <input type="hidden" id="hdnURL_ObtenerConsultasAnteriores" value='@Url.Action("ObtenerConsultasAnteriores", "Consulta")' />
+<input type="hidden" id="hdnURL_BuscarPacientePorNumDocumento" value='@Url.Action("BuscarPacientePorNumDocumento", "Pacientes")' />
+<input type="hidden" id="hdnURL_ObtenerConsultasAnterioresPorNumDocumento" value='@Url.Action("ObtenerConsultasAnterioresPorNumDocumento", "Consulta")' />
 
 <input type="hidden" id="hiddenRutPaciente" />
 <input type="hidden" id="hiddenNumDocumento" />
@@ -50,11 +52,11 @@
                             <div class="col-3">
                                 <label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
                                 <input id="inputRut" type="text" class="form-control" placeholder="Ej. 12.325.369-9">
-                                <input type="text" class="form-control col-md-2" placeholder="N° Documento" id="inputNumDocumento" style="display:none">
+                                <input type="text" class="form-control col-md-2" placeholder="N° Documento" id="inputNumDocumento" style="display:none" maxlength="15">
                             </div>
                             <div class="col-1 text-center">
                                 <label style="color: #F89B9B; font-size: 20px; font-family: 'Signika Negative', sans-serif;">&nbsp;</label>
-                                <button class="btn btn-blue" onclick="ModuloConsulta.BuscarPaciente(this)">Buscar</button>
+                                <button class="btn btn-blue" id="btnBuscarPaciente" onclick="ModuloConsulta.BuscarPaciente(this)">Buscar</button>
                             </div>
                         </div>
                     </div>
@@ -415,100 +417,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                @* <div class="accordion-item">
-                            <h2 class="accordion-header" id="accordionFicha-receta-head">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-receta" aria-expanded="true" aria-controls="accordionFicha-receta">
-                            Receta
-                            </button>
-                            </h2>
-                            <div id="accordionFicha-receta" class="accordion-collapse collapse" aria-labelledby="accordionFicha-receta-head">
-                            <div class="accordion-body">
-                            <form class="row g-3">
-                            <div class="col-md-12 position-relative">
-                            <input class="form-control me-2" type="search" placeholder="Buscar Medicamento" aria-label="Search">
-                            <i class="fas fa-search icon-input"></i>
-                            </div>
-                            <div class="col-md-12 position-relative">
-                            <label for="" class="form-label colorfimel-blue">Medicamento</label>
-                            <input type="text" class="form-control" id="">
-                            <i class="fas fa-prescription-bottle icon-input-ficha"></i>
-                            </div>
-                            <div class="col-md-12">
-                            <label for="" class="form-label colorfimel-blue">Indicaciones</label>
-                            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-                            </div>
-                            <div class="col-md-12 text-center">
-                            <button class="btn btn-pink">Agregar</button>
-                            </div>
-                            </form>
-                            </div>
-                            </div>
-                            </div> *@
-                                @* <div class="accordion-item">
-                            <h2 class="accordion-header" id="accordionFicha-ordenExam-head">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-ordenExam" aria-expanded="true" aria-controls="accordionFicha-ordenExam">
-                            Orden de examenes
-                            </button>
-                            </h2>
-                            <div id="accordionFicha-ordenExam" class="accordion-collapse collapse" aria-labelledby="accordionFicha-ordenExam-head">
-                            <div class="accordion-body">
-                            <form class="row g-3">
-                            <div class="col-md-12 position-relative">
-                            <input class="form-control me-2" type="search" placeholder="Buscar Medicamento" aria-label="Search">
-                            <i class="fas fa-search icon-input"></i>
-                            </div>
-                            <div class="col-md-12 position-relative">
-                            <label for="" class="form-label colorfimel-blue">Examen</label>
-                            <input type="text" class="form-control" id="">
-                            <i class="fas fa-notes-medical icon-input-ficha"></i>
-                            </div>
-                            <div class="col-md-12 text-center">
-                            <button class="btn btn-pink">Agregar</button>
-                            </div>
-                            </form>
-                            </div>
-                            </div>
-                            </div> *@
-                                @* <div class="accordion-item">
-                            <h2 class="accordion-header" id="accordionFicha-examenAd-head">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenAd" aria-expanded="true" aria-controls="accordionFicha-examenAd">
-                            Exámenes
-                            </button>
-                            </h2>
-                            <div id="accordionFicha-examenAd" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenAd-head">
-                            <div class="accordion-body">
-                            <form class="row g-3">
-                            <div class="col-md-12 position-relative">
-                            <input class="form-control me-2" type="search" placeholder="Buscar Medicamento" aria-label="Search">
-                            <i class="fas fa-search icon-input"></i>
-                            </div>
-                            <div class="col-md-12 position-relative">
-                            <label for="" class="form-label colorfimel-blue">Examen</label>
-                            <input type="text" class="form-control" id="">
-                            <i class="fas fa-notes-medical icon-input-ficha"></i>
-                            </div>
-                            <div class="col-md-12">
-                            <label for="" class="form-label colorfimel-blue">Fecha de examen</label>
-                            <input type="date" class="form-control" id="">
-                            </div>
-                            <div class="col-md-12">
-                            <label for="" class="form-label colorfimel-blue">Subir examen</label>
-                            <div class="box">
-                            <input type="file" name="file-1[]" id="file-1" class="inputfile inputfile-1" data-multiple-caption="{count} archivos seleccionados" multiple="">
-                            <label class="file-upload-label" for="file-1"><i class="fas fa-upload"></i> <span>Adjuntar examen</span></label>
-                            </div>
-                            </div>
-                            <div class="col-md-12 text-center">
-                            <button class="btn btn-pink">Agregar</button>
-                            </div>
-                            </form>
-                            </div>
-                            </div>
-                            </div> *@
-                            </div>
-                            @*                         <div class="bg-white rounded p-3 text-center">
-                        <button class="btn btn-blue" id="btnGuardarConsulta" onclick="ModuloConsulta.GrabarConsulta(this)" disabled>Guardar Consulta</button>
-                        </div> *@
                         </div>
                     </div>
                 </div>
@@ -520,5 +428,26 @@
 </div>
 
 @section scripts {
+    <script src="~/js/site/Utils.js?v=1.0" type="text/javascript"></script>
     <script src="~/js/site/Nueva_Consulta.js?v=1.0" type="text/javascript"></script>
+    <script>
+        // Manejar parámetros de la URL
+        $(document).ready(function() {
+            var rutParam = getUrlParameter('rut');
+            var numDocParam = getUrlParameter('numDoc');
+            var tipoParam = getUrlParameter('tipo');
+            
+            if (rutParam) {
+                $('#inputRut').val(rutParam);
+                // Buscar automáticamente el paciente
+                ModuloConsulta.BuscarPaciente($('#btnBuscarPaciente'));
+            } else if (numDocParam && tipoParam) {
+                // Configurar el combo para el tipo de documento
+                $('#comboTipoDocumento').val(tipoParam).trigger('change');
+                $('#inputNumDocumento').val(numDocParam);
+                // Buscar automáticamente el paciente
+                ModuloConsulta.BuscarPaciente($('#btnBuscarPaciente'));
+            }
+        });
+    </script>
 }
