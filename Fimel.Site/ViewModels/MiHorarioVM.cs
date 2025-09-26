@@ -6,6 +6,7 @@ namespace Fimel.Site.ViewModels
     {
         public ConfiguracionUsuario ConfiguracionUsuario { get; set; }
         public List<HorarioAtencion> HorariosAtencion { get; set; }
+        public List<HorarioEspecifico> HorariosEspecificos { get; set; }
         public List<UsuarioVM> ListaUsuarios { get; set; }
     }
 

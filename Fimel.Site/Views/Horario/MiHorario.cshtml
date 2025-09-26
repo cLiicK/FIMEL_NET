@@ -4,12 +4,16 @@
 
 <input type="hidden" id="hdnURL_CrearBloqueHorario" value='@Url.Action("_CrearBloqueHorario", "Horario")' />
 <input type="hidden" id="hdnURL_EliminarBloqueHorario" value='@Url.Action("_EliminarBloqueHorario", "Horario")' />
+<input type="hidden" id="hdnURL_ObtenerHorariosEspecificos" value='@Url.Action("ObtenerHorariosEspecificos", "Horario")' />
+<input type="hidden" id="hdnURL_CrearHorarioEspecifico" value='@Url.Action("_CrearHorarioEspecifico", "Horario")' />
+<input type="hidden" id="hdnURL_EliminarHorarioEspecifico" value='@Url.Action("_EliminarHorarioEspecifico", "Horario")' />
 <input type="hidden" id="hdnURL_ObtenerCitas" value='@Url.Action("ObtenerCitas", "Horario")' />
 <input type="hidden" id="hdnURL_ObtenerVistaAgenda" value='@Url.Action("ObtenerVistaAgenda", "Horario")' />
 <input type="hidden" id="hdnURL_CrearCita" value='@Url.Action("_GuardarCita", "Horario")' />
 <input type="hidden" id="hdnUsuarioSeleccionado" value="" />
 <input type="hidden" id="hdnURL_BuscarPaciente" value='@Url.Action("BuscarPaciente", "Pacientes")' />
 <input type="hidden" id="hdnURL_BuscarPacientePorNumDocumento" value='@Url.Action("BuscarPacientePorNumDocumento", "Pacientes")' />
+
 
 @if (Model.ConfiguracionUsuario != null)
 {

@@ -2,69 +2,124 @@
 
 
 <div class="modal fade" id="configurarHorarioModal" tabindex="-1" aria-labelledby="configurarHorarioModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="configurarHorarioModalLabel">Configurar Bloque Horario</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label for="diaSemana" class="form-label">Día de la Semana</label>
-                    <select class="form-select" id="diaSemanaNuevoBloque">
-                        <option value="">Seleccione Día...</option>
-                        <option value="Lunes">Lunes</option>
-                        <option value="Martes">Martes</option>
-                        <option value="Miércoles">Miércoles</option>
-                        <option value="Jueves">Jueves</option>
-                        <option value="Viernes">Viernes</option>
-                        <option value="Sábado">Sábado</option>
-                        <option value="Domingo">Domingo</option>
-                    </select>
-                </div>
+                <!-- Pestañas para horarios -->
+                <ul class="nav nav-tabs" id="horarioTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="horarios-semanales-tab" data-bs-toggle="tab" data-bs-target="#horarios-semanales" type="button" role="tab" aria-controls="horarios-semanales" aria-selected="true">
+                            Horarios Semanales
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="horarios-especificos-tab" data-bs-toggle="tab" data-bs-target="#horarios-especificos" type="button" role="tab" aria-controls="horarios-especificos" aria-selected="false">
+                            Horarios Específicos
+                        </button>
+                    </li>
+                </ul>
 
-                <div class="mb-3">
-                    <label for="horaInicio" class="form-label">Hora de Inicio</label>
-                    <input type="time" class="form-control" id="horaInicioNuevoBloque" required step="1800" />
-                </div>
+                <!-- Contenido de las pestañas -->
+                <div class="tab-content" id="horarioTabsContent">
+                    <div class="tab-pane fade show active" id="horarios-semanales" role="tabpanel" aria-labelledby="horarios-semanales-tab">
+                        <br />
+                        <div class="mb-3">
+                            <label for="diaSemana" class="form-label">Día de la Semana</label>
+                            <select class="form-select" id="diaSemanaNuevoBloque">
+                                <option value="">Seleccione Día...</option>
+                                <option value="Lunes">Lunes</option>
+                                <option value="Martes">Martes</option>
+                                <option value="Miércoles">Miércoles</option>
+                                <option value="Jueves">Jueves</option>
+                                <option value="Viernes">Viernes</option>
+                                <option value="Sábado">Sábado</option>
+                                <option value="Domingo">Domingo</option>
+                            </select>
+                        </div>
 
-                <div class="mb-3">
-                    <label for="horaFin" class="form-label">Hora de Fin</label>
-                    <input type="time" class="form-control" id="horaFinNuevoBloque" required />
-                </div>
+                        <div class="mb-3">
+                            <label for="horaInicio" class="form-label">Hora de Inicio</label>
+                            <input type="time" class="form-control" id="horaInicioNuevoBloque" required step="1800" />
+                        </div>
 
-                <div class="mb-3">
-                    <label for="comentario" class="form-label">Comentario</label>
-                    <textarea class="form-control" id="comentarioNuevoBloque" rows="3"></textarea>
-                </div>
+                        <div class="mb-3">
+                            <label for="horaFin" class="form-label">Hora de Fin</label>
+                            <input type="time" class="form-control" id="horaFinNuevoBloque" required />
+                        </div>
 
-                <div class="modal-footer">
-                    <button class="btn btn-blue" id="btnGuardarBloque" onclick="ModuloHorarioCita.GuardarNuevoBloque()">Guardar</button>
+                        <div class="mb-3">
+                            <label for="comentario" class="form-label">Comentario</label>
+                            <textarea class="form-control" id="comentarioNuevoBloque" rows="3"></textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn btn-blue" id="btnGuardarBloque" onclick="ModuloHorarioCita.GuardarNuevoBloque()">Guardar</button>
+                        </div>
+                        <h5>Bloques Horarios Existentes</h5>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Día</th>
+                                    <th>Hora Inicio</th>
+                                    <th>Hora Fin</th>
+                                    <th>Comentario</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaBloquesExistentes">
+                                @foreach (var horario in Model)
+                                {
+                                    <tr>
+                                        <td>@horario.DiaSemana</td>
+                                        <td>@horario.HoraInicio.ToString(@"hh\:mm")</td>
+                                        <td>@horario.HoraFin.ToString(@"hh\:mm")</td>
+                                        <td>@horario.Comentario</td>
+                                        <td><a class="btn btn-ico" onclick="ModuloHorarioCita.EliminarBloque(@horario.Id)"><i class="fas fa-trash"></i></a> </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade" id="horarios-especificos" role="tabpanel" aria-labelledby="horarios-especificos-tab">
+                        <br />
+                        <!-- Formulario para nuevo horario específico -->
+                        <div class="mb-3">
+                            <label for="fechaEspecificaNuevoHorario" class="form-label">Fecha Específica</label>
+                            <input type="date" class="form-control" id="fechaEspecificaNuevoHorario" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="horaInicioEspecificoNuevoHorario" class="form-label">Hora de Inicio</label>
+                            <input type="time" class="form-control" id="horaInicioEspecificoNuevoHorario" required step="1800" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="horaFinEspecificoNuevoHorario" class="form-label">Hora de Fin</label>
+                            <input type="time" class="form-control" id="horaFinEspecificoNuevoHorario" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="comentarioEspecificoNuevoHorario" class="form-label">Comentario</label>
+                            <textarea class="form-control" id="comentarioEspecificoNuevoHorario" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary" id="btnGuardarHorarioEspecifico" onclick="ModuloHorarioCita.GuardarNuevoHorarioEspecifico()">
+                                <i class="fas fa-plus"></i> Guardar Horario Específico
+                            </button>
+                        </div>
+
+                        <h5>Horarios Específicos Existentes</h5>
+                        <div id="contenedorHorariosEspecificos">
+                            <!-- Los horarios específicos se cargarán aquí dinámicamente -->
+                        </div>
+                    </div>
                 </div>
-                <h5>Bloques Horarios Existentes</h5>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Día</th>
-                            <th>Hora Inicio</th>
-                            <th>Hora Fin</th>
-                            <th>Comentario</th>
-                            <th>&nbsp;</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaBloquesExistentes">
-                        @foreach (var horario in Model)
-                        {
-                            <tr>
-                                <td>@horario.DiaSemana</td>
-                                <td>@horario.HoraInicio.ToString(@"hh\:mm")</td>
-                                <td>@horario.HoraFin.ToString(@"hh\:mm")</td>
-                                <td>@horario.Comentario</td>
-                                <td><a class="btn btn-ico" onclick="ModuloHorarioCita.EliminarBloque(@horario.Id)"><i class="fas fa-trash"></i></a> </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
 
             </div>
         </div>

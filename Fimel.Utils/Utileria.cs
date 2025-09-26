@@ -22,6 +22,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using System.Net.Mail;
+using System.Net.Mime;
+using System.Text;
 
 namespace Fimel.Utils
 {
@@ -80,6 +83,8 @@ namespace Fimel.Utils
                 throw ex;
             }
         }
+
+
         public void EnviarCorreo(EnvioCorreo correo)
         {
             try
@@ -88,17 +93,29 @@ namespace Fimel.Utils
                 string CCBitacora = string.Empty;
                 string CCOBitacora = string.Empty;
 
-                SmtpClient smtpClient = new SmtpClient(config["SMTP_Config:Domain"], Convert.ToInt32(config["SMTP_Config:Port"]));
+                using var smtpClient = new SmtpClient(
+                    config["SMTP_Config:Domain"],
+                    Convert.ToInt32(config["SMTP_Config:Port"])
+                );
 
-                smtpClient.Credentials = new System.Net.NetworkCredential(config["SMTP_Config:Correo"], config["SMTP_Config:Contrasena"]);
-                // smtpClient.UseDefaultCredentials = true; // uncomment if you don't want to use the network credentials
+                smtpClient.Credentials = new System.Net.NetworkCredential(
+                    config["SMTP_Config:Correo"],
+                    config["SMTP_Config:Contrasena"]
+                );
                 smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                smtpClient.EnableSsl = false;
-                MailMessage mail = new MailMessage();
+                smtpClient.EnableSsl = false; // cámbialo a true si corresponde
 
-                //Setting From , To and CC
-                mail.From = new MailAddress(config["SMTP_Config:Correo"], config["SMTP_Config:Display_Name"]);
+                using var mail = new MailMessage
+                {
+                    From = new MailAddress(config["SMTP_Config:Correo"], config["SMTP_Config:Display_Name"]),
+                    Subject = correo.Asunto,
+                    IsBodyHtml = true,
+                    BodyEncoding = Encoding.UTF8,
+                    SubjectEncoding = Encoding.UTF8,
+                    Body = correo.CuerpoCorreo ?? string.Empty
+                };
 
+                // To
                 if (correo.Destinatarios != null)
                 {
                     foreach (var destinatario in correo.Destinatarios)
@@ -108,32 +125,31 @@ namespace Fimel.Utils
                     }
                 }
 
+                // CC
                 if (correo.CC != null)
                 {
-                    foreach (var CC in correo.CC)
+                    foreach (var cc in correo.CC)
                     {
-                        mail.To.Add(new MailAddress(CC));
-                        CCBitacora = string.Concat(CCBitacora, ",", CC);
+                        mail.CC.Add(new MailAddress(cc));
+                        CCBitacora = string.Concat(CCBitacora, ",", cc);
                     }
                 }
 
+                // Bcc (CCO)
                 if (correo.CCO != null)
                 {
-                    foreach (var CCO in correo.CCO)
+                    foreach (var cco in correo.CCO)
                     {
-                        mail.CC.Add(new MailAddress(CCO));
-                        CCOBitacora = string.Concat(CCOBitacora, ",", CCO);
+                        mail.Bcc.Add(new MailAddress(cco));
+                        CCOBitacora = string.Concat(CCOBitacora, ",", cco);
                     }
                 }
 
-
-                mail.Subject = correo.Asunto;
-                mail.IsBodyHtml = true;
-                mail.Body = correo.CuerpoCorreo;
-
+                // Envío
                 smtpClient.Send(mail);
 
-                BitacoraMensajerias bitacora = new BitacoraMensajerias()
+                // Bitácora
+                var bitacora = new BitacoraMensajerias
                 {
                     Destinatarios = destBitacora,
                     CC = CCBitacora,
@@ -151,6 +167,83 @@ namespace Fimel.Utils
                 Logger.Log($"Error al EnviarCorreo: {ex}");
             }
         }
+
+        public void EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)> inlineImages)
+        {
+            try
+            {
+                using var smtpClient = new SmtpClient(
+                    config["SMTP_Config:Domain"],
+                    Convert.ToInt32(config["SMTP_Config:Port"])
+                );
+
+                smtpClient.Credentials = new System.Net.NetworkCredential(
+                    config["SMTP_Config:Correo"],
+                    config["SMTP_Config:Contrasena"]
+                );
+                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                smtpClient.EnableSsl = false;
+
+                using var mail = new MailMessage
+                {
+                    From = new MailAddress(config["SMTP_Config:Correo"], config["SMTP_Config:Display_Name"]),
+                    Subject = correo.Asunto,
+                    IsBodyHtml = true,
+                    BodyEncoding = Encoding.UTF8,
+                    SubjectEncoding = Encoding.UTF8
+                };
+
+                // To
+                if (correo.Destinatarios != null)
+                    foreach (var destinatario in correo.Destinatarios)
+                        mail.To.Add(new MailAddress(destinatario));
+
+                // CC
+                if (correo.CC != null)
+                    foreach (var cc in correo.CC)
+                        mail.CC.Add(new MailAddress(cc));
+
+                // Bcc
+                if (correo.CCO != null)
+                    foreach (var cco in correo.CCO)
+                        mail.Bcc.Add(new MailAddress(cco));
+
+                // Cuerpo
+                if (inlineImages == null || inlineImages.Count == 0)
+                {
+                    // Envío normal
+                    mail.Body = correo.CuerpoCorreo ?? string.Empty;
+                }
+                else
+                {
+                    // Con imágenes embebidas
+                    var htmlView = AlternateView.CreateAlternateViewFromString(
+                        correo.CuerpoCorreo ?? string.Empty,
+                        Encoding.UTF8,
+                        MediaTypeNames.Text.Html
+                    );
+
+                    foreach (var img in inlineImages)
+                    {
+                        var lr = new LinkedResource(img.Path, img.Mime)
+                        {
+                            ContentId = img.ContentId,
+                            TransferEncoding = TransferEncoding.Base64
+                        };
+                        htmlView.LinkedResources.Add(lr);
+                    }
+
+                    mail.AlternateViews.Add(htmlView);
+                }
+
+                smtpClient.Send(mail);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al EnviarCorreo: {ex}");
+            }
+        }
+
         public void EliminarArchivo(string rutaArchivo)
         {
             try

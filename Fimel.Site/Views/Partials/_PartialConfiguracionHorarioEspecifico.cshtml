@@ -1,0 +1,43 @@
+@model List<HorarioEspecifico>
+
+@try
+{
+    @if (Model != null && Model.Count > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora Inicio</th>
+                    <th>Hora Fin</th>
+                    <th>Comentario</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var horario in Model)
+                {
+                    <tr>
+                        <td>@(horario?.FechaEspecifica.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                        <td>@(horario?.HoraInicio.ToString(@"hh\:mm") ?? "N/A")</td>
+                        <td>@(horario?.HoraFin.ToString(@"hh\:mm") ?? "N/A")</td>
+                        <td>@(horario?.Comentario ?? "")</td>
+                        <td><a class="btn btn-ico" onclick="ModuloHorarioCita.EliminarHorarioEspecifico(@(horario?.Id ?? 0))"><i class="fas fa-trash"></i></a> </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No hay horarios específicos configurados.
+        </div>
+    }
+}
+catch (Exception ex)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i> Error al cargar los horarios específicos: @ex.Message
+    </div>
+}

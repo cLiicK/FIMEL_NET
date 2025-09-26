@@ -25,6 +25,7 @@ namespace Fimel.Models
         public DbSet<BitacoraMensajerias> BitacoraMensajerias { get; set; }
         public DbSet<Config> Config { get; set; }
         public DbSet<HorarioAtencion> HorariosAtencion { get; set; }
+        public DbSet<HorarioEspecifico> HorariosEspecificos { get; set; }
         public DbSet<Cita> Citas { get; set; }
         public DbSet<ConfiguracionUsuario> ConfiguracionesUsuario { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -50,6 +51,7 @@ namespace Fimel.Models
             modelBuilder.Entity<BitacoraMensajerias>().ToTable("BitacoraMensajerias", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<Config>().ToTable("Config", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<HorarioAtencion>().ToTable("HorariosAtencion", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<HorarioEspecifico>().ToTable("HorariosEspecificos");
             modelBuilder.Entity<Cita>().ToTable("Citas");
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario", t => t.ExcludeFromMigrations());
 
