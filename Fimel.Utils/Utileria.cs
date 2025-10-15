@@ -168,7 +168,7 @@ namespace Fimel.Utils
             }
         }
 
-        public void EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)> inlineImages)
+        public void EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)> inlineImages, string remitente)
         {
             try
             {
@@ -184,9 +184,12 @@ namespace Fimel.Utils
                 smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
                 smtpClient.EnableSsl = false;
 
+                if (string.IsNullOrEmpty(remitente))
+                    remitente = config["SMTP_Config:Display_Name"];
+
                 using var mail = new MailMessage
                 {
-                    From = new MailAddress(config["SMTP_Config:Correo"], config["SMTP_Config:Display_Name"]),
+                    From = new MailAddress(config["SMTP_Config:Correo"], remitente),
                     Subject = correo.Asunto,
                     IsBodyHtml = true,
                     BodyEncoding = Encoding.UTF8,

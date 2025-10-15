@@ -358,7 +358,7 @@ namespace Fimel.Site.Controllers
                 };
 
                 Utileria utileria = new Utileria();
-                utileria.EnviarCorreo(correo, imagenes);
+                utileria.EnviarCorreo(correo, imagenes, $"Mta. {profesional.Nombres} {profesional.ApellidoPaterno}");
             }
             catch (Exception ex)
             {
