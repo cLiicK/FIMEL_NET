@@ -20,7 +20,7 @@ namespace Fimel.Api.Controllers
         {
             try
             {
-                Instituciones? institucion = db.Instituciones.Where(x => x.Id == id && x.Vigente == "1").FirstOrDefault();
+                Instituciones? institucion = db.Instituciones.Where(x => x.Id == id && x.Vigente == "S").FirstOrDefault();
 
                 if (institucion == null)
                     return NotFound();
