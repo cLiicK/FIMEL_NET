@@ -220,31 +220,10 @@
                 return null;
             }
             objDatosConsulta["TipoConsulta"] = $('#Consulta_TipoConsulta option:selected').val();
-
-            if (!$("#inputPeso").val()) {
-                Swal.fire('Ingrese el Peso', '', 'warning');
-                return null;
-            }
             objDatosConsulta["Peso"] = $("#inputPeso").val() || null;
-
-            if (!$("#inputTalla").val()) {
-                Swal.fire('Ingrese la Talla', '', 'warning');
-                return null;
-            }
             objDatosConsulta["Talla"] = $("#inputTalla").val() || null;
-
-            if (!$("#inputIMC").val()) {
-                Swal.fire('Haga el cálculo del IMC', '', 'warning');
-                return null;
-            }
             objDatosConsulta["IMC"] = $("#inputIMC").val() || null;
-
-            if (!$("#inputEstadoNutricional").val()) {
-                Swal.fire('Haga el calculo del IMC', 'Nueva Consultae', 'warning');
-                return null;
-            }
             objDatosConsulta["EstadoNutricional"] = $("#inputEstadoNutricional").val() || null;
-
             objDatosConsulta["PresionArterial"] = $("#inputPresionArterial").val() || null;
 
             if (!$("#inputMotivoConsulta").val()) {
@@ -252,31 +231,10 @@
                 return null;
             }
             objDatosConsulta["MotivoConsulta"] = $("#inputMotivoConsulta").val() || null;
-
-            if (!$("#inputAnamnesis").val()) {
-                Swal.fire('Ingrese Anamnesis', '', 'warning');
-                return null;
-            }
             objDatosConsulta["Anamnesis"] = $("#inputAnamnesis").val() || null;
-
-            if (!$("#inputExamenFisico").val()) {
-                Swal.fire('Ingrese el Examen Físico', '', 'warning');
-                return null;
-            }
             objDatosConsulta["ExamenFisico"] = $("#inputExamenFisico").val() || null;
-
-            if (!$("#inputDiagnostico").val()) {
-                Swal.fire('Ingrese un Diagnóstico', '', 'warning');
-                return null;
-            }
             objDatosConsulta["Diagnostico"] = $("#inputDiagnostico").val() || null;
-
-            if (!$("#inputIndicaciones").val()) {
-                Swal.fire('Ingrese las Indicaciones', '', 'warning');
-                return null;
-            }
             objDatosConsulta["Indicaciones"] = $("#inputIndicaciones").val() || null;
-
             objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
             objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val() || null;
             objDatosConsulta["FechaProximoControl"] = $("#inputFechaProximoControl").val() || null;
