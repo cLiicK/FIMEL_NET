@@ -19,6 +19,7 @@
 }
 
 <input type="hidden" id="hdnURL_ObtenerConsultasAnteriores" value='@Url.Action("ObtenerConsultasAnteriores", "Consulta")' />
+<input type="hidden" id="hdnURL_ObtenerConsultasAnterioresPorNumDocumento" value='@Url.Action("ObtenerConsultasAnterioresPorNumDocumento", "Consulta")' />
 <input type="hidden" id="hiddenRutPaciente" value="@(Model.Rut.HasValue ? Model.Rut.Value.ToString() : "")" />
 <input type="hidden" id="hiddenNumDocumento" value="@(Model.NumeroDocumento ?? "")" />
 <input type="hidden" id="hiddenTipoDocumento" value="@(Model.TipoDocumento ?? "")" />
@@ -331,6 +332,7 @@
 @section scripts {
     <script src="~/js/site/Utils.js?v=1.0" type="text/javascript"></script>
     <script src="~/js/site/Shared.js?v=1.0" type="text/javascript"></script>
+    <script src="~/js/site/detalle_paciente.js"></script>
     <script>
         $(".btn-toggle").click(function () {
             if ($(this).hasClass("active")) {
@@ -339,19 +341,6 @@
             else {
                 $(".btn-toggle").removeClass("active");
                 $(this).addClass("active");
-            }
-        });
-        
-        // Cargar consultas anteriores automáticamente al cargar la página
-        $(document).ready(function() {
-            var rutPaciente = $('#hiddenRutPaciente').val();
-            var numDocumento = $('#hiddenNumDocumento').val();
-            var tipoDocumento = $('#hiddenTipoDocumento').val();
-            
-            if (rutPaciente && tipoDocumento === "RUT") {
-                ObtenerConsultasAnteriores(rutPaciente, "RUT");
-            } else if (numDocumento && tipoDocumento !== "RUT") {
-                ObtenerConsultasAnteriores(numDocumento, tipoDocumento);
             }
         });
     </script>
