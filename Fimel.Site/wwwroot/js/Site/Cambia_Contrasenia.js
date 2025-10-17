@@ -9,11 +9,11 @@
             let usuarioEncryptado = $("#hfUsuarioEncryptado").val();
             if (password1 != password2) {
                 Swal.fire('', "Las contraseñas no coinciden", 'warning');
-                return;
+                return false;
             }
             if (password1.length < 8) {
                 Swal.fire('', "La contraseña debe tener mínimo 8 caracteres", 'warning');
-                return;
+                return false;
             }
 
             showLoading(object);
