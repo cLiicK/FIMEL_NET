@@ -121,7 +121,10 @@ namespace Fimel.Site.Controllers
             try
             {
                 Pacientes pacienteConsultado = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{rutPaciente}");
-                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
+                //List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
+                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}")
+                                                                                                .OrderByDescending(t => t.FechaConsulta ?? t.FechaCreacion).ToList();
+
                 return Json(consultasAnteriores);
             }
             catch (Exception ex)
@@ -136,7 +139,8 @@ namespace Fimel.Site.Controllers
             try
             {
                 Pacientes pacienteConsultado = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{rutPaciente}");
-                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
+                List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}")
+                                                                  .OrderByDescending(t => t.FechaConsulta ?? t.FechaCreacion).ToList();
                 return Json(consultasAnteriores);
             }
             catch (Exception ex)
