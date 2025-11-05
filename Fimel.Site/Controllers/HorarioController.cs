@@ -417,6 +417,42 @@ namespace Fimel.Site.Controllers
             return Convert.ToBase64String(binaryData);
         }
 
+        [HttpPost]
+        public ActionResult ActualizarCitaConCorreo(int id, Cita cita)
+        {
+            try
+            {
+                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+
+                if (usuario == null)
+                    return Json(new { success = false, message = "Usuario no autenticado" });
+
+                // Actualizar la cita usando el API
+                Cita citaActualizada = APIBase.Put<Cita>($"Citas/{id}/ActualizarConCorreo", cita);
+
+                if (citaActualizada == null)
+                    return Json(new { success = false, message = "Error al actualizar la cita" });
+
+                try
+                {
+                    EnviarCorreoConfirmacionCita(citaActualizada, usuario);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Error al enviar correo de confirmación: {ex}");
+                    // No fallar la creación de la cita si el correo falla
+                }
+
+
+                return Json(new { success = true, message = "Cita actualizada y correo enviado", cita = citaActualizada });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al actualizar cita con correo: {ex}");
+                return Json(new { success = false, message = "Error al actualizar la cita" });
+            }
+        }
+
         [HttpGet]
         public IActionResult ObtenerVistaAgenda(int idUsuario)
         {

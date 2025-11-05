@@ -1,9 +1,10 @@
 ﻿<input type="hidden" id="hdnURL_EliminarCitaModal" value="@Url.Action("_EliminarCita","Horario")" />
 <input type="hidden" id="hdnURL_CrearCita" value="@Url.Action("_GuardarCita","Horario")" />
+<input type="hidden" id="hdnURL_ActualizarCitaConCorreo" value="@Url.Action("ActualizarCitaConCorreo","Horario")" />
 
 <div class="modal fade" id="modalEventoNuevo" tabindex="-1" aria-labelledby="modalEventoNuevoLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content modal-sm">
+        <div class="modal-content modal">
             <div class="modal-header">
                 <input type="hidden" value="" id="fechaModal" />
                 <center><strong><h5 class="modal-title" id="modalEventoNuevoLabel"></h5></strong></center>
@@ -27,15 +28,16 @@
 
 <div class="modal fade" id="modalEvento" tabindex="-1" aria-labelledby="modalEventoLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content modal-sm">
+        <div class="modal-content modal">
             <div class="modal-header">
                 <center><strong><h5 class="modal-title" id="modalEventoLabel"></h5></strong></center>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 <input type="hidden" value="" id="idCitaModal" />
             </div>
             <div class="modal-body">
-                <p><strong>Hora de Inicio</strong> <input class="form-control" id="horaInicioCita" disabled/></p>
-                <p><strong>Hora Término</strong> <input class="form-control" id="horaTerminoCita" disabled /></p>
+                <p><strong>Fecha</strong> <input class="form-control" type="date" id="fechaCita" disabled/></p>
+                <p><strong>Hora de Inicio</strong> <input class="form-control" type="time" id="horaInicioCita" disabled/></p>
+                <p><strong>Hora Término</strong> <input class="form-control" type="time" id="horaTerminoCita" disabled /></p>
                 <p><strong>Nombre y apellido</strong> <input class="form-control" id="nombreCita" disabled /></p>
                 <p><strong>Correo</strong> <input class="form-control" id="correoCita" disabled /></p>
                 <p><strong>Telefono</strong> <input class="form-control" id="telefonoCita" disabled /></p>
@@ -46,7 +48,10 @@
                 {
                     <button class="btn btn-success" id="btnIniciarCitaModal" onclick="ModuloHorarioCita.IniciarCitaModal()">Iniciar Cita</button>
                 }
-                <button class="btn btn-danger" id="btnEliminarCitaModal" onclick="ModuloHorarioCita.EliminarCitaModal()">Eliminar Cita</button>
+                <button class="btn btn-warning" id="btnModificarCitaModal" onclick="ModuloHorarioCita.ModificarCitaModal()">Modificar</button>
+                <button class="btn btn-primary" id="btnGuardarModificacionCita" onclick="ModuloHorarioCita.GuardarModificacionCita()" style="display: none;">Guardar Cambios</button>
+                <button class="btn btn-secondary" id="btnCancelarModificacion" onclick="ModuloHorarioCita.CancelarModificacion()" style="display: none;">Cancelar</button>
+                <button class="btn btn-danger" id="btnEliminarCitaModal" onclick="ModuloHorarioCita.EliminarCitaModal()">Eliminar</button>
             </div>
         </div>
     </div>

@@ -265,6 +265,11 @@ var ModuloHorarioCita = (function () {
                     let formatoFecha = fechaSeleccionada.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
                     $('#modalEventoLabel').text(formatoFecha);
+                    
+                    // Cargar la fecha en formato ISO para el input date
+                    let fechaISO = fechaSeleccionada.toISOString().split('T')[0];
+                    $('#fechaCita').val(fechaISO);
+                    
                     $('#horaInicioCita').val(info.event.extendedProps.horaInicio);
                     $('#horaTerminoCita').val(info.event.extendedProps.horaFinal);
                     $('#nombreCita').val(info.event.extendedProps.nombre);
@@ -272,6 +277,22 @@ var ModuloHorarioCita = (function () {
                     $('#telefonoCita').val(info.event.extendedProps.telefono);
                     $('#notaCita').val(info.event.extendedProps.nota);
                     $('#idCitaModal').val(info.event.extendedProps.idCita);
+
+                    // Asegurar que los campos estén deshabilitados al abrir el modal
+                    $('#fechaCita').prop('disabled', true);
+                    $('#horaInicioCita').prop('disabled', true);
+                    $('#horaTerminoCita').prop('disabled', true);
+                    $('#nombreCita').prop('disabled', true);
+                    $('#correoCita').prop('disabled', true);
+                    $('#telefonoCita').prop('disabled', true);
+                    $('#notaCita').prop('disabled', true);
+                    
+                    // Asegurar que los botones estén en su estado inicial
+                    $('#btnModificarCitaModal').show();
+                    $('#btnGuardarModificacionCita').hide();
+                    $('#btnCancelarModificacion').hide();
+                    $('#btnIniciarCitaModal').show();
+                    $('#btnEliminarCitaModal').show();
 
                     $('#modalEvento').modal('show');
                 },
@@ -630,7 +651,7 @@ var ModuloHorarioCita = (function () {
             })
         },
         GuardarCitaModal: function () {
-            var btnGuardar = $('#btnGuardarCitaModal');
+            var btnGuardar = $('#btnGuardarModificacionCita');
 
             if (!$("#horaInicioCitaNuevo").val()) {
                 Swal.fire('Ingrese la Hora de Inicio', '', 'warning');
@@ -828,6 +849,147 @@ var ModuloHorarioCita = (function () {
             
             // Mostrar el modal para ingresar RUT
             $('#modalIniciarCita').modal('show');
+        },
+
+        ModificarCitaModal: function () {
+            // Habilitar todos los campos para edición
+            $('#fechaCita').prop('disabled', false);
+            $('#horaInicioCita').prop('disabled', false);
+            $('#horaTerminoCita').prop('disabled', false);
+            $('#nombreCita').prop('disabled', false);
+            $('#correoCita').prop('disabled', false);
+            $('#telefonoCita').prop('disabled', false);
+            $('#notaCita').prop('disabled', false);
+            
+            // Cambiar botones: ocultar "Modificar" y mostrar "Guardar" y "Cancelar"
+            $('#btnModificarCitaModal').hide();
+            $('#btnGuardarModificacionCita').show();
+            $('#btnCancelarModificacion').show();
+            
+            // Ocultar otros botones durante la edición
+            $('#btnIniciarCitaModal').hide();
+            $('#btnEliminarCitaModal').hide();
+        },
+
+        CancelarModificacion: function () {
+            // Deshabilitar todos los campos
+            $('#fechaCita').prop('disabled', true);
+            $('#horaInicioCita').prop('disabled', true);
+            $('#horaTerminoCita').prop('disabled', true);
+            $('#nombreCita').prop('disabled', true);
+            $('#correoCita').prop('disabled', true);
+            $('#telefonoCita').prop('disabled', true);
+            $('#notaCita').prop('disabled', true);
+            
+            // Restaurar botones: mostrar "Modificar" y ocultar "Guardar" y "Cancelar"
+            $('#btnModificarCitaModal').show();
+            $('#btnGuardarModificacionCita').hide();
+            $('#btnCancelarModificacion').hide();
+            
+            // Mostrar otros botones
+            $('#btnIniciarCitaModal').show();
+            $('#btnEliminarCitaModal').show();
+        },
+
+
+        GuardarModificacionCita: function () {
+            var btnGuardar = $('#btnGuardarModificacionCita');
+
+            // Validaciones
+            if (!$("#fechaCita").val()) {
+                Swal.fire('Seleccione la Fecha', '', 'warning');
+                return null;
+            }
+            if (!$("#horaInicioCita").val()) {
+                Swal.fire('Ingrese la Hora de Inicio', '', 'warning');
+                return null;
+            }
+            if (!$("#horaTerminoCita").val()) {
+                Swal.fire('Ingrese la Hora de Termino', '', 'warning');
+                return null;
+            }
+            if (!$("#nombreCita").val()) {
+                Swal.fire('Ingrese el Nombre y Apellido', '', 'warning');
+                return null;
+            }
+            if (!$("#correoCita").val()) {
+                Swal.fire('Ingrese un Correo Electrónico', '', 'warning');
+                return null;
+            }
+
+            let fecha = $('#fechaCita').val();
+            let horaInicio = $('#horaInicioCita').val();
+            let horaFinal = $('#horaTerminoCita').val();
+
+            if (horaInicio.length === 5) {
+                horaInicio += ":00";
+            }
+
+            if (horaFinal.length === 5) {
+                horaFinal += ":00";
+            }
+
+            let cita = {
+                FechaHoraInicio: `${fecha}T${horaInicio}`,
+                FechaHoraFinal: `${fecha}T${horaFinal}`,
+                NombrePaciente: $('#nombreCita').val(),
+                CorreoPaciente: $('#correoCita').val(),
+                Telefono: $('#telefonoCita').val(),
+                Nota: $('#notaCita').val(),
+            }
+
+            Swal.fire({
+                title: 'Modificar Cita',
+                text: '¿Está seguro de modificar esta cita? Se enviará un correo de confirmación al paciente.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Guardar Cambios',
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    btnGuardar.prop('disabled', true);
+                    btnGuardar.text('Guardando...');
+
+                    $.ajax({
+                        url: $('#hdnURL_ActualizarCitaConCorreo').val(),
+                        data: {
+                            id: $('#idCitaModal').val(),
+                            cita: cita
+                        },
+                        method: 'POST',
+                        success: function (response, jqXHR) {
+                            if (response && response.success) {
+                                Swal.fire({
+                                    title: 'Cita modificada exitosamente',
+                                    text: 'Se ha enviado un correo de confirmación al paciente.',
+                                    icon: 'success',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#modalEvento').modal('hide');
+                                        location.reload();
+                                    }
+                                })
+                            }
+                            else {
+                                btnGuardar.prop('disabled', false);
+                                btnGuardar.text('Guardar Cambios');
+                                Swal.fire('Error', response.message || 'Error al modificar la cita', 'error');
+                                return;
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            Swal.fire('Error', 'Favor comuníquese con un administrador', 'error');
+                            btnGuardar.prop('disabled', false);
+                            btnGuardar.text('Guardar Cambios');
+                            return;
+                        }
+                    });
+                }
+                else {
+                    btnGuardar.prop('disabled', false);
+                    btnGuardar.text('Guardar Cambios');
+                }
+            })
         },
 
         ValidarRutIniciarCita: function () {

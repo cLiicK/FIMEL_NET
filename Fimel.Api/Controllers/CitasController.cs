@@ -101,12 +101,17 @@ namespace Fimel.Api.Controllers
             {
                 Cita? dbCita = db.Citas.Find(id);
 
+                if (dbCita == null)
+                    return NotFound("Cita no encontrada");
+
                 dbCita.NumeroDocumento = cita.NumeroDocumento;
                 dbCita.TipoDocumento = cita.TipoDocumento;
                 dbCita.CorreoPaciente = cita.CorreoPaciente;
                 dbCita.NombrePaciente = cita.NombrePaciente;
                 dbCita.FechaHoraFinal = cita.FechaHoraFinal;
                 dbCita.FechaHoraInicio = cita.FechaHoraInicio;
+                dbCita.Telefono = cita.Telefono;
+                dbCita.Nota = cita.Nota;
                 dbCita.Vigente = cita.Vigente;
 
                 db.SaveChanges();
@@ -116,6 +121,40 @@ namespace Fimel.Api.Controllers
             catch (Exception ex)
             {
                 Logger.Log($"Error Cita: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("{id}/ActualizarConCorreo")]
+        public IActionResult ActualizarConCorreo(int id, Cita cita)
+        {
+            try
+            {
+                Cita? dbCita = db.Citas
+                    .Where(x => x.Id == id && x.Vigente == "S")
+                    .Include(x => x.Usuario)
+                    .FirstOrDefault();
+
+                if (dbCita == null)
+                    return NotFound("Cita no encontrada");
+
+                // Actualizar campos
+                dbCita.NumeroDocumento = cita.NumeroDocumento;
+                dbCita.TipoDocumento = cita.TipoDocumento;
+                dbCita.CorreoPaciente = cita.CorreoPaciente;
+                dbCita.NombrePaciente = cita.NombrePaciente;
+                dbCita.FechaHoraFinal = cita.FechaHoraFinal;
+                dbCita.FechaHoraInicio = cita.FechaHoraInicio;
+                dbCita.Telefono = cita.Telefono;
+                dbCita.Nota = cita.Nota;
+
+                db.SaveChanges();
+
+                return Ok(dbCita);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al actualizar cita con correo: {ex}");
                 return StatusCode(500, ex);
             }
         }
