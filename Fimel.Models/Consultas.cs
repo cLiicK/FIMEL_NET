@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,5 +26,8 @@ namespace Fimel.Models
         public string? PresionArterial { get; set; }
         public DateTime? FechaConsulta { get; set; }
         public DateTime? FechaProximoControl { get; set; }
+
+        [NotMapped]
+        public int FechaPresentable { get; set; }
     }
 }

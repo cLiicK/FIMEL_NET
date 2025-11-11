@@ -141,6 +141,8 @@ namespace Fimel.Site.Controllers
                 Pacientes pacienteConsultado = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{rutPaciente}");
                 List<Consultas> consultasAnteriores = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{pacienteConsultado.Id}")
                                                                   .OrderByDescending(t => t.FechaConsulta ?? t.FechaCreacion).ToList();
+                
+                
                 return Json(consultasAnteriores);
             }
             catch (Exception ex)

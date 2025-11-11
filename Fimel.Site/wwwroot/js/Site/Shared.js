@@ -19,8 +19,8 @@
                 $("#inputTalla").val(response[0].Talla)
                 for (var i = 0; i < response.length; i++) {
                     let timestamp;
-                    if (/\/Date\((\d+)\)\//.test(response[i].FechaCreacion)) {
-                        timestamp = parseInt(response[i].FechaCreacion.replace(/\/Date\((\d+)\)\//, '$1'), 10);
+                    if (/\/Date\((\d+)\)\//.test(response[i].FechaConsulta)) {
+                        timestamp = parseInt(response[i].FechaConsulta.replace(/\/Date\((\d+)\)\//, '$1'), 10);
                     } else {
                         timestamp = Date.parse(response[i].FechaCreacion);
                     }
