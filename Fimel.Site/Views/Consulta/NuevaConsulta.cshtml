@@ -3,6 +3,7 @@
 <input type="hidden" id="hdnURL_ObtenerConsultasAnteriores" value='@Url.Action("ObtenerConsultasAnteriores", "Consulta")' />
 <input type="hidden" id="hdnURL_BuscarPacientePorNumDocumento" value='@Url.Action("BuscarPacientePorNumDocumento", "Pacientes")' />
 <input type="hidden" id="hdnURL_ObtenerConsultasAnterioresPorNumDocumento" value='@Url.Action("ObtenerConsultasAnterioresPorNumDocumento", "Consulta")' />
+<input type="hidden" id="hdnURL_ImprimirReceta" value='@Url.Action("ImprimirReceta", "Consulta")' />
 
 <input type="hidden" id="hiddenRutPaciente" />
 <input type="hidden" id="hiddenNumDocumento" />
@@ -336,7 +337,12 @@
                                                     <textarea class="form-control" id="inputIndicaciones" rows="3"></textarea>
                                                 </div>
                                                 <div class="col-md-12">
-                                                    <label for="exampleFormControlTextarea1" class="form-label">Receta</label>
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <label for="exampleFormControlTextarea1" class="form-label mb-0">Receta</label>
+                                                        <button type="button" class="btn-receta" id="btnImprimirReceta" onclick="ModuloConsulta.ImprimirReceta(this)">
+                                                            <i class="fas fa-file-pdf"></i> Imprimir receta
+                                                        </button>
+                                                    </div>
                                                     <textarea class="form-control" id="inputReceta" rows="3"></textarea>
                                                 </div>
                                                 <div class="col-md-12">

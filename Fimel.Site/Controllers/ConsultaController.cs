@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text;
+using System.Net;
 
 namespace Fimel.Site.Controllers
 {
@@ -32,9 +34,9 @@ namespace Fimel.Site.Controllers
             {
                 Pacientes paciente = null;
                 if (query.Rut.HasValue && query.Rut > 0)
-                    { paciente = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{query.Rut}"); }
+                { paciente = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{query.Rut}"); }
                 if (!string.IsNullOrEmpty(query.NumDoc))
-                    { paciente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{query.NumDoc}"); }
+                { paciente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{query.NumDoc}"); }
 
                 List<Consultas> historial = APIBase.Get<List<Consultas>>($"Consultas/GetByIdPaciente/{paciente.Id}").OrderByDescending(t => t.FechaConsulta).ToList();
 
@@ -187,7 +189,7 @@ namespace Fimel.Site.Controllers
                 _consulta.Indicaciones = _datosConsulta.Indicaciones;
                 _consulta.Receta = _datosConsulta.Receta;
                 _consulta.OrdenExamenes = _datosConsulta.OrdenExamenes;
-                
+
                 // Convertir fechas de string a DateTime
                 if (!string.IsNullOrEmpty(_datosConsulta.FechaProximoControl?.ToString()))
                 {
@@ -196,14 +198,14 @@ namespace Fimel.Site.Controllers
                         _consulta.FechaProximoControl = fechaProximoControl;
                     }
                 }
-                
+
                 if (!string.IsNullOrEmpty(_datosConsulta.FechaConsulta?.ToString()))
                 {
                     if (DateTime.TryParse(_datosConsulta.FechaConsulta.ToString(), out DateTime fechaConsulta))
                     {
                         _consulta.FechaConsulta = fechaConsulta;
                     }
-                    }
+                }
                 Consultas actualizada = APIBase.Put<Consultas>($"Consultas/{_datosConsulta.Id}", _consulta);
                 if (actualizada != null)
                 {
@@ -233,6 +235,89 @@ namespace Fimel.Site.Controllers
                 Logger.Log($"Error EliminarConsulta: {ex}");
                 return null;
             }
+        }
+
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public ActionResult ImprimirReceta(int rutPaciente, string numDocumento, string receta, string fechaConsulta)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuarioConectado == null)
+                    return RedirectToAction("Login", "Login");
+
+                Pacientes paciente = null;
+                if (rutPaciente != 0)
+                    paciente = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{rutPaciente}");
+                else if (!string.IsNullOrEmpty(numDocumento))
+                    paciente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{numDocumento}");
+
+                if (string.IsNullOrEmpty(receta))
+                    return Json(new { success = false, message = "La receta está vacía" });
+
+                string htmlContent = GenerarHtmlReceta(usuarioConectado, paciente, receta, fechaConsulta);
+
+                string tempHtmlPath = Path.Combine(Path.GetTempPath(), $"receta_{DateTime.Now.Ticks}.html");
+                System.IO.File.WriteAllText(tempHtmlPath, htmlContent, Encoding.UTF8);
+
+                byte[] pdfBytes = new Utileria().HtmlToPDF(tempHtmlPath);
+
+                if (System.IO.File.Exists(tempHtmlPath))
+                    System.IO.File.Delete(tempHtmlPath);
+
+                string nombrePaciente = $"{paciente.Nombres} {paciente.PrimerApellido}".Replace(" ", "_");
+
+                return File(pdfBytes, "application/pdf", $"Receta_{nombrePaciente.Replace(" ", "_")}_{DateTime.Now:yyyyMMddmmss}.pdf");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al generar PDF de receta: {ex}");
+                return Json(new { success = false, message = "Error al generar el PDF de la receta" });
+            }
+        }
+
+        private string GenerarHtmlReceta(Usuarios profesional, Pacientes paciente, string receta, string fechaConsulta)
+        {
+            string direccionInstitucion = "Dirección no disponible";
+
+            Instituciones institucion = null;
+            if (profesional.IdInstitucion.HasValue)
+            {
+                institucion = APIBase.Get<Instituciones>($"Instituciones/{profesional.IdInstitucion.Value}");
+                if (institucion != null && !string.IsNullOrEmpty(institucion.Dirección))
+                    direccionInstitucion = institucion.Dirección;
+            }
+
+            string ruta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "htmls", "receta.html");
+            string contenidoHTML = System.IO.File.ReadAllText(ruta);
+
+
+
+            //Remplazar TAG del HTML
+            var dataHtml = new Dictionary<string, string>
+            {
+                //["{{img_logo}}"] = ConvertirImageABase64(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png")),
+                ["{{NombreProfesional}}"] = $"{profesional.Nombres} {profesional.ApellidoPaterno} {profesional.ApellidoMaterno}",
+                ["{{Especialidad}}"] = "Mta",
+                ["{{RutProfesional}}"] = "16.086.998-4",
+                ["{{DireccionConsulta}}"] = direccionInstitucion,
+                ["{{TelefonoConsulta}}"] = institucion.Telefono.ToString(),
+                ["{{PacienteNombre}}"] = $"{paciente.Nombres} {paciente.PrimerApellido} {paciente.SegundoApellido}",
+                ["{{PacienteRut}}"] = $"{paciente.Rut.Value.ToString("N0")} {paciente.Dv}",
+                ["{{PacienteDireccion}}"] = paciente.Direccion,
+                ["{{PacienteTelefono}}"] = paciente.Celular.ToString(),
+                ["{{PacienteEdad}}"] = new Utileria().CalcularEdad(paciente.FechaNacimiento.Value).ToString(),
+                ["{{PacienteSexo}}"] = paciente.SexoBiologico == "M" ? "Masculino" : "Femenino",
+                ["{{FechaAtencion}}"] = fechaConsulta,
+                ["{{TextoReceta}}"] = receta,
+                ["{{RutEspecialista}}"] = "16.086.998-4"
+            };
+
+            foreach (var kv in dataHtml)
+                contenidoHTML = contenidoHTML.Replace(kv.Key, kv.Value);
+
+            return contenidoHTML;
         }
     }
 }

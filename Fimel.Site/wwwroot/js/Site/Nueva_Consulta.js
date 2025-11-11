@@ -329,6 +329,41 @@
             const dd = String(hoy.getDate()).padStart(2, '0');
             const fechaFormateada = `${yyyy}-${mm}-${dd}`;
             $(inputSelector).val(fechaFormateada);
+        },
+        ImprimirReceta: function (object) {
+            let receta = $("#inputReceta").val();
+            if (!receta || receta.trim() === "") {
+                Swal.fire('Atención', 'Debe ingresar una receta antes de imprimir', 'warning');
+                return;
+            }
+
+            let rutPaciente = $("#hiddenRutPaciente").val() || 0;
+            let numDocumento = $("#hiddenNumDocumento").val() || "";
+            let fechaConsulta = $("#inputFechaConsulta").val() || "";
+
+            showLoading(object);
+
+            $.ajax({
+                url: $('#hdnURL_ImprimirReceta').val(),
+                data: {
+                    rutPaciente: rutPaciente,
+                    numDocumento: numDocumento,
+                    receta: receta,
+                    fechaConsulta: fechaConsulta
+                },
+                method: 'POST',
+                cache: false,
+                async: true,
+                success: function (response, jqXHR) {
+                    if (response.Codigo === 200) {
+                        closeLoading(object);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    Swal.fire('Error', 'Favor comuniquese con un administrador', 'error');
+                    closeLoading(object);
+                }
+            });
         }
     }
 })();
