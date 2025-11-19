@@ -18,18 +18,18 @@
             if (response.length > 0) {
                 $("#inputTalla").val(response[0].Talla)
                 for (var i = 0; i < response.length; i++) {
-                    let timestamp;
-                    if (/\/Date\((\d+)\)\//.test(response[i].FechaConsulta)) {
-                        timestamp = parseInt(response[i].FechaConsulta.replace(/\/Date\((\d+)\)\//, '$1'), 10);
+                    let fecha;
+                    if (response[i].FechaConsulta != null) {
+                        fecha = new Date(response[i].FechaConsulta);
                     } else {
-                        timestamp = Date.parse(response[i].FechaCreacion);
+                        fecha = new Date(response[i].FechaCreacion);
                     }
-                    const date = new Date(timestamp);
-                    const day = ('0' + date.getDate()).slice(-2);
-                    const month = ('0' + (date.getMonth() + 1)).slice(-2);
-                    const year = date.getFullYear();
 
-                    let fechaSTR = `${day}-${month}-${year}`;
+                    const dia = String(fecha.getDate()).padStart(2, '0');
+                    const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Los meses empiezan en 0
+                    const anio = fecha.getFullYear();
+                 
+                    const fechaSTR = `${dia}-${mes}-${anio}`;
 
                     const encryptedId = btoa(response[i].Id.toString());
                     const url = `/Consulta/DetalleConsulta?idEncrypted=${encryptedId}`;

@@ -116,7 +116,7 @@
                         data: null,
                         orderable: false,
                         render: function (data, type, row) {
-                            return `<a class="btn btn-ico" onclick="ModuloHistorialConsultas.EliminarConsulta(${data.Id})"><i class="fas fa-trash-alt" title="Eliminar"></i></a>`;
+                            return `<a class="btn btn-ico" onclick="ModuloHistorialConsultas.EliminarConsulta(${data.Id})"><i class="fas fa-trash-can" title="Eliminar"></i></a>`;
                         }
 
                     }

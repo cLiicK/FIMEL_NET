@@ -4,6 +4,7 @@ using Fimel.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Fimel.Models.Migrations
 {
     [DbContext(typeof(FimelDbContext))]
-    partial class FimelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251119013621_plantillas_consulta")]
+    partial class plantillas_consulta
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -603,15 +606,10 @@ namespace Fimel.Models.Migrations
                     b.Property<string>("Titulo")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UsuarioId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Vigente")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("PlantillasConsulta", (string)null);
                 });
@@ -822,17 +820,6 @@ namespace Fimel.Models.Migrations
                     b.HasOne("Fimel.Models.Usuarios", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId");
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("Fimel.Models.PlantillaConsulta", b =>
-                {
-                    b.HasOne("Fimel.Models.Usuarios", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("Usuario");
                 });

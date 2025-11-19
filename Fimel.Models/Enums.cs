@@ -22,5 +22,12 @@ namespace Fimel.Models
             Especialista = 2,
             Administrativo = 3
         }
+
+        public enum EnumTiposPlantillas
+        {
+            Anamnesis = 1,
+            ExamenFisico = 2,
+            Indicaciones = 3
+        }
     }
 }

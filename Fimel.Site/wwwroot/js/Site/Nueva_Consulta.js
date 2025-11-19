@@ -186,7 +186,13 @@
                                 confirmButtonText: 'Ir a Ficha Paciente'
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    window.location.replace("/Pacientes/FichaPaciente?p=" + rutCompleto);
+                                    let urlFichaPaciente;
+                                    if (tipoDocto == "RUT") {
+                                        urlFichaPaciente = "/Pacientes/FichaPaciente?p=" + encodeURIComponent(rutCompleto);
+                                    } else {
+                                        urlFichaPaciente = "/Pacientes/FichaPaciente?numDoc=" + encodeURIComponent(validacionRut) + "&tipo=" + encodeURIComponent(tipoDocto);
+                                    }
+                                    window.location.replace(urlFichaPaciente);
                                 }
                             });
                         }
@@ -198,7 +204,13 @@
                             confirmButtonText: 'Ir a Ficha Paciente'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.replace("/Pacientes/FichaPaciente?p=" + rutCompleto);
+                                let urlFichaPaciente;
+                                if (tipoDocto == "RUT") {
+                                    urlFichaPaciente = "/Pacientes/FichaPaciente?p=" + encodeURIComponent(rutCompleto);
+                                } else {
+                                    urlFichaPaciente = "/Pacientes/FichaPaciente?numDoc=" + encodeURIComponent(validacionRut) + "&tipo=" + encodeURIComponent(tipoDocto);
+                                }
+                                window.location.replace(urlFichaPaciente);
                             }
                         });
                     }
@@ -329,6 +341,397 @@
             const dd = String(hoy.getDate()).padStart(2, '0');
             const fechaFormateada = `${yyyy}-${mm}-${dd}`;
             $(inputSelector).val(fechaFormateada);
+        },
+
+        AbrirModalPlantillas: function (tipo) {
+            const modalElement = document.getElementById('modalPlantillas');
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            
+            // Si no existe instancia, crear una nueva
+            if (!modal) {
+                modal = new bootstrap.Modal(modalElement);
+            }
+            
+            // Agregar listener para limpiar backdrop cuando se cierre el modal
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(function(backdrop) {
+                    backdrop.remove();
+                });
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }, { once: true });
+            
+            const modalTitle = document.getElementById('modalPlantillasLabel');
+            const contenedor = $('#contenedorPlantillas');
+            
+            // Guardar el tipo actual para usarlo después
+            $('#modalPlantillas').data('tipo-actual', tipo);
+            
+            // Ocultar formulario y botón de crear
+            $('#formularioNuevaPlantilla').hide();
+            $('#btnMostrarFormulario').hide();
+            
+            // Limpiar formulario y resetear modo edición
+            $('#inputTituloPlantilla').val('');
+            $('#inputContenidoPlantilla').val('');
+            $('#inputIdPlantillaEditar').val('');
+            $('#tituloFormularioPlantilla').text('Crear Nueva Plantilla');
+            $('#btnGuardarPlantilla').text('Guardar Plantilla');
+            
+            // Actualizar título según el tipo
+            let titulo = 'Plantillas';
+            if (tipo === 'Anamnesis') {
+                titulo = 'Plantillas de Anamnesis';
+            } else if (tipo === 'ExamenFisico') {
+                titulo = 'Plantillas de Examen Físico';
+            } else if (tipo === 'Indicaciones') {
+                titulo = 'Plantillas de Indicaciones';
+            }
+            modalTitle.textContent = titulo;
+            
+            // Mostrar loading
+            contenedor.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
+            
+            // Abrir modal
+            modal.show();
+            
+            // Cargar plantillas
+            $.ajax({
+                url: '/Consulta/ObtenerPlantillasPorTipo',
+                type: 'GET',
+                data: { tipo: tipo },
+                success: function (response) {
+                    if (response.success && response.data && response.data.length > 0) {
+                        let html = '';
+                        response.data.forEach(function (plantilla, index) {
+                            const contenidoEscapado = (plantilla.Contenido || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n');
+                            const tituloEscapado = (plantilla.Titulo || 'Sin título').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                            html += `
+                                <div class="list-group-item plantilla-item-container">
+                                    <div class="d-flex w-100 justify-content-between align-items-start">
+                                        <div class="plantilla-item flex-grow-1" style="cursor: pointer;" 
+                                             data-tipo="${tipo}" 
+                                             data-id="${plantilla.Id}" 
+                                             data-titulo="${tituloEscapado}" 
+                                             data-contenido="${contenidoEscapado}">
+                                            <h6 class="mb-1">${tituloEscapado}</h6>
+                                            <p class="mb-1 text-muted small">${(plantilla.Contenido || '').substring(0, 100)}${(plantilla.Contenido || '').length > 100 ? '...' : ''}</p>
+                                        </div>
+                                        <div class="d-flex gap-1 ms-2">
+                                            <button class="btn btn-sm btn-outline-primary btn-editar-plantilla" 
+                                                    data-id="${plantilla.Id}" 
+                                                    data-titulo="${tituloEscapado}" 
+                                                    data-contenido="${contenidoEscapado}"
+                                                    title="Editar plantilla">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger btn-eliminar-plantilla" 
+                                                    data-id="${plantilla.Id}" 
+                                                    data-titulo="${tituloEscapado}"
+                                                    title="Eliminar plantilla">
+                                                <i class="fas fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        contenedor.html(html);
+                        
+                        // Agregar event listeners para seleccionar plantilla
+                        contenedor.find('.plantilla-item').on('click', function() {
+                            const $item = $(this);
+                            ModuloConsulta.SeleccionarPlantilla(
+                                $item.data('tipo'),
+                                $item.data('id'),
+                                $item.data('titulo'),
+                                $item.data('contenido')
+                            );
+                        });
+                        
+                        // Agregar event listeners para editar plantilla
+                        contenedor.find('.btn-editar-plantilla').on('click', function(e) {
+                            e.stopPropagation();
+                            const $btn = $(this);
+                            ModuloConsulta.EditarPlantilla(
+                                $btn.data('id'),
+                                $btn.data('titulo'),
+                                $btn.data('contenido')
+                            );
+                        });
+                        
+                        // Agregar event listeners para eliminar plantilla
+                        contenedor.find('.btn-eliminar-plantilla').on('click', function(e) {
+                            e.stopPropagation();
+                            const $btn = $(this);
+                            ModuloConsulta.EliminarPlantilla(
+                                $btn.data('id'),
+                                $btn.data('titulo')
+                            );
+                        });
+                        
+                        // Mostrar botón de crear siempre (también cuando hay plantillas)
+                        $('#btnMostrarFormulario').show();
+                    } else {
+                        contenedor.html('<div class="alert alert-info"><i class="fas fa-info-circle"></i> No hay plantillas disponibles para este tipo.</div>');
+                        // Mostrar botón para crear nueva plantilla
+                        $('#btnMostrarFormulario').show();
+                    }
+                },
+                error: function () {
+                    contenedor.html('<div class="alert alert-danger"><i class="fas fa-triangle-exclamation"></i> Error al cargar las plantillas.</div>');
+                }
+            });
+        },
+
+        SeleccionarPlantilla: function (tipo, id, titulo, contenido) {
+            // Determinar el textarea según el tipo
+            let textareaId = '';
+            if (tipo === 'Anamnesis') {
+                textareaId = '#inputAnamnesis';
+            } else if (tipo === 'ExamenFisico') {
+                textareaId = '#inputExamenFisico';
+            } else if (tipo === 'Indicaciones') {
+                textareaId = '#inputIndicaciones';
+            }
+            
+            if (textareaId) {
+                const textarea = $(textareaId);
+                const contenidoActual = textarea.val();
+                
+                // Decodificar el contenido (revertir el escape)
+                const contenidoDecodificado = contenido
+                    .replace(/&#39;/g, "'")
+                    .replace(/&quot;/g, '"')
+                    .replace(/\\n/g, '\n');
+                
+                // Si ya hay contenido, agregar con salto de línea
+                if (contenidoActual.trim() !== '') {
+                    textarea.val(contenidoActual + '\n\n' + contenidoDecodificado);
+                } else {
+                    textarea.val(contenidoDecodificado);
+                }
+                
+                // Cerrar modal completamente
+                const modalElement = document.getElementById('modalPlantillas');
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // Asegurarse de eliminar el backdrop si existe
+                setTimeout(function() {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(function(backdrop) {
+                        backdrop.remove();
+                    });
+                    // Remover la clase modal-open del body
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 100);
+                
+                // Mostrar mensaje de éxito
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Plantilla aplicada',
+                    text: `La plantilla "${titulo}" ha sido aplicada correctamente.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        },
+
+        MostrarFormularioCrear: function () {
+            // Limpiar formulario y resetear modo edición
+            $('#inputTituloPlantilla').val('');
+            $('#inputContenidoPlantilla').val('');
+            $('#inputIdPlantillaEditar').val('');
+            $('#tituloFormularioPlantilla').text('Crear Nueva Plantilla');
+            $('#btnGuardarPlantilla').text('Guardar Plantilla');
+            
+            // Mostrar formulario
+            $('#formularioNuevaPlantilla').show();
+            $('#btnMostrarFormulario').hide();
+            
+            // Scroll al formulario
+            $('#formularioNuevaPlantilla')[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        },
+
+        CancelarCrearPlantilla: function () {
+            $('#formularioNuevaPlantilla').hide();
+            $('#btnMostrarFormulario').show();
+            // Limpiar formulario y resetear modo edición
+            $('#inputTituloPlantilla').val('');
+            $('#inputContenidoPlantilla').val('');
+            $('#inputIdPlantillaEditar').val('');
+            $('#tituloFormularioPlantilla').text('Crear Nueva Plantilla');
+            $('#btnGuardarPlantilla').text('Guardar Plantilla');
+        },
+
+        EditarPlantilla: function (id, titulo, contenido) {
+            // Decodificar el contenido si viene escapado
+            const contenidoDecodificado = typeof contenido === 'string' 
+                ? contenido.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\n/g, '\n')
+                : contenido;
+            
+            // Cargar datos en el formulario
+            $('#inputIdPlantillaEditar').val(id);
+            $('#inputTituloPlantilla').val(titulo);
+            $('#inputContenidoPlantilla').val(contenidoDecodificado);
+            
+            // Cambiar título y botón
+            $('#tituloFormularioPlantilla').text('Editar Plantilla');
+            $('#btnGuardarPlantilla').text('Actualizar Plantilla');
+            
+            // Mostrar formulario
+            $('#formularioNuevaPlantilla').show();
+            $('#btnMostrarFormulario').hide();
+            
+            // Scroll al formulario
+            $('#formularioNuevaPlantilla')[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        },
+
+        GuardarNuevaPlantilla: function () {
+            const tipo = $('#modalPlantillas').data('tipo-actual');
+            const idEditar = $('#inputIdPlantillaEditar').val();
+            const titulo = $('#inputTituloPlantilla').val().trim();
+            const contenido = $('#inputContenidoPlantilla').val().trim();
+            const esEdicion = idEditar && idEditar !== '';
+
+            // Validaciones
+            if (!titulo) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo requerido',
+                    text: 'Por favor ingrese un título para la plantilla.'
+                });
+                $('#inputTituloPlantilla').focus();
+                return;
+            }
+
+            if (!contenido) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo requerido',
+                    text: 'Por favor ingrese el contenido de la plantilla.'
+                });
+                $('#inputContenidoPlantilla').focus();
+                return;
+            }
+
+            // Mostrar loading
+            Swal.fire({
+                title: esEdicion ? 'Actualizando...' : 'Guardando...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Determinar URL y método según si es edición o creación
+            const url = esEdicion ? '/Consulta/ActualizarPlantilla' : '/Consulta/GuardarPlantilla';
+            const data = esEdicion 
+                ? { id: idEditar, tipo: tipo, titulo: titulo, contenido: contenido }
+                : { tipo: tipo, titulo: titulo, contenido: contenido };
+
+            // Guardar o actualizar plantilla
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: esEdicion ? 'Plantilla actualizada' : 'Plantilla guardada',
+                            text: esEdicion ? 'La plantilla se ha actualizado correctamente.' : 'La plantilla se ha guardado correctamente.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Recargar plantillas y ocultar formulario
+                            const tipoActual = $('#modalPlantillas').data('tipo-actual');
+                            ModuloConsulta.AbrirModalPlantillas(tipoActual || tipo);
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || (esEdicion ? 'Error al actualizar la plantilla.' : 'Error al guardar la plantilla.')
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: esEdicion ? 'Error al actualizar la plantilla. Por favor intente nuevamente.' : 'Error al guardar la plantilla. Por favor intente nuevamente.'
+                    });
+                }
+            });
+        },
+
+        EliminarPlantilla: function (id, titulo) {
+            // Confirmar eliminación
+            Swal.fire({
+                icon: 'warning',
+                title: '¿Eliminar plantilla?',
+                text: `¿Está seguro que desea eliminar la plantilla "${titulo}"?`,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Eliminando...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Eliminar plantilla
+                    $.ajax({
+                        url: '/Consulta/EliminarPlantilla',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Plantilla eliminada',
+                                    text: 'La plantilla se ha eliminado correctamente.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    // Recargar plantillas
+                                    const tipo = $('#modalPlantillas').data('tipo-actual');
+                                    ModuloConsulta.AbrirModalPlantillas(tipo);
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message || 'Error al eliminar la plantilla.'
+                                });
+                            }
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al eliminar la plantilla. Por favor intente nuevamente.'
+                            });
+                        }
+                    });
+                }
+            });
         }
     }
 })();

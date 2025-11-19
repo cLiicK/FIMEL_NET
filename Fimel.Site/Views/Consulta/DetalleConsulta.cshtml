@@ -9,6 +9,10 @@
 
     int edad = new Utileria().CalcularEdad(Model.Paciente.FechaNacimiento.Value);
     string fechaConsulta = Model.Consulta.FechaConsulta.HasValue ? Model.Consulta.FechaConsulta.Value.ToString("dd-MM-yyyy") : string.Empty;
+    if (string.IsNullOrEmpty(fechaConsulta))
+    {
+        fechaConsulta = Model.Consulta.FechaCreacion.HasValue ? Model.Consulta.FechaCreacion.Value.ToString("dd-MM-yyyy") : string.Empty;
+    }
     string fechaProximoControl = Model.Consulta.FechaProximoControl.HasValue ? Model.Consulta.FechaProximoControl.Value.ToString("dd-MM-yyyy") : string.Empty;
 }
 
@@ -193,7 +197,7 @@
                                                 <textarea class="form-control" rows="3" id="inputAnamnesis" disabled>@Model.Consulta.Anamnesis</textarea>
                                             </div>
                                             <div class="col-md-12">
-                                                <label for="exampleFormControlTextarea1" class="form-label">Examen fisico</label>
+                                                <label for="exampleFormControlTextarea1" class="form-label">Examen físico</label>
                                                 <textarea class="form-control" rows="3" id="inputExamenFisico" disabled>@Model.Consulta.ExamenFisico</textarea>
                                             </div>
                                             <div class="col-md-12">

@@ -236,5 +236,121 @@ namespace Fimel.Site.Controllers
                 return null;
             }
         }
+
+        public ActionResult ObtenerPlantillasPorTipo(string tipo)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                
+                if (usuarioConectado == null)
+                    return Json(new { success = false, message = "Usuario no autenticado" });
+
+                List<PlantillaConsulta> plantillas = APIBase.Get<List<PlantillaConsulta>>($"PlantillasConsulta/GetByTipo/{tipo}/{usuarioConectado.Id}");
+                return Json(new { success = true, data = plantillas });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al ObtenerPlantillasPorTipo: {ex}");
+                return Json(new { success = false, message = "Error al obtener las plantillas" });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult GuardarPlantilla(string tipo, string titulo, string contenido)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                
+                if (usuarioConectado == null)
+                    return Json(new { success = false, message = "Usuario no autenticado" });
+
+                PlantillaConsulta nuevaPlantilla = new PlantillaConsulta
+                {
+                    Titulo = titulo,
+                    Contenido = contenido,
+                    TipoPlantilla = tipo,
+                    Vigente = "S",
+                    FechaCreacion = DateTime.Now,
+                    Usuario = usuarioConectado
+                };
+
+                PlantillaConsulta plantillaGuardada = APIBase.Post<PlantillaConsulta>("PlantillasConsulta", nuevaPlantilla);
+                
+                if (plantillaGuardada != null)
+                {
+                    return Json(new { success = true, message = "Plantilla guardada correctamente" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Error al guardar la plantilla" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al GuardarPlantilla: {ex}");
+                return Json(new { success = false, message = "Error al guardar la plantilla" });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult ActualizarPlantilla(int id, string tipo, string titulo, string contenido)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                
+                if (usuarioConectado == null)
+                    return Json(new { success = false, message = "Usuario no autenticado" });
+
+                PlantillaConsulta plantillaActualizada = APIBase.Put<PlantillaConsulta>($"PlantillasConsulta/{id}", new PlantillaConsulta
+                {
+                    Id = id,
+                    Titulo = titulo,
+                    Contenido = contenido,
+                    TipoPlantilla = tipo,
+                    Vigente = "S",
+                    Usuario = usuarioConectado
+                });
+                
+                if (plantillaActualizada != null)
+                {
+                    return Json(new { success = true, message = "Plantilla actualizada correctamente" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Error al actualizar la plantilla" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al ActualizarPlantilla: {ex}");
+                return Json(new { success = false, message = "Error al actualizar la plantilla" });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult EliminarPlantilla(int id)
+        {
+            try
+            {
+                bool eliminada = APIBase.Delete<bool>($"PlantillasConsulta/{id}");
+                
+                if (eliminada)
+                {
+                    return Json(new { success = true, message = "Plantilla eliminada correctamente" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Error al eliminar la plantilla" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al EliminarPlantilla: {ex}");
+                return Json(new { success = false, message = "Error al eliminar la plantilla" });
+            }
+        }
     }
 }
