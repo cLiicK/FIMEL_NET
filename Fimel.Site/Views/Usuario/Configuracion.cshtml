@@ -2,6 +2,8 @@
 
 <input type="hidden" id="hdnURL_GuardarConfiguracion" value='@Url.Action("_GuardarConfiguracion", "Usuario")' />
 <input type="hidden" id="hdnURL_ActualizarConfiguracion" value='@Url.Action("_ActualizarConfiguracion", "Usuario")' />
+<input type="hidden" id="hdnURL_SubirLogo" value='@Url.Action("_SubirLogo", "Usuario")' />
+<input type="hidden" id="hdnURL_GenerarToken" value='@Url.Action("_GenerarTokenPublico", "Usuario")' />
 <input type="hidden" id="idConfig" value='@Model.Configuracion.Id' />
 
 
@@ -67,6 +69,18 @@
 														}
 													</select>
 												</div>
+												<div class="col-md-4">
+													<label for="inputDiasAvisoControl" class="form-label">
+														D&#237;as de aviso previo al control
+														<i class="fas fa-circle-info ms-1 text-muted"
+														   data-bs-toggle="tooltip" data-bs-placement="top"
+														   title="Correo al paciente N d&#237;as antes de su pr&#243;ximo control. 0 = desactivado."
+														   style="cursor:help;"></i>
+													</label>
+													<input type="number" class="form-control" id="inputDiasAvisoControl" min="0" max="30"
+														value="@(Model.Configuracion != null ? Model.Configuracion.DiasAvisoPrevioControl : 5)"
+														placeholder="5">
+												</div>
 											</form>
 										</div>
 									</div>
@@ -125,6 +139,93 @@
 									</div>
 								</div> *@
 							</div>
+
+							@if (Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Especialista ||
+								 Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Administrador)
+							{
+								string? urlPublica = ViewBag.UrlPublica as string;
+								<div class="accordion-item mt-2">
+									<h2 class="accordion-header">
+										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionConfig-EnlacePublico" aria-expanded="false">
+											Enlace público de agendamiento
+										</button>
+									</h2>
+									<div id="accordionConfig-EnlacePublico" class="accordion-collapse collapse">
+										<div class="accordion-body">
+											<p class="text-muted" style="font-size:0.88rem">
+												Comparte este enlace para que tus pacientes puedan agendar una cita directamente,
+												sin necesidad de iniciar sesión.
+											</p>
+											@if (!string.IsNullOrEmpty(urlPublica))
+											{
+												<div class="mb-3">
+													<label class="form-label fw-semibold">Tu enlace actual</label>
+													<div class="input-group">
+														<input type="text" class="form-control form-control-sm" id="inputUrlPublica" value="@urlPublica" readonly>
+														<button class="btn btn-outline-secondary btn-sm" type="button" onclick="ModuloConfiguracionUsuario.CopiarEnlace()">
+															<i class="fas fa-copy"></i>
+														</button>
+														<a href="@urlPublica" target="_blank" class="btn btn-outline-secondary btn-sm">
+															<i class="fas fa-arrow-up-right-from-square"></i>
+														</a>
+													</div>
+												</div>
+											}
+											<button type="button" class="btn btn-blue btn-sm" id="btnGenerarToken"
+												onclick="ModuloConfiguracionUsuario.GenerarEnlace(this)">
+												<i class="fas fa-link me-1"></i>
+												@(string.IsNullOrEmpty(urlPublica) ? "Generar enlace" : "Regenerar enlace")
+											</button>
+											@if (!string.IsNullOrEmpty(urlPublica))
+											{
+												<p class="text-muted mt-2" style="font-size:0.8rem">
+													Al regenerar el enlace, el anterior dejará de funcionar.
+												</p>
+											}
+										</div>
+									</div>
+								</div>
+							}
+							@if (Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Especialista ||
+								 Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Administrador)
+							{
+								string? logoBase64 = ViewBag.LogoBase64 as string;
+								<div class="accordion-item mt-2">
+									<h2 class="accordion-header">
+										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionConfig-Logo" aria-expanded="false">
+											Logo para correos
+										</button>
+									</h2>
+									<div id="accordionConfig-Logo" class="accordion-collapse collapse">
+										<div class="accordion-body">
+											<p class="text-muted" style="font-size:0.88rem">
+												Este logo aparecerá en los correos de cumpleaños enviados a tus pacientes.
+												Si no subes uno, se usará el logo de Fimel.
+											</p>
+											@if (!string.IsNullOrEmpty(logoBase64))
+											{
+												<div class="mb-3">
+													<label class="form-label">Logo actual</label><br>
+													<img id="imgLogoActual" src="data:image/png;base64,@logoBase64" alt="Logo actual"
+														style="max-height:80px;max-width:220px;border:1px solid #e0e8f0;border-radius:8px;padding:6px;background:#fff">
+												</div>
+											}
+											<div class="mb-3" id="divPreviewNuevoLogo" style="display:none">
+												<label class="form-label">Vista previa</label><br>
+												<img id="imgPreviewLogo" alt="Vista previa"
+													style="max-height:80px;max-width:220px;border:1px solid #e0e8f0;border-radius:8px;padding:6px;background:#fff">
+											</div>
+											<div class="mb-3">
+												<label for="inputLogoFile" class="form-label">@(!string.IsNullOrEmpty(logoBase64) ? "Cambiar logo" : "Subir logo") (PNG o JPG, máx. 2 MB)</label>
+												<input type="file" class="form-control" id="inputLogoFile" accept=".png,.jpg,.jpeg">
+											</div>
+											<button type="button" class="btn btn-blue btn-sm" onclick="ModuloConfiguracionUsuario.SubirLogo(this)">
+												<i class="fas fa-upload me-1"></i> Subir logo
+											</button>
+										</div>
+									</div>
+								</div>
+							}
 						</div>
 						<!--LATERAL-->
 						<div class="col-md-4">

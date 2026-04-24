@@ -87,11 +87,16 @@ namespace Fimel.Site.Controllers
                     {
                         idCita = cita.Id,
                         nombre = cita.NombrePaciente,
+                        apellidoPaterno = cita.ApellidoPaciente,
+                        apellidoMaterno = cita.SegundoApellidoPaciente,
                         correo = cita.CorreoPaciente,
                         telefono = cita.Telefono,
                         nota = cita.Nota,
                         documento = cita.TipoDocumento,
-                        numDocumento = cita.TipoDocumento == "RUT" ? Utileria.FormatearRutSinDv(Convert.ToInt32(cita.NumeroDocumento)) : cita.NumeroDocumento,
+                        numDocumentoRaw = cita.NumeroDocumento,
+                        numDocumento = (cita.TipoDocumento == "RUT" && int.TryParse(cita.NumeroDocumento, out int rutFmt))
+                            ? Utileria.FormatearRutSinDv(rutFmt)
+                            : cita.NumeroDocumento,
                         horaInicio = cita.FechaHoraInicio.ToString("HH:mm"),
                         horaFinal = cita.FechaHoraFinal.ToString("HH:mm")
                     }
@@ -320,15 +325,10 @@ namespace Fimel.Site.Controllers
                 if (citaPost == null)
                     return Json(new { success = false, message = "Error al crear cita" });
 
-                try
-                {
-                    EnviarCorreoConfirmacionCita(citaPost, usuarioDestino);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log($"Error al enviar correo de confirmación: {ex}");
-                    // No fallar la creación de la cita si el correo falla
-                }
+                try { EnviarCorreoConfirmacionCita(citaPost, usuarioDestino); }
+                catch (Exception ex) { Logger.Log($"Error al enviar correo de confirmación: {ex}"); }
+
+                CrearOActualizarPacienteDesde(citaPost, idUsuarioFinal);
 
                 return Json(new { success = true, message = "Cita creada" });
             }
@@ -408,6 +408,68 @@ namespace Fimel.Site.Controllers
                 Logger.Log($"Error al generar contenido del correo: {ex}");
                 return $"Su cita ha sido confirmada para el {cita.FechaHoraInicio.ToString("dd/MM/yyyy")} a las {cita.FechaHoraInicio.ToString("HH:mm")} con {profesional.Nombres} {profesional.ApellidoPaterno}.";
             }
+        }
+
+        private void CrearOActualizarPacienteDesde(Cita cita, int idUsuario)
+        {
+            if (string.IsNullOrEmpty(cita.NumeroDocumento) || string.IsNullOrEmpty(cita.TipoDocumento))
+                return;
+
+            try
+            {
+                Pacientes pacienteExistente = null;
+
+                if (cita.TipoDocumento == "RUT" && int.TryParse(cita.NumeroDocumento, out int rut))
+                {
+                    try { pacienteExistente = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{rut}"); } catch { }
+                }
+                else
+                {
+                    try { pacienteExistente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{Uri.EscapeDataString(cita.NumeroDocumento)}"); } catch { }
+                }
+
+                if (pacienteExistente != null && pacienteExistente.Id > 0)
+                    return;
+
+                var nuevo = new Pacientes
+                {
+                    Nombres = cita.NombrePaciente,
+                    PrimerApellido = cita.ApellidoPaciente,
+                    SegundoApellido = cita.SegundoApellidoPaciente,
+                    Email = cita.CorreoPaciente,
+                    Celular = int.TryParse(new string(cita.Telefono?.Where(char.IsDigit).ToArray()), out int tel) ? tel : null,
+                    TipoDocumento = cita.TipoDocumento,
+                    NumeroDocumento = cita.NumeroDocumento,
+                    UsuarioCreacion = idUsuario
+                };
+
+                if (cita.TipoDocumento == "RUT" && int.TryParse(cita.NumeroDocumento, out int rutNum))
+                {
+                    nuevo.Rut = rutNum;
+                    nuevo.Dv = CalcularDvRut(rutNum);
+                }
+
+                APIBase.Post<Pacientes>("Pacientes", nuevo);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al crear paciente desde cita: {ex}");
+            }
+        }
+
+        private static string CalcularDvRut(int rut)
+        {
+            int suma = 0, multiplicador = 2, numero = rut;
+            while (numero > 0)
+            {
+                suma += (numero % 10) * multiplicador;
+                numero /= 10;
+                multiplicador = multiplicador == 7 ? 2 : multiplicador + 1;
+            }
+            int dv = 11 - (suma % 11);
+            if (dv == 11) return "0";
+            if (dv == 10) return "K";
+            return dv.ToString();
         }
 
         public static string ConvertirImageABase64(string rutaImagen)

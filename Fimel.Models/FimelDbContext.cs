@@ -44,7 +44,7 @@ namespace Fimel.Models
             modelBuilder.Entity<Reservas>().ToTable("Reservas", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<parExamenes>().ToTable("parExamenes", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<parEspecialidades>().ToTable("parEspecialidades", t => t.ExcludeFromMigrations());
-            modelBuilder.Entity<Instituciones>().ToTable("Instituciones", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<Instituciones>().ToTable("Instituciones");
             modelBuilder.Entity<parTiposConsultas>().ToTable("parTiposConsultas", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<Bitacoras>().ToTable("Bitacoras", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<Perfiles>().ToTable("Perfiles", t => t.ExcludeFromMigrations());
@@ -54,7 +54,7 @@ namespace Fimel.Models
             modelBuilder.Entity<HorarioAtencion>().ToTable("HorariosAtencion", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<HorarioEspecifico>().ToTable("HorariosEspecificos");
             modelBuilder.Entity<Cita>().ToTable("Citas");
-            modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario");
             modelBuilder.Entity<PlantillaConsulta>().ToTable("PlantillasConsulta");
 
         }

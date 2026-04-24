@@ -1,0 +1,555 @@
+@model Fimel.Models.ConfiguracionUsuario
+@{
+    Layout = null;
+    string token = ViewBag.Token;
+    string profesionalNombre = $"{Model.Usuario.Nombres} {Model.Usuario.ApellidoPaterno} {Model.Usuario.ApellidoMaterno}".Trim();
+    string institucionNombre = Model.Usuario.Institucion?.RazonSocial ?? "Fimel";
+    string? logoBase64 = Model.Usuario.Institucion?.Logo;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Agendar Cita — @profesionalNombre</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32x32.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Signika+Negative:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap-5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --f-blue: #0E96CC;
+            --f-dark: #0a6e96;
+            --f-light: #e8f7fd;
+            --f-bg: #F5F7FB;
+            --f-text: #444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Open Sans', sans-serif; background: var(--f-bg); color: var(--f-text); min-height: 100vh; }
+        h1,h2,h3,h4,h5 { font-family: 'Signika Negative', sans-serif; }
+
+        /* HEADER */
+        .ag-header {
+            background: #fff;
+            border-bottom: 1px solid #edf2f7;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .ag-header-logo {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: var(--f-light);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .ag-header-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+        .ag-header-logo .fa-stethoscope { font-size: 1.4rem; color: var(--f-blue); }
+        .ag-header-info h2 { font-size: 1.05rem; color: #1a2a3a; margin: 0; }
+        .ag-header-info p { font-size: 0.82rem; color: #888; margin: 0; }
+
+        /* STEPS */
+        .ag-steps {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            background: #fff;
+            border-bottom: 1px solid #edf2f7;
+            padding: 0;
+        }
+        .ag-step {
+            flex: 1; max-width: 160px;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #bbb;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .ag-step.active { color: var(--f-blue); border-bottom-color: var(--f-blue); font-weight: 700; }
+        .ag-step.done { color: #28a745; border-bottom-color: #28a745; }
+        .ag-step i { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+
+        /* MAIN CONTENT */
+        .ag-body { max-width: 520px; margin: 0 auto; padding: 20px 16px 60px; }
+
+        /* PANEL */
+        .ag-panel { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 16px; }
+        .ag-panel-title { font-size: 1rem; font-weight: 700; color: #1a2a3a; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .ag-panel-title i { color: var(--f-blue); }
+
+        /* MONTH NAV */
+        .month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .month-nav button { background: var(--f-bg); border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; color: var(--f-text); font-size: 0.9rem; transition: background 0.15s; }
+        .month-nav button:hover { background: var(--f-light); color: var(--f-blue); }
+        .month-nav span { font-weight: 700; font-size: 0.95rem; color: #1a2a3a; }
+
+        /* DAY HEADERS */
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 6px; }
+        .days-header span { text-align: center; font-size: 0.7rem; color: #aaa; font-weight: 600; padding: 4px 0; }
+
+        /* CALENDAR GRID */
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day-cell {
+            aspect-ratio: 1;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: default;
+            color: #ccc;
+            font-weight: 400;
+        }
+        .day-cell.available {
+            background: var(--f-light);
+            color: var(--f-blue);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .day-cell.available:hover { background: #c5ecf9; transform: scale(1.08); }
+        .day-cell.selected { background: var(--f-blue) !important; color: #fff !important; }
+        .day-cell.today { border: 2px solid var(--f-blue); }
+        .day-cell.past { color: #ddd; }
+
+        /* TIME SLOTS */
+        .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        @@media (min-width: 360px) { .slots-grid { grid-template-columns: repeat(4, 1fr); } }
+        .slot-btn {
+            padding: 10px 4px;
+            border: 2px solid #e0e8f0;
+            background: #fff;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--f-text);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .slot-btn:hover { border-color: var(--f-blue); color: var(--f-blue); }
+        .slot-btn.selected { border-color: var(--f-blue); background: var(--f-blue); color: #fff; }
+
+        /* FORM */
+        .ag-form label { font-size: 0.88rem; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
+        .ag-form input, .ag-form textarea {
+            width: 100%; padding: 11px 14px;
+            border: 1.5px solid #e0e8f0;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-family: 'Open Sans', sans-serif;
+            color: var(--f-text);
+            transition: border-color 0.15s;
+            outline: none;
+            margin-bottom: 14px;
+        }
+        .ag-form input:focus, .ag-form textarea:focus { border-color: var(--f-blue); }
+        .ag-form textarea { resize: none; height: 80px; }
+
+        /* RESUMEN */
+        .resumen-box {
+            background: var(--f-light);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+        .resumen-box p { margin: 0; font-size: 0.88rem; color: #4a6a7a; line-height: 1.7; }
+        .resumen-box strong { color: #1a2a3a; }
+
+        /* BUTTONS */
+        .btn-fimel {
+            width: 100%;
+            background: var(--f-blue);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .btn-fimel:hover { background: var(--f-dark); transform: translateY(-1px); }
+        .btn-fimel:disabled { background: #b0d8ec; cursor: default; transform: none; }
+        .btn-back {
+            display: flex; align-items: center; gap: 6px;
+            background: none; border: none;
+            color: var(--f-blue); font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; padding: 0; margin-bottom: 14px;
+        }
+
+        /* SUCCESS */
+        .success-box { text-align: center; padding: 20px 0; }
+        .success-icon { width: 72px; height: 72px; background: #e8fdf0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 2rem; color: #28a745; }
+        .success-box h3 { font-size: 1.3rem; color: #1a2a3a; margin-bottom: 8px; }
+        .success-box p { font-size: 0.92rem; color: #6a7a8a; line-height: 1.6; }
+
+        /* LOADING */
+        .ag-loading { text-align: center; padding: 30px 0; color: #aaa; font-size: 0.9rem; }
+        .ag-empty { text-align: center; padding: 20px 0; color: #aaa; font-size: 0.88rem; }
+        .ag-empty i { display: block; font-size: 2rem; margin-bottom: 8px; color: #ddd; }
+
+        /* FOOTER */
+        .ag-footer { text-align: center; padding: 16px; font-size: 0.78rem; color: #bbb; }
+        .ag-footer a { color: #bbb; text-decoration: none; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="ag-header">
+        <div class="ag-header-logo">
+            @if (!string.IsNullOrEmpty(logoBase64))
+            {
+                <img src="data:image/png;base64,@logoBase64" alt="Logo">
+            }
+            else
+            {
+                <i class="fas fa-stethoscope"></i>
+            }
+        </div>
+        <div class="ag-header-info">
+            <h2>@profesionalNombre</h2>
+            <p>@institucionNombre</p>
+        </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="ag-steps">
+        <div class="ag-step active" id="step-ind-1">
+            <i class="fas fa-calendar-days"></i>Fecha
+        </div>
+        <div class="ag-step" id="step-ind-2">
+            <i class="fas fa-clock"></i>Hora
+        </div>
+        <div class="ag-step" id="step-ind-3">
+            <i class="fas fa-user"></i>Datos
+        </div>
+        <div class="ag-step" id="step-ind-4">
+            <i class="fas fa-check"></i>Listo
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="ag-body">
+
+        <!-- STEP 1: FECHA -->
+        <div id="step1">
+            <div class="ag-panel">
+                <div class="ag-panel-title"><i class="fas fa-calendar-days"></i> Selecciona una fecha</div>
+                <div class="month-nav">
+                    <button id="btnPrevMonth"><i class="fas fa-chevron-left"></i></button>
+                    <span id="lblMes"></span>
+                    <button id="btnNextMonth"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="days-header">
+                    <span>Lu</span><span>Ma</span><span>Mi</span>
+                    <span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+                </div>
+                <div class="days-grid" id="daysGrid">
+                    <div class="ag-loading"><i class="fas fa-spinner fa-spin"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: HORA -->
+        <div id="step2" class="hidden">
+            <button class="btn-back" onclick="Agendar.irPaso(1)">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <div class="ag-panel">
+                <div class="ag-panel-title"><i class="fas fa-clock"></i> <span id="lblFechaSeleccionada"></span></div>
+                <div id="slotsContainer">
+                    <div class="ag-loading"><i class="fas fa-spinner fa-spin"></i> Cargando horarios...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: DATOS -->
+        <div id="step3" class="hidden">
+            <button class="btn-back" onclick="Agendar.irPaso(2)">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <div class="ag-panel">
+                <div class="ag-panel-title"><i class="fas fa-user"></i> Tus datos</div>
+                <div class="resumen-box">
+                    <p><i class="fas fa-calendar-check me-1" style="color:var(--f-blue)"></i>
+                       <strong id="resumenFecha"></strong> &nbsp;·&nbsp; <strong id="resumenHora"></strong></p>
+                    <p><i class="fas fa-user-doctor me-1" style="color:var(--f-blue)"></i> @profesionalNombre</p>
+                </div>
+                <form class="ag-form" id="formDatos" onsubmit="Agendar.confirmar(event)">
+                    <div>
+                        <label>Nombre completo <span style="color:red">*</span></label>
+                        <input type="text" id="inNombre" placeholder="Ej: María González" required maxlength="120">
+                    </div>
+                    <div>
+                        <label>Correo electrónico <span style="color:red">*</span></label>
+                        <input type="email" id="inCorreo" placeholder="tu@correo.com" required maxlength="120">
+                    </div>
+                    <div>
+                        <label>Teléfono <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+                        <input type="tel" id="inTelefono" placeholder="+56 9 1234 5678" maxlength="30">
+                    </div>
+                    <div>
+                        <label>Nota <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+                        <textarea id="inNota" placeholder="Motivo de la consulta u observaciones..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-fimel" id="btnConfirmar">
+                        <i class="fas fa-calendar-check me-2"></i>Confirmar cita
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- STEP 4: ÉXITO -->
+        <div id="step4" class="hidden">
+            <div class="ag-panel">
+                <div class="success-box">
+                    <div class="success-icon"><i class="fas fa-check"></i></div>
+                    <h3>¡Cita confirmada!</h3>
+                    <p>Hemos enviado un correo de confirmación a <strong id="resumenCorreo"></strong>.<br>
+                       Te esperamos el <strong id="resumenFechaFinal"></strong> a las <strong id="resumenHoraFinal"></strong>.</p>
+                </div>
+            </div>
+            <button class="btn-fimel" onclick="Agendar.reiniciar()" style="margin-top:8px">
+                <i class="fas fa-plus me-2"></i>Agendar otra cita
+            </button>
+        </div>
+
+    </div>
+
+    <div class="ag-footer">
+        Powered by <a href="#">Fimel</a>
+    </div>
+
+    <script>
+        const TOKEN = '@token';
+        const URL_DISPONIBILIDAD = '@Url.Action("ObtenerDisponibilidad", "Agendar")';
+        const URL_RESERVAR = '@Url.Action("Reservar", "Agendar")';
+
+        const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        const DIAS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+        var Agendar = (function () {
+            var estado = {
+                anio: new Date().getFullYear(),
+                mes: new Date().getMonth(),   // 0-based
+                diasDisponibles: {},          // { 'yyyy-MM-dd': [{horaInicio, horaFin}] }
+                fechaSeleccionada: null,
+                slotSeleccionado: null,
+                cargandoMes: false
+            };
+
+            function formatFecha(yyyy, mm, dd) {
+                return `${yyyy}-${String(mm+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+            }
+
+            function labelFecha(fechaStr) {
+                var d = new Date(fechaStr + 'T00:00:00');
+                return `${DIAS_ES[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
+            }
+
+            async function cargarMes(anio, mes) {
+                if (estado.cargandoMes) return;
+                estado.cargandoMes = true;
+
+                var desde = new Date(anio, mes, 1);
+                var hasta = new Date(anio, mes + 1, 0);
+
+                document.getElementById('daysGrid').innerHTML = '<div class="ag-loading" style="grid-column:span 7"><i class="fas fa-spinner fa-spin"></i></div>';
+
+                try {
+                    var resp = await fetch(`${URL_DISPONIBILIDAD}?token=${TOKEN}&desde=${desde.toISOString()}&hasta=${hasta.toISOString()}`);
+                    var data = await resp.json();
+
+                    estado.diasDisponibles = {};
+                    if (data.ok && data.slots) {
+                        data.slots.forEach(s => {
+                            if (!estado.diasDisponibles[s.fecha]) estado.diasDisponibles[s.fecha] = [];
+                            estado.diasDisponibles[s.fecha].push(s);
+                        });
+                    }
+                } catch(e) {}
+
+                renderCalendario(anio, mes);
+                estado.cargandoMes = false;
+            }
+
+            function renderCalendario(anio, mes) {
+                document.getElementById('lblMes').textContent = `${MESES[mes]} ${anio}`;
+                var grid = document.getElementById('daysGrid');
+                grid.innerHTML = '';
+
+                var hoy = new Date(); hoy.setHours(0,0,0,0);
+                var primerDia = new Date(anio, mes, 1).getDay(); // 0=Dom
+                var offset = primerDia === 0 ? 6 : primerDia - 1; // lunes=0
+                var diasEnMes = new Date(anio, mes + 1, 0).getDate();
+
+                for (var i = 0; i < offset; i++) {
+                    var cell = document.createElement('div');
+                    cell.className = 'day-cell';
+                    grid.appendChild(cell);
+                }
+
+                for (var d = 1; d <= diasEnMes; d++) {
+                    var fechaStr = formatFecha(anio, mes, d);
+                    var fecha = new Date(anio, mes, d);
+                    var cell = document.createElement('div');
+                    cell.className = 'day-cell';
+                    cell.textContent = d;
+
+                    if (fecha < hoy) {
+                        cell.classList.add('past');
+                    } else if (estado.diasDisponibles[fechaStr]) {
+                        cell.classList.add('available');
+                        if (fecha.toDateString() === hoy.toDateString()) cell.classList.add('today');
+                        if (estado.fechaSeleccionada === fechaStr) cell.classList.add('selected');
+                        cell.addEventListener('click', (function(fs) {
+                            return function() { seleccionarFecha(fs); };
+                        })(fechaStr));
+                    } else {
+                        if (fecha.toDateString() === hoy.toDateString()) cell.classList.add('today');
+                    }
+
+                    grid.appendChild(cell);
+                }
+            }
+
+            function seleccionarFecha(fechaStr) {
+                estado.fechaSeleccionada = fechaStr;
+                estado.slotSeleccionado = null;
+                renderCalendario(estado.anio, estado.mes);
+                irPaso(2);
+                renderSlots(fechaStr);
+            }
+
+            function renderSlots(fechaStr) {
+                document.getElementById('lblFechaSeleccionada').textContent = labelFecha(fechaStr);
+                var container = document.getElementById('slotsContainer');
+                var slots = estado.diasDisponibles[fechaStr] || [];
+
+                if (slots.length === 0) {
+                    container.innerHTML = '<div class="ag-empty"><i class="fas fa-calendar-xmark"></i>Sin horarios disponibles para este día.</div>';
+                    return;
+                }
+
+                var grid = document.createElement('div');
+                grid.className = 'slots-grid';
+
+                slots.forEach(s => {
+                    var btn = document.createElement('button');
+                    btn.className = 'slot-btn' + (estado.slotSeleccionado && estado.slotSeleccionado.horaInicio === s.horaInicio ? ' selected' : '');
+                    btn.textContent = s.horaInicio;
+                    btn.addEventListener('click', function() {
+                        estado.slotSeleccionado = s;
+                        document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        setTimeout(() => irPaso(3), 200);
+                    });
+                    grid.appendChild(btn);
+                });
+
+                container.innerHTML = '';
+                container.appendChild(grid);
+            }
+
+            function irPaso(n) {
+                [1,2,3,4].forEach(i => {
+                    document.getElementById('step'+i).classList.toggle('hidden', i !== n);
+                    var ind = document.getElementById('step-ind-'+i);
+                    ind.className = 'ag-step' + (i < n ? ' done' : i === n ? ' active' : '');
+                });
+                if (n === 3 && estado.fechaSeleccionada && estado.slotSeleccionado) {
+                    document.getElementById('resumenFecha').textContent = labelFecha(estado.fechaSeleccionada);
+                    document.getElementById('resumenHora').textContent = estado.slotSeleccionado.horaInicio + ' – ' + estado.slotSeleccionado.horaFin;
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            async function confirmar(e) {
+                e.preventDefault();
+                var btn = document.getElementById('btnConfirmar');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Confirmando...';
+
+                var fechaInicio = estado.fechaSeleccionada + 'T' + estado.slotSeleccionado.horaInicio + ':00';
+                var fechaFin    = estado.fechaSeleccionada + 'T' + estado.slotSeleccionado.horaFin + ':00';
+
+                var params = new URLSearchParams({
+                    token: TOKEN,
+                    nombre: document.getElementById('inNombre').value,
+                    correo: document.getElementById('inCorreo').value,
+                    telefono: document.getElementById('inTelefono').value,
+                    nota: document.getElementById('inNota').value,
+                    fechaHoraInicio: fechaInicio,
+                    fechaHoraFin: fechaFin
+                });
+
+                try {
+                    var resp = await fetch(URL_RESERVAR, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params });
+                    var data = await resp.json();
+
+                    if (data.ok) {
+                        document.getElementById('resumenCorreo').textContent = document.getElementById('inCorreo').value;
+                        document.getElementById('resumenFechaFinal').textContent = labelFecha(estado.fechaSeleccionada);
+                        document.getElementById('resumenHoraFinal').textContent = estado.slotSeleccionado.horaInicio;
+                        irPaso(4);
+                    } else {
+                        alert(data.error || 'Error al confirmar la cita. Intenta nuevamente.');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Confirmar cita';
+                    }
+                } catch(err) {
+                    alert('Error de conexión. Por favor intenta nuevamente.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Confirmar cita';
+                }
+            }
+
+            function reiniciar() {
+                estado.fechaSeleccionada = null;
+                estado.slotSeleccionado = null;
+                document.getElementById('formDatos').reset();
+                cargarMes(estado.anio, estado.mes);
+                irPaso(1);
+            }
+
+            return {
+                init: function() {
+                    document.getElementById('btnPrevMonth').addEventListener('click', function() {
+                        if (estado.mes === 0) { estado.mes = 11; estado.anio--; }
+                        else estado.mes--;
+                        // No retroceder antes del mes actual
+                        var hoy = new Date();
+                        if (estado.anio < hoy.getFullYear() || (estado.anio === hoy.getFullYear() && estado.mes < hoy.getMonth())) {
+                            estado.mes = hoy.getMonth(); estado.anio = hoy.getFullYear();
+                        }
+                        cargarMes(estado.anio, estado.mes);
+                    });
+                    document.getElementById('btnNextMonth').addEventListener('click', function() {
+                        if (estado.mes === 11) { estado.mes = 0; estado.anio++; }
+                        else estado.mes++;
+                        // Máximo 3 meses adelante
+                        var max = new Date(); max.setMonth(max.getMonth() + 3);
+                        if (estado.anio > max.getFullYear() || (estado.anio === max.getFullYear() && estado.mes > max.getMonth())) {
+                            estado.mes = max.getMonth(); estado.anio = max.getFullYear();
+                        }
+                        cargarMes(estado.anio, estado.mes);
+                    });
+                    cargarMes(estado.anio, estado.mes);
+                },
+                irPaso,
+                confirmar,
+                reiniciar
+            };
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() { Agendar.init(); });
+    </script>
+</body>
+</html>

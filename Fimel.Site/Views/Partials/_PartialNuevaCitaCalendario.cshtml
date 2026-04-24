@@ -11,11 +11,37 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Hora de Inicio</strong> <input class="form-control" type="time" id="horaInicioCitaNuevo" disabled/></p>
-                <p><strong>Hora Término</strong> <input class="form-control" type="time" id="horaTerminoCitaNuevo" /></p>
-                <p><strong>Nombre y apellido</strong> <input class="form-control" id="nombreCitaNuevo" /></p>
-                <p><strong>Correo</strong> <input class="form-control" id="correoCitaNuevo" /></p>
-                <p><strong>Telefono</strong> <input class="form-control" id="telefonoCitaNuevo" /></p>
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Hora de Inicio</label>
+                        <input class="form-control form-control-sm" type="time" id="horaInicioCitaNuevo" disabled/>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Hora Término</label>
+                        <input class="form-control form-control-sm" type="time" id="horaTerminoCitaNuevo" disabled/>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-5">
+                        <label class="form-label fw-semibold">Tipo Documento <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-sm" id="tipoDocNuevo">
+                            <option value="RUT">RUT</option>
+                            <option value="Pasaporte">Pasaporte</option>
+                            <option value="DNIExtranjero">DNI Extranjero</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-7">
+                        <label class="form-label fw-semibold">N° Documento <span class="text-danger">*</span></label>
+                        <input class="form-control form-control-sm" type="text" id="numDocRutNuevo" placeholder="Ej. 12.325.369-9" maxlength="12" />
+                        <input class="form-control form-control-sm" type="text" id="numDocNumNuevo" placeholder="N° Documento" style="display:none" />
+                    </div>
+                </div>
+                <p><strong>Nombres <span class="text-danger">*</span></strong> <input class="form-control" id="nombreCitaNuevo" placeholder="Nombres" /></p>
+                <p><strong>Apellido Paterno</strong> <input class="form-control" id="apellidoPaternoCitaNuevo" placeholder="Apellido paterno" /></p>
+                <p><strong>Apellido Materno</strong> <input class="form-control" id="apellidoMaternoCitaNuevo" placeholder="Apellido materno" /></p>
+                <p><strong>Correo <span class="text-danger">*</span></strong> <input class="form-control" type="email" id="correoCitaNuevo" /></p>
+                <p><strong>Teléfono</strong> <input class="form-control" id="telefonoCitaNuevo" /></p>
                 <p><strong>Nota</strong> <input class="form-control" id="notaCitaNuevo" /></p>
             </div>
             <div class="modal-footer">
@@ -36,11 +62,32 @@
             </div>
             <div class="modal-body">
                 <p><strong>Fecha</strong> <input class="form-control" type="date" id="fechaCita" disabled/></p>
-                <p><strong>Hora de Inicio</strong> <input class="form-control" type="time" id="horaInicioCita" disabled/></p>
-                <p><strong>Hora Término</strong> <input class="form-control" type="time" id="horaTerminoCita" disabled /></p>
-                <p><strong>Nombre y apellido</strong> <input class="form-control" id="nombreCita" disabled /></p>
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Hora de Inicio</label>
+                        <input class="form-control form-control-sm" type="time" id="horaInicioCita" disabled/>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Hora Término</label>
+                        <input class="form-control form-control-sm" type="time" id="horaTerminoCita" disabled/>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-5">
+                        <label class="form-label fw-semibold">Tipo Documento</label>
+                        <input class="form-control form-control-sm" type="text" id="tipoDocCita" disabled />
+                    </div>
+                    <div class="col-7">
+                        <label class="form-label fw-semibold">N° Documento</label>
+                        <input class="form-control form-control-sm" type="text" id="numDocCita" disabled />
+                        <input type="hidden" id="numDocCitaRaw" />
+                    </div>
+                </div>
+                <p><strong>Nombres</strong> <input class="form-control" id="nombreCita" disabled /></p>
+                <p><strong>Apellido Paterno</strong> <input class="form-control" id="apellidoPaternoCita" disabled /></p>
+                <p><strong>Apellido Materno</strong> <input class="form-control" id="apellidoMaternoCita" disabled /></p>
                 <p><strong>Correo</strong> <input class="form-control" id="correoCita" disabled /></p>
-                <p><strong>Telefono</strong> <input class="form-control" id="telefonoCita" disabled /></p>
+                <p><strong>Teléfono</strong> <input class="form-control" id="telefonoCita" disabled /></p>
                 <p><strong>Nota</strong> <input class="form-control" id="notaCita" disabled /></p>
             </div>
             <div class="modal-footer">

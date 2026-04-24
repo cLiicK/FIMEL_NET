@@ -512,6 +512,27 @@ namespace Fimel.Utils
             }
         }
 
+        public void Patch<T>(string URI, T obj)
+        {
+            try
+            {
+                string jsonParams = JsonConvert.SerializeObject(obj, Formatting.None,
+                    new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+                var content = new StringContent(jsonParams, Encoding.UTF8, "application/json");
+                var request = new HttpRequestMessage(HttpMethod.Patch, URI) { Content = content };
+                HttpResponseMessage response = this.Client.SendAsync(request).GetAwaiter().GetResult();
+
+                if (!this.ResponseOk(response.StatusCode))
+                    Logger.Log($"Patch {URI} respondió {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.ToString());
+                Logger.Log(URI);
+                throw ex;
+            }
+        }
+
         public T Delete<T>(string URI)
         {
             try

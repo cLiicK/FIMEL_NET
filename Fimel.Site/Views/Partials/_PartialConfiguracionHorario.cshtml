@@ -27,28 +27,32 @@
                 <div class="tab-content" id="horarioTabsContent">
                     <div class="tab-pane fade show active" id="horarios-semanales" role="tabpanel" aria-labelledby="horarios-semanales-tab">
                         <br />
-                        <div class="mb-3">
-                            <label for="diaSemana" class="form-label">Día de la Semana</label>
-                            <select class="form-select" id="diaSemanaNuevoBloque">
-                                <option value="">Seleccione Día...</option>
-                                <option value="Lunes">Lunes</option>
-                                <option value="Martes">Martes</option>
-                                <option value="Miércoles">Miércoles</option>
-                                <option value="Jueves">Jueves</option>
-                                <option value="Viernes">Viernes</option>
-                                <option value="Sábado">Sábado</option>
-                                <option value="Domingo">Domingo</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="horaInicio" class="form-label">Hora de Inicio</label>
-                            <input type="time" class="form-control" id="horaInicioNuevoBloque" required step="1800" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="horaFin" class="form-label">Hora de Fin</label>
-                            <input type="time" class="form-control" id="horaFinNuevoBloque" required />
+                        <div class="row mb-3">
+                            <div class="col-5">
+                                <label for="diaSemanaNuevoBloque" class="form-label">Día de la Semana</label>
+                                <select class="form-select" id="diaSemanaNuevoBloque">
+                                    <option value="">Seleccione Día...</option>
+                                    <option value="Lunes">Lunes</option>
+                                    <option value="Martes">Martes</option>
+                                    <option value="Miércoles">Miércoles</option>
+                                    <option value="Jueves">Jueves</option>
+                                    <option value="Viernes">Viernes</option>
+                                    <option value="Sábado">Sábado</option>
+                                    <option value="Domingo">Domingo</option>
+                                </select>
+                            </div>
+                            <div class="col-3">
+                                <label for="horaInicioNuevoBloque" class="form-label">Hora Inicio</label>
+                                <select class="form-select" id="horaInicioNuevoBloque" required>
+                                    <option value="">--:--</option>
+                                </select>
+                            </div>
+                            <div class="col-3">
+                                <label for="horaFinNuevoBloque" class="form-label">Hora Fin</label>
+                                <select class="form-select" id="horaFinNuevoBloque" required>
+                                    <option value="">--:--</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -88,19 +92,23 @@
                     <div class="tab-pane fade" id="horarios-especificos" role="tabpanel" aria-labelledby="horarios-especificos-tab">
                         <br />
                         <!-- Formulario para nuevo horario específico -->
-                        <div class="mb-3">
-                            <label for="fechaEspecificaNuevoHorario" class="form-label">Fecha Específica</label>
-                            <input type="date" class="form-control" id="fechaEspecificaNuevoHorario" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="horaInicioEspecificoNuevoHorario" class="form-label">Hora de Inicio</label>
-                            <input type="time" class="form-control" id="horaInicioEspecificoNuevoHorario" required step="1800" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="horaFinEspecificoNuevoHorario" class="form-label">Hora de Fin</label>
-                            <input type="time" class="form-control" id="horaFinEspecificoNuevoHorario" required />
+                        <div class="row mb-3">
+                            <div class="col-5">
+                                <label for="fechaEspecificaNuevoHorario" class="form-label">Fecha Específica</label>
+                                <input type="date" class="form-control" id="fechaEspecificaNuevoHorario" required />
+                            </div>
+                            <div class="col-3">
+                                <label for="horaInicioEspecificoNuevoHorario" class="form-label">Hora Inicio</label>
+                                <select class="form-select" id="horaInicioEspecificoNuevoHorario" required>
+                                    <option value="">--:--</option>
+                                </select>
+                            </div>
+                            <div class="col-3">
+                                <label for="horaFinEspecificoNuevoHorario" class="form-label">Hora Fin</label>
+                                <select class="form-select" id="horaFinEspecificoNuevoHorario" required>
+                                    <option value="">--:--</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="mb-3">

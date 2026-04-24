@@ -4,6 +4,7 @@ using Fimel.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Fimel.Models.Migrations
 {
     [DbContext(typeof(FimelDbContext))]
-    partial class FimelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260330122936_AgregaLogo_Instituciones")]
+    partial class AgregaLogo_Instituciones
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -100,9 +103,6 @@ namespace Fimel.Models.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApellidoPaciente")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CorreoPaciente")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -124,9 +124,6 @@ namespace Fimel.Models.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NumeroDocumento")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SegundoApellidoPaciente")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Telefono")
@@ -183,17 +180,11 @@ namespace Fimel.Models.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DiasAvisoPrevioControl")
-                        .HasColumnType("int");
-
                     b.Property<TimeSpan>("DuracionBloqueHorario")
                         .HasColumnType("time");
 
                     b.Property<DateTime?>("FechaCreacion")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("TokenPublico")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
@@ -205,7 +196,10 @@ namespace Fimel.Models.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("ConfiguracionesUsuario", (string)null);
+                    b.ToTable("ConfiguracionesUsuario", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Fimel.Models.Consultas", b =>

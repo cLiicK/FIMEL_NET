@@ -14,5 +14,6 @@ namespace Fimel.Models
         public string? Dirección { get; set; }
         public int? Telefono { get; set; }
         public string? Email { get; set; }
+        public string? Logo { get; set; }
     }
 }

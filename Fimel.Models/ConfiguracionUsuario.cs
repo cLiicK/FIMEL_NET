@@ -11,5 +11,7 @@ namespace Fimel.Models
     {
         public Usuarios Usuario { get; set; }
         public TimeSpan DuracionBloqueHorario { get; set; }
+        public string? TokenPublico { get; set; }
+        public int DiasAvisoPrevioControl { get; set; } = 5;
     }
 }

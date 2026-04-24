@@ -15,8 +15,30 @@ namespace Fimel.Api.Controllers
             db = context;
         }
 
+        [HttpPatch("{id}/Logo")]
+        public IActionResult ActualizarLogo(int id, [FromBody] string logoBase64)
+        {
+            try
+            {
+                Instituciones? institucion = db.Instituciones.Find(id);
+
+                if (institucion == null)
+                    return NotFound();
+
+                institucion.Logo = logoBase64;
+                db.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al actualizar logo de institución: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet("{id}")]
-        public IActionResult Get(int id) 
+        public IActionResult Get(int id)
         {
             try
             {

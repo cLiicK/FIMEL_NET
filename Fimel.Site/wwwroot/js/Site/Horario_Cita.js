@@ -1,5 +1,24 @@
 ﻿var configuracionUsuario = $('#ObjectConfigUsuario').val() ? JSON.parse($('#ObjectConfigUsuario').val()) : null;
 
+function getBlockMinutes() {
+    if (!configuracionUsuario || !configuracionUsuario.DuracionBloqueHorario) return 30;
+    var parts = configuracionUsuario.DuracionBloqueHorario.split(':');
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
+function populateTimeSelect(selectId, blockMinutes) {
+    var $select = $(selectId);
+    var current = $select.val();
+    $select.empty().append('<option value="">Seleccione...</option>');
+    for (var h = 0; h < 24; h++) {
+        for (var m = 0; m < 60; m += blockMinutes) {
+            var val = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+            $select.append('<option value="' + val + '">' + val + '</option>');
+        }
+    }
+    if (current) $select.val(current);
+}
+
 var ModuloHorarioCita = (function () {
     return {
         IniciarScripts: function () {
@@ -15,46 +34,11 @@ var ModuloHorarioCita = (function () {
             inputFecha.val(fechaChile);
             inputFecha.attr('min', fechaChile); // impide seleccionar fechas anteriores
 
-            $('#horaInicioNuevoBloque').change(function () {
-                let value = $('#horaInicioNuevoBloque').val();
-                let minutes = parseInt(value.split(':')[1]);
-                if (minutes !== 0 && minutes !== 30) {
-                    let newMinutes = (minutes < 30) ? "00" : "30";
-                    let newValue = value.split(':')[0] + ":" + newMinutes;
-                    $('#horaInicioNuevoBloque').val(newValue);
-                }
-            });
-
-            $('#horaFinNuevoBloque').change(function () {
-                let value = $('#horaFinNuevoBloque').val();
-                let minutes = parseInt(value.split(':')[1]);
-                if (minutes !== 0 && minutes !== 30) {
-                    let newMinutes = (minutes < 30) ? "00" : "30";
-                    let newValue = value.split(':')[0] + ":" + newMinutes;
-                    $('#horaFinNuevoBloque').val(newValue);
-                }
-            });
-
-            // Validaciones para horarios específicos
-            $('#horaInicioEspecificoNuevoHorario').change(function () {
-                let value = $('#horaInicioEspecificoNuevoHorario').val();
-                let minutes = parseInt(value.split(':')[1]);
-                if (minutes !== 0 && minutes !== 30) {
-                    let newMinutes = (minutes < 30) ? "00" : "30";
-                    let newValue = value.split(':')[0] + ":" + newMinutes;
-                    $('#horaInicioEspecificoNuevoHorario').val(newValue);
-                }
-            });
-
-            $('#horaFinEspecificoNuevoHorario').change(function () {
-                let value = $('#horaFinEspecificoNuevoHorario').val();
-                let minutes = parseInt(value.split(':')[1]);
-                if (minutes !== 0 && minutes !== 30) {
-                    let newMinutes = (minutes < 30) ? "00" : "30";
-                    let newValue = value.split(':')[0] + ":" + newMinutes;
-                    $('#horaFinEspecificoNuevoHorario').val(newValue);
-                }
-            });
+            var blockMinutes = getBlockMinutes();
+            populateTimeSelect('#horaInicioNuevoBloque', blockMinutes);
+            populateTimeSelect('#horaFinNuevoBloque', blockMinutes);
+            populateTimeSelect('#horaInicioEspecificoNuevoHorario', blockMinutes);
+            populateTimeSelect('#horaFinEspecificoNuevoHorario', blockMinutes);
 
             // Establecer fecha mínima para horarios específicos
             hoyLocal = new Date();
@@ -108,6 +92,72 @@ var ModuloHorarioCita = (function () {
                     $("#inputRutIniciarCita").hide();
                     $("#inputNumDocumentoIniciarCita").show();
                 }
+            });
+
+            // Handlers para el combo y RUT del modal de NUEVA cita
+            $('#tipoDocNuevo').on('change', function () {
+                if ($(this).val() === 'RUT') {
+                    $('#numDocRutNuevo').show();
+                    $('#numDocNumNuevo').hide().val('');
+                } else {
+                    $('#numDocRutNuevo').hide().val('');
+                    $('#numDocNumNuevo').show();
+                }
+            });
+
+            $('#numDocRutNuevo').keypress(function (e) { onlyNumbersWithK(e); });
+            $('#numDocRutNuevo').keyup(function () {
+                let cadena = $(this).val().replace(/[.]/gi, '').replace('-', '');
+                if (cadena.length > 9) cadena = cadena.substr(0, 9);
+                let concat = '', i = cadena.length - 1;
+                for (; i >= 0;) {
+                    concat = cadena[i] + concat;
+                    if (i + 1 == cadena.length && i > 0) concat = '-' + concat;
+                    if (concat.length == 9 && cadena.length > 7) concat = '.' + concat;
+                    if (concat.length == 5 && cadena.length > 4) concat = '.' + concat;
+                    i--;
+                }
+                $(this).val(concat);
+            });
+
+            $('#numDocRutNuevo').blur(function () {
+                var rutValidado = validarRut($(this).val());
+                if (rutValidado === '00' || rutValidado === '01' || !rutValidado) return;
+                $.get('/Pacientes/BuscarPaciente', { rutPaciente: parseInt(rutValidado) }, function (p) {
+                    if (p && p.Id && p.Id > 0) {
+                        if (p.Nombres)         $('#nombreCitaNuevo').val(p.Nombres);
+                        if (p.PrimerApellido)  $('#apellidoPaternoCitaNuevo').val(p.PrimerApellido);
+                        if (p.SegundoApellido) $('#apellidoMaternoCitaNuevo').val(p.SegundoApellido);
+                        if (p.Email)           $('#correoCitaNuevo').val(p.Email);
+                        if (p.Celular)         $('#telefonoCitaNuevo').val(p.Celular);
+                    }
+                });
+            });
+
+            $('#numDocNumNuevo').blur(function () {
+                var numDoc = $(this).val().trim();
+                if (!numDoc) return;
+                $.get('/Pacientes/BuscarPacientePorNumDocumento', { numDoc: numDoc }, function (p) {
+                    if (p && p.Id && p.Id > 0) {
+                        if (p.Nombres)         $('#nombreCitaNuevo').val(p.Nombres);
+                        if (p.PrimerApellido)  $('#apellidoPaternoCitaNuevo').val(p.PrimerApellido);
+                        if (p.SegundoApellido) $('#apellidoMaternoCitaNuevo').val(p.SegundoApellido);
+                        if (p.Email)           $('#correoCitaNuevo').val(p.Email);
+                        if (p.Celular)         $('#telefonoCitaNuevo').val(p.Celular);
+                    }
+                });
+            });
+
+            $('#modalEventoNuevo').on('hidden.bs.modal', function () {
+                $('#tipoDocNuevo').val('RUT');
+                $('#numDocRutNuevo').val('').show();
+                $('#numDocNumNuevo').val('').hide();
+                $('#nombreCitaNuevo').val('');
+                $('#apellidoPaternoCitaNuevo').val('');
+                $('#apellidoMaternoCitaNuevo').val('');
+                $('#correoCitaNuevo').val('');
+                $('#telefonoCitaNuevo').val('');
+                $('#notaCitaNuevo').val('');
             });
 
             $('#selectProfesional').off('change').on('change', function () {
@@ -207,6 +257,10 @@ var ModuloHorarioCita = (function () {
                 locale: 'es',
                 timeZone: 'local',
                 slotDuration: configuracionUsuario ? configuracionUsuario.DuracionBloqueHorario : '00:30:00',
+                scrollTime:  document.getElementById('hdnScrollTime')?.value  || '08:00:00',
+                slotMinTime: document.getElementById('hdnSlotMinTime')?.value || '07:30:00',
+                slotMaxTime: document.getElementById('hdnSlotMaxTime')?.value || '21:00:00',
+                nowIndicator: true,
                 firstDay: 1,
                 headerToolbar: {
                     left: 'prev,next today',
@@ -265,29 +319,27 @@ var ModuloHorarioCita = (function () {
                     let formatoFecha = fechaSeleccionada.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
                     $('#modalEventoLabel').text(formatoFecha);
-                    
-                    // Cargar la fecha en formato ISO para el input date
+
                     let fechaISO = fechaSeleccionada.toISOString().split('T')[0];
                     $('#fechaCita').val(fechaISO);
-                    
+
                     $('#horaInicioCita').val(info.event.extendedProps.horaInicio);
                     $('#horaTerminoCita').val(info.event.extendedProps.horaFinal);
+                    $('#tipoDocCita').val(info.event.extendedProps.documento || '');
+                    $('#numDocCita').val(info.event.extendedProps.numDocumento || '');
+                    $('#numDocCitaRaw').val(info.event.extendedProps.numDocumentoRaw || '');
                     $('#nombreCita').val(info.event.extendedProps.nombre);
+                    $('#apellidoPaternoCita').val(info.event.extendedProps.apellidoPaterno || '');
+                    $('#apellidoMaternoCita').val(info.event.extendedProps.apellidoMaterno || '');
                     $('#correoCita').val(info.event.extendedProps.correo);
                     $('#telefonoCita').val(info.event.extendedProps.telefono);
                     $('#notaCita').val(info.event.extendedProps.nota);
                     $('#idCitaModal').val(info.event.extendedProps.idCita);
 
-                    // Asegurar que los campos estén deshabilitados al abrir el modal
-                    $('#fechaCita').prop('disabled', true);
-                    $('#horaInicioCita').prop('disabled', true);
-                    $('#horaTerminoCita').prop('disabled', true);
-                    $('#nombreCita').prop('disabled', true);
-                    $('#correoCita').prop('disabled', true);
-                    $('#telefonoCita').prop('disabled', true);
-                    $('#notaCita').prop('disabled', true);
-                    
-                    // Asegurar que los botones estén en su estado inicial
+                    // Campos siempre deshabilitados al abrir
+                    $('#fechaCita, #horaInicioCita, #horaTerminoCita, #tipoDocCita, #numDocCita').prop('disabled', true);
+                    $('#nombreCita, #apellidoPaternoCita, #apellidoMaternoCita, #correoCita, #telefonoCita, #notaCita').prop('disabled', true);
+
                     $('#btnModificarCitaModal').show();
                     $('#btnGuardarModificacionCita').hide();
                     $('#btnCancelarModificacion').hide();
@@ -303,10 +355,17 @@ var ModuloHorarioCita = (function () {
                 select: function (info) {
                     let fechaSeleccionada = new Date(info.startStr);
                     let formatoFecha = fechaSeleccionada.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-                    let horaSeleccionada = fechaSeleccionada.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    let horaInicio = String(fechaSeleccionada.getHours()).padStart(2, '0') + ':' + String(fechaSeleccionada.getMinutes()).padStart(2, '0');
                     $('#modalEventoNuevoLabel').text(formatoFecha);
                     $('#fechaModal').val(info.startStr);
-                    $('#horaInicioCitaNuevo').val(horaSeleccionada);
+                    $('#horaInicioCitaNuevo').val(horaInicio);
+
+                    let duracionStr = (configuracionUsuario && configuracionUsuario.DuracionBloqueHorario) ? configuracionUsuario.DuracionBloqueHorario : '00:30:00';
+                    let partes = duracionStr.split(':');
+                    let minutosDuracion = parseInt(partes[0]) * 60 + parseInt(partes[1]);
+                    let fechaFin = new Date(fechaSeleccionada.getTime() + minutosDuracion * 60000);
+                    let horaFin = String(fechaFin.getHours()).padStart(2, '0') + ':' + String(fechaFin.getMinutes()).padStart(2, '0');
+                    $('#horaTerminoCitaNuevo').val(horaFin);
 
                     $('#modalEventoNuevo').modal('show');
                 },
@@ -653,41 +712,56 @@ var ModuloHorarioCita = (function () {
         GuardarCitaModal: function () {
             var btnGuardar = $('#btnGuardarModificacionCita');
 
+            // Validar documento
+            var tipoDoc = $('#tipoDocNuevo').val();
+            var numDoc;
+            if (tipoDoc === 'RUT') {
+                var rutVal = validarRut($('#numDocRutNuevo').val());
+                if (rutVal === '00' || rutVal === '01') {
+                    Swal.fire('Ingrese un RUT válido', '', 'warning');
+                    return null;
+                }
+                numDoc = rutVal;
+            } else {
+                numDoc = $('#numDocNumNuevo').val().trim();
+                if (!numDoc) {
+                    Swal.fire('Ingrese el número de documento', '', 'warning');
+                    return null;
+                }
+            }
+
             if (!$("#horaInicioCitaNuevo").val()) {
                 Swal.fire('Ingrese la Hora de Inicio', '', 'warning');
                 return null;
             }
             if (!$("#horaTerminoCitaNuevo").val()) {
-                Swal.fire('Ingrese la Hora de Termino', '', 'warning');
+                Swal.fire('Ingrese la Hora de Término', '', 'warning');
                 return null;
             }
             if (!$("#nombreCitaNuevo").val()) {
-                Swal.fire('Ingrese el Nombre y Apellido', '', 'warning');
+                Swal.fire('Ingrese el Nombre', '', 'warning');
                 return null;
             }
             if (!$("#correoCitaNuevo").val()) {
                 Swal.fire('Ingrese un Correo Electrónico', '', 'warning');
                 return null;
             }
-            let fecha = $('#fechaModal').val();
 
-            fecha = fecha.split("T")[0]
+            let fecha = $('#fechaModal').val().split('T')[0];
 
             let horaInicio = $('#horaInicioCitaNuevo').val();
             let horaFinal = $('#horaTerminoCitaNuevo').val();
-
-            if (horaInicio.length === 5) {
-                horaInicio += ":00";
-            }
-
-            if (horaFinal.length === 5) {
-                horaFinal += ":00";
-            }
+            if (horaInicio.length === 5) horaInicio += ':00';
+            if (horaFinal.length === 5) horaFinal += ':00';
 
             let cita = {
                 FechaHoraInicio: `${fecha}T${horaInicio}`,
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
+                TipoDocumento: tipoDoc,
+                NumeroDocumento: numDoc,
                 NombrePaciente: $('#nombreCitaNuevo').val(),
+                ApellidoPaciente: $('#apellidoPaternoCitaNuevo').val(),
+                SegundoApellidoPaciente: $('#apellidoMaternoCitaNuevo').val(),
                 CorreoPaciente: $('#correoCitaNuevo').val(),
                 Telefono: $('#telefonoCitaNuevo').val(),
                 Nota: $('#notaCitaNuevo').val(),
@@ -841,52 +915,95 @@ var ModuloHorarioCita = (function () {
         },
 
         IniciarCitaModal: function () {
-            // Cerrar el modal de detalles de la cita
-            $('#modalEvento').modal('hide');
-            
-            // Limpiar el campo RUT
-            $('#inputRutIniciarCita').val('');
-            
-            // Mostrar el modal para ingresar RUT
-            $('#modalIniciarCita').modal('show');
+            var numDocRaw = $('#numDocCitaRaw').val();
+            var tipoDoc = $('#tipoDocCita').val();
+
+            if (numDocRaw) {
+                $('#modalEvento').modal('hide');
+
+                var urlBusqueda, busquedaData, urlConsulta, urlFicha;
+
+                if (tipoDoc === 'RUT') {
+                    var dv = getDV(numDocRaw).toString();
+                    var rutFormateado = ObtenerRutSTR(parseInt(numDocRaw), dv);
+                    urlBusqueda = '/Pacientes/BuscarPaciente';
+                    busquedaData = { rutPaciente: parseInt(numDocRaw) };
+                    urlConsulta = '/Consulta/NuevaConsulta?rut=' + encodeURIComponent(rutFormateado);
+                    urlFicha = '/Pacientes/FichaPaciente?p=' + encodeURIComponent(rutFormateado);
+                } else {
+                    urlBusqueda = '/Pacientes/BuscarPacientePorNumDocumento';
+                    busquedaData = { numDoc: numDocRaw };
+                    urlConsulta = '/Consulta/NuevaConsulta?numDoc=' + encodeURIComponent(numDocRaw) + '&tipo=' + encodeURIComponent(tipoDoc);
+                    urlFicha = '/Pacientes/FichaPaciente?numDoc=' + encodeURIComponent(numDocRaw) + '&tipo=' + encodeURIComponent(tipoDoc);
+                }
+
+                $.ajax({
+                    url: urlBusqueda,
+                    data: busquedaData,
+                    method: 'GET',
+                    success: function (response) {
+                        if (response && response.Id && response.Id > 0) {
+                            Swal.fire({
+                                title: 'Paciente encontrado',
+                                text: '¿Desea iniciar una nueva consulta?',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonText: 'Ir a Nueva Consulta',
+                                cancelButtonText: 'Cancelar'
+                            }).then((result) => {
+                                if (result.isConfirmed) window.location.href = urlConsulta;
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Ficha incompleta',
+                                text: 'El paciente fue creado con datos básicos. ¿Desea completar la ficha clínica?',
+                                icon: 'info',
+                                showCancelButton: true,
+                                confirmButtonText: 'Completar Ficha',
+                                cancelButtonText: 'Cancelar'
+                            }).then((result) => {
+                                if (result.isConfirmed) window.location.href = urlFicha;
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error', 'Ha ocurrido un error al buscar el paciente', 'error');
+                    }
+                });
+            } else {
+                // Cita sin documento (registrada antes de esta funcionalidad) — flujo anterior
+                $('#modalEvento').modal('hide');
+                $('#inputRutIniciarCita').val('');
+                $('#modalIniciarCita').modal('show');
+            }
         },
 
         ModificarCitaModal: function () {
-            // Habilitar todos los campos para edición
             $('#fechaCita').prop('disabled', false);
             $('#horaInicioCita').prop('disabled', false);
             $('#horaTerminoCita').prop('disabled', false);
+            // Tipo doc y num doc no se modifican (identifican al paciente)
             $('#nombreCita').prop('disabled', false);
+            $('#apellidoPaternoCita').prop('disabled', false);
+            $('#apellidoMaternoCita').prop('disabled', false);
             $('#correoCita').prop('disabled', false);
             $('#telefonoCita').prop('disabled', false);
             $('#notaCita').prop('disabled', false);
-            
-            // Cambiar botones: ocultar "Modificar" y mostrar "Guardar" y "Cancelar"
+
             $('#btnModificarCitaModal').hide();
             $('#btnGuardarModificacionCita').show();
             $('#btnCancelarModificacion').show();
-            
-            // Ocultar otros botones durante la edición
             $('#btnIniciarCitaModal').hide();
             $('#btnEliminarCitaModal').hide();
         },
 
         CancelarModificacion: function () {
-            // Deshabilitar todos los campos
-            $('#fechaCita').prop('disabled', true);
-            $('#horaInicioCita').prop('disabled', true);
-            $('#horaTerminoCita').prop('disabled', true);
-            $('#nombreCita').prop('disabled', true);
-            $('#correoCita').prop('disabled', true);
-            $('#telefonoCita').prop('disabled', true);
-            $('#notaCita').prop('disabled', true);
-            
-            // Restaurar botones: mostrar "Modificar" y ocultar "Guardar" y "Cancelar"
+            $('#fechaCita, #horaInicioCita, #horaTerminoCita, #tipoDocCita, #numDocCita').prop('disabled', true);
+            $('#nombreCita, #apellidoPaternoCita, #apellidoMaternoCita, #correoCita, #telefonoCita, #notaCita').prop('disabled', true);
+
             $('#btnModificarCitaModal').show();
             $('#btnGuardarModificacionCita').hide();
             $('#btnCancelarModificacion').hide();
-            
-            // Mostrar otros botones
             $('#btnIniciarCitaModal').show();
             $('#btnEliminarCitaModal').show();
         },
@@ -932,7 +1049,11 @@ var ModuloHorarioCita = (function () {
             let cita = {
                 FechaHoraInicio: `${fecha}T${horaInicio}`,
                 FechaHoraFinal: `${fecha}T${horaFinal}`,
+                TipoDocumento: $('#tipoDocCita').val(),
+                NumeroDocumento: $('#numDocCitaRaw').val(),
                 NombrePaciente: $('#nombreCita').val(),
+                ApellidoPaciente: $('#apellidoPaternoCita').val(),
+                SegundoApellidoPaciente: $('#apellidoMaternoCita').val(),
                 CorreoPaciente: $('#correoCita').val(),
                 Telefono: $('#telefonoCita').val(),
                 Nota: $('#notaCita').val(),

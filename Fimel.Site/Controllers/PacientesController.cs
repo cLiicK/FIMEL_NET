@@ -1,4 +1,5 @@
 ﻿using Fimel.Models;
+using Fimel.Models.Integraciones;
 using Fimel.Models.Params;
 using Fimel.Site.ViewModels;
 using Fimel.Utils;
@@ -176,6 +177,103 @@ namespace Fimel.Site.Controllers
             {
                 Logger.Log($"Error EliminarPaciente: {ex}");
                 return null;
+            }
+        }
+
+        [HttpGet]
+        public ActionResult ObtenerProximosControles(DateTime? fechaDesde, DateTime? fechaHasta)
+        {
+            try
+            {
+                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuario == null) return Json(new { success = false });
+
+                string desde = (fechaDesde ?? DateTime.Today).ToString("yyyy-MM-dd");
+                string hasta = (fechaHasta ?? DateTime.Today.AddDays(30)).ToString("yyyy-MM-dd");
+
+                List<Consultas> controles = APIBase.Get<List<Consultas>>(
+                    $"Consultas/GetProximosControles?idUsuario={usuario.Id}&fechaDesde={desde}&fechaHasta={hasta}");
+
+                return Json(new { success = true, data = controles ?? new List<Consultas>() });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ObtenerProximosControles: {ex}");
+                return Json(new { success = false, data = new List<object>() });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult EnviarCorreoProximoControl(int idConsulta)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+
+                Consultas consulta = APIBase.Get<Consultas>($"Consultas/{idConsulta}");
+                if (consulta == null || !consulta.FechaProximoControl.HasValue)
+                    return Json(new { success = false, message = "Consulta no encontrada o sin fecha de próximo control." });
+
+                Pacientes paciente = APIBase.Get<Pacientes>($"Pacientes/{consulta.Id_Paciente}");
+                if (paciente == null || string.IsNullOrEmpty(paciente.Email))
+                    return Json(new { success = false, message = "El paciente no tiene correo registrado." });
+
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-proximo-control.html");
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+
+                if (!System.IO.File.Exists(templatePath))
+                    return Json(new { success = false, message = "Plantilla de correo no encontrada." });
+
+                string templateHtml = System.IO.File.ReadAllText(templatePath);
+                string nombreCompleto = $"{paciente.Nombres} {paciente.PrimerApellido}".Trim();
+                string fechaFormateada = consulta.FechaProximoControl.Value.ToString("dd/MM/yyyy");
+                string nombreProfesional = $"{usuarioConectado.Nombres} {usuarioConectado.ApellidoPaterno}".Trim();
+
+                Instituciones? institucion = null;
+                if (usuarioConectado.IdInstitucion.HasValue)
+                    institucion = APIBase.Get<Instituciones>($"Instituciones/{usuarioConectado.IdInstitucion}");
+
+                string remitente = institucion?.RazonSocial ?? "FIMEL";
+
+                string cuerpo = templateHtml
+                    .Replace("{{nombre_paciente}}", nombreCompleto)
+                    .Replace("{{fecha_proximo_control}}", fechaFormateada)
+                    .Replace("{{nombre_profesional}}", nombreProfesional)
+                    .Replace("{{nombre_institucion}}", remitente);
+
+                string logoEfectivo = logoPath;
+                string? logoTempPath = null;
+
+                if (!string.IsNullOrEmpty(institucion?.Logo))
+                {
+                    logoTempPath = Path.Combine(Path.GetTempPath(), $"logo_inst_{usuarioConectado.IdInstitucion}.png");
+                    System.IO.File.WriteAllBytes(logoTempPath, Convert.FromBase64String(institucion.Logo));
+                    logoEfectivo = logoTempPath;
+                }
+
+                var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
+                {
+                    (logoEfectivo, "logoImage", "image/png")
+                };
+
+                var correo = new EnvioCorreo
+                {
+                    Destinatarios = new List<string> { paciente.Email },
+                    Asunto = $"Recordatorio: tu próximo control es el {fechaFormateada}",
+                    CuerpoCorreo = cuerpo
+                };
+
+                new Utileria().EnviarCorreo(correo, imagenesCorreo, remitente);
+
+                if (logoTempPath != null && System.IO.File.Exists(logoTempPath))
+                    System.IO.File.Delete(logoTempPath);
+
+                return Json(new { success = true, message = $"Correo enviado a {paciente.Email}" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error EnviarCorreoProximoControl: {ex}");
+                return Json(new { success = false, message = "Error al enviar el correo." });
             }
         }
 

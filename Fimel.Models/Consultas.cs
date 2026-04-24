@@ -29,5 +29,8 @@ namespace Fimel.Models
 
         [NotMapped]
         public int FechaPresentable { get; set; }
+
+        [NotMapped]
+        public Pacientes? Paciente { get; set; }
     }
 }

@@ -11,6 +11,8 @@ namespace Fimel.Models
         public DateTime FechaHoraInicio { get; set; }
         public DateTime FechaHoraFinal { get; set; }
         public string NombrePaciente { get; set; }
+        public string? ApellidoPaciente { get; set; }
+        public string? SegundoApellidoPaciente { get; set; }
         public string CorreoPaciente { get; set; }
         public string? TipoDocumento { get; set; }
         public string? NumeroDocumento { get; set; }

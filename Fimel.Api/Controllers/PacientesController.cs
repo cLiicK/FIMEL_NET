@@ -143,6 +143,56 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetByCumpleanos")]
+        public IActionResult GetByCumpleanos([FromQuery] int dia, [FromQuery] int mes)
+        {
+            try
+            {
+                List<Pacientes> pacientes = db.Pacientes
+                    .Where(x => x.Vigente == "S"
+                        && x.FechaNacimiento != null
+                        && !string.IsNullOrEmpty(x.Email)
+                        && x.FechaNacimiento.Value.Day == dia
+                        && x.FechaNacimiento.Value.Month == mes)
+                    .ToList();
+
+                // Poblar UsuarioConectado con su institución para personalizar el correo
+                var userIds = pacientes
+                    .Where(p => p.UsuarioCreacion.HasValue)
+                    .Select(p => p.UsuarioCreacion!.Value)
+                    .Distinct()
+                    .ToList();
+
+                var usuarios = db.Usuarios
+                    .Where(u => userIds.Contains(u.Id))
+                    .ToList();
+
+                var instIds = usuarios
+                    .Where(u => u.IdInstitucion.HasValue)
+                    .Select(u => u.IdInstitucion!.Value)
+                    .Distinct()
+                    .ToList();
+
+                var instituciones = db.Instituciones
+                    .Where(i => instIds.Contains(i.Id))
+                    .ToList();
+
+                foreach (var usuario in usuarios)
+                    usuario.Institucion = instituciones.FirstOrDefault(i => i.Id == usuario.IdInstitucion);
+
+                foreach (var paciente in pacientes)
+                    paciente.UsuarioConectado = usuarios.FirstOrDefault(u => u.Id == paciente.UsuarioCreacion);
+
+                return Ok(pacientes);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Pacientes GetByCumpleanos: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpPost]
         public IActionResult Post(Pacientes paciente)
         {

@@ -1,13 +1,120 @@
 ﻿@using System.Text.Json
 @model MiHorarioVM
 
+@{
+    string scrollTime  = "08:00:00";
+    string slotMinTime = "07:30:00";
+    string slotMaxTime = "21:00:00";
+
+    if (Model.HorariosAtencion != null && Model.HorariosAtencion.Any())
+    {
+        var minHora = Model.HorariosAtencion.Min(h => h.HoraInicio);
+        var maxHora = Model.HorariosAtencion.Max(h => h.HoraFin);
+
+        var slotMin = minHora > TimeSpan.FromMinutes(30)
+            ? minHora.Subtract(TimeSpan.FromMinutes(30))
+            : TimeSpan.Zero;
+        var slotMax = maxHora.Add(TimeSpan.FromMinutes(30));
+        if (slotMax >= TimeSpan.FromHours(24)) slotMax = TimeSpan.FromHours(23) + TimeSpan.FromMinutes(59);
+
+        scrollTime  = minHora.ToString(@"hh\:mm\:ss");
+        slotMinTime = slotMin.ToString(@"hh\:mm\:ss");
+        slotMaxTime = slotMax.ToString(@"hh\:mm\:ss");
+    }
+}
+
+<input type="hidden" id="hdnScrollTime"  value="@scrollTime"  />
+<input type="hidden" id="hdnSlotMinTime" value="@slotMinTime" />
+<input type="hidden" id="hdnSlotMaxTime" value="@slotMaxTime" />
+
+<style>
+    /* ── FullCalendar — Fimel theme ───────────────────────────── */
+    :root {
+        --fc-button-bg-color:           #0E96CC;
+        --fc-button-border-color:       #0E96CC;
+        --fc-button-hover-bg-color:     #0a6e96;
+        --fc-button-hover-border-color: #0a6e96;
+        --fc-button-active-bg-color:    #0a6e96;
+        --fc-button-active-border-color:#0a6e96;
+        --fc-today-bg-color:            rgba(14,150,204,0.06);
+        --fc-now-indicator-color:       #0E96CC;
+        --fc-border-color:              #edf2f7;
+        --fc-page-bg-color:             #fff;
+        --fc-neutral-bg-color:          #f8fafc;
+        --fc-list-event-hover-bg-color: #e8f7fd;
+    }
+
+    #calendar { font-family: 'Open Sans', sans-serif; font-size: 0.875rem; }
+
+    /* Toolbar */
+    #calendar .fc-toolbar-title {
+        font-family: 'Signika Negative', sans-serif;
+        font-size: 1.05rem;
+        color: #1a2a3a;
+        font-weight: 700;
+    }
+    #calendar .fc-toolbar.fc-header-toolbar { margin-bottom: 14px; }
+
+    /* Botones nav */
+    #calendar .fc-button {
+        border-radius: 8px !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 5px 13px;
+        letter-spacing: 0.01em;
+        box-shadow: none !important;
+    }
+    #calendar .fc-button-group .fc-button          { border-radius: 0 !important; }
+    #calendar .fc-button-group .fc-button:first-child { border-radius: 8px 0 0 8px !important; }
+    #calendar .fc-button-group .fc-button:last-child  { border-radius: 0 8px 8px 0 !important; }
+
+    /* Cabeceras de día */
+    #calendar .fc-col-header-cell {
+        background: #f8fafc;
+        font-family: 'Signika Negative', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #4a6a7a;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 7px 0;
+        border-color: #edf2f7;
+    }
+    #calendar .fc-col-header-cell a { color: inherit; text-decoration: none; }
+
+    /* Slots de tiempo */
+    #calendar .fc-timegrid-slot        { height: 2em; }
+    #calendar .fc-timegrid-slot-label  { font-size: 0.73rem; color: #a0aab4; padding-right: 8px; }
+    #calendar .fc-timegrid-axis        { font-size: 0.73rem; }
+
+    /* Grid lines */
+    #calendar .fc-scrollgrid           { border-color: #edf2f7; border-radius: 12px; overflow: hidden; }
+    #calendar .fc-scrollgrid td,
+    #calendar .fc-scrollgrid th        { border-color: #edf2f7; }
+
+    /* Eventos */
+    #calendar .fc-event {
+        border-radius: 6px !important;
+        border: none !important;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        box-shadow: 0 1px 3px rgba(14,150,204,0.18);
+        cursor: pointer;
+    }
+    #calendar .fc-event-title   { font-weight: 600; }
+    #calendar .fc-event-time    { font-size: 0.7rem; opacity: 0.85; }
+
+    /* Indicador de hora actual */
+    #calendar .fc-now-indicator-line  { border-color: #0E96CC; border-top-width: 2px; }
+    #calendar .fc-now-indicator-arrow { border-top-color: #0E96CC; border-bottom-color: #0E96CC; }
+
+    /* Columna de hoy */
+    #calendar .fc-day-today .fc-col-header-cell-cushion { color: #0E96CC; }
+</style>
+
 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
     <div id="accionesCita" style="display: block;">
-        <button class="btn" data-bs-toggle="modal" data-bs-target="#modalNuevaCita"
-                style="background-color: #F89B9B; color: white;">
-            Crear Cita <i class="fas fa-calendar-plus"></i>
-        </button>
-
         <button class="btn" data-bs-toggle="modal" data-bs-target="#configurarHorarioModal"
                 style="background-color: #F89B9B; color: white;">
             Mi Horario <i class="fas fa-cog"></i>

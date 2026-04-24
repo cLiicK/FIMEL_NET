@@ -58,6 +58,7 @@ namespace Fimel.Api.Controllers
                     return BadRequest("No se encontró la configuracion");
 
                 dbConfig.DuracionBloqueHorario = config.DuracionBloqueHorario;
+                dbConfig.DiasAvisoPrevioControl = config.DiasAvisoPrevioControl;
 
                 db.SaveChanges();
 
@@ -66,6 +67,46 @@ namespace Fimel.Api.Controllers
             catch (Exception ex)
             {
                 Logger.Log($"Error al actualizar ConfiguracionUsuario: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("{id}/TokenPublico")]
+        public IActionResult ActualizarTokenPublico(int id, [FromBody] string token)
+        {
+            try
+            {
+                ConfiguracionUsuario? dbConfig = db.ConfiguracionesUsuario.Find(id);
+                if (dbConfig == null) return NotFound();
+
+                dbConfig.TokenPublico = token;
+                db.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ConfiguracionUsuario ActualizarTokenPublico: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetByToken/{token}")]
+        public IActionResult GetByToken(string token)
+        {
+            try
+            {
+                ConfiguracionUsuario? config = db.ConfiguracionesUsuario
+                    .Include(x => x.Usuario)
+                    .ThenInclude(u => u.Perfil)
+                    .Where(x => x.TokenPublico == token && x.Vigente == "S")
+                    .FirstOrDefault();
+
+                return Ok(config);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ConfiguracionUsuario GetByToken: {ex}");
                 return StatusCode(500, ex);
             }
         }

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using System.Globalization;
+using Fimel.Site.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.AddControllers()
         x.JsonSerializerOptions.PropertyNamingPolicy = null;
         x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+
+builder.Services.AddHostedService<CumpleanosBackgroundService>();
+builder.Services.AddHostedService<ProximoControlBackgroundService>();
 
 builder.Services.AddSession(options =>
 {
