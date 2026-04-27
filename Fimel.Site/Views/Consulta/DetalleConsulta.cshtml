@@ -17,8 +17,14 @@
 }
 
 <input type="hidden" id="hdnURL_ActualizarConsulta" value='@Url.Action("ActualizarConsulta", "Consulta")' />
-
 <input type="hidden" id="idConsulta" value='@Model.Consulta.Id' />
+<input type="hidden" id="hdnNombreDoctor" value='@ViewBag.NombreDoctor' />
+<input type="hidden" id="hdnNombreInstitucion" value='@ViewBag.NombreInstitucion' />
+<input type="hidden" id="hdnNombrePaciente" value='@(Model.Paciente.Nombres + " " + Model.Paciente.PrimerApellido)' />
+<input type="hidden" id="hdnRutPaciente" value='@rutCompleto' />
+<input type="hidden" id="hdnEdadPaciente" value='@(edad.HasValue ? edad.ToString() : "")' />
+<input type="hidden" id="hdnFechaConsulta" value='@fechaConsulta' />
+<input type="hidden" id="hdnRecetaJson" value="@(Model.Consulta.Receta ?? "")" />
 
 <style>
     #accordionFicha-nuevaConsulta-head .accordion-button {
@@ -212,8 +218,13 @@
                                                 <textarea class="form-control" rows="3" id="inputIndicaciones" disabled>@Model.Consulta.Indicaciones</textarea>
                                             </div>
                                             <div class="col-md-12">
-                                                <label for="exampleFormControlTextarea1" class="form-label">Receta</label>
-                                                <textarea class="form-control" rows="3" id="inputReceta" disabled>@Model.Consulta.Receta</textarea>
+                                                <label class="form-label fw-semibold">Receta</label>
+                                                <div id="listaMedicamentosDetalle" class="mb-2"></div>
+                                                <div class="d-flex gap-2" id="divBotonesReceta" style="display:none!important;">
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ImprimirRecetaDetalle()">
+                                                        <i class="fas fa-print me-1"></i>Imprimir Receta
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="col-md-12">
                                                 <label for="exampleFormControlTextarea1" class="form-label">Orden Exámenes</label>
@@ -326,5 +337,5 @@
 </div>
 
 @section scripts {
-    <script src="~/js/site/Historial_Consultas.js?v=2.0" type="text/javascript"></script>
+    <script src="~/js/site/Historial_Consultas.js?v=3.0" type="text/javascript"></script>
 }

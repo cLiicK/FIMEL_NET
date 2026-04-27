@@ -1,4 +1,5 @@
 ﻿using Fimel.Models;
+using Fimel.Models.Integraciones;
 using Fimel.Models.Params;
 using Fimel.Site.ViewModels;
 using Fimel.Utils;
@@ -18,6 +19,22 @@ namespace Fimel.Site.Controllers
 
         public ActionResult NuevaConsulta()
         {
+            Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+            if (usuario != null)
+            {
+                ViewBag.NombreDoctor = $"{usuario.Nombres} {usuario.ApellidoPaterno}".Trim();
+                ViewBag.IdInstitucion = usuario.IdInstitucion;
+
+                if (usuario.IdInstitucion.HasValue)
+                {
+                    Instituciones inst = APIBase.Get<Instituciones>($"Instituciones/{usuario.IdInstitucion}");
+                    ViewBag.NombreInstitucion = inst?.RazonSocial ?? "FIMEL";
+                }
+                else
+                {
+                    ViewBag.NombreInstitucion = "FIMEL";
+                }
+            }
             return View();
         }
         public ActionResult HistorialConsultas()
@@ -60,6 +77,18 @@ namespace Fimel.Site.Controllers
 
                 Consultas consulta = APIBase.Get<Consultas>($"Consultas/{Convert.ToInt32(idConsulta)}");
                 Pacientes paciente = APIBase.Get<Pacientes>($"Pacientes/{consulta.Id_Paciente}");
+
+                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuario != null)
+                {
+                    ViewBag.NombreDoctor = $"{usuario.Nombres} {usuario.ApellidoPaterno}".Trim();
+                    if (usuario.IdInstitucion.HasValue)
+                    {
+                        Instituciones inst = APIBase.Get<Instituciones>($"Instituciones/{usuario.IdInstitucion}");
+                        ViewBag.NombreInstitucion = inst?.RazonSocial ?? "FIMEL";
+                    }
+                    else ViewBag.NombreInstitucion = "FIMEL";
+                }
 
                 DetalleConsultaVM vm = new DetalleConsultaVM()
                 {
@@ -331,6 +360,102 @@ namespace Fimel.Site.Controllers
         }
 
         [HttpPost]
+        public ActionResult EnviarReceta(string emailPaciente, string nombrePaciente, string rutPaciente,
+            string edadPaciente, string fechaConsulta, string medicamentosJson)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuarioConectado == null)
+                    return Json(new { success = false, message = "Sesión no válida." });
+
+                if (string.IsNullOrEmpty(emailPaciente))
+                    return Json(new { success = false, message = "El paciente no tiene correo registrado." });
+
+                Instituciones? institucion = null;
+                if (usuarioConectado.IdInstitucion.HasValue)
+                    institucion = APIBase.Get<Instituciones>($"Instituciones/{usuarioConectado.IdInstitucion}");
+
+                string nombreDoctor = $"{usuarioConectado.Nombres} {usuarioConectado.ApellidoPaterno}".Trim();
+                string nombreInstitucion = institucion?.RazonSocial ?? "FIMEL";
+
+                var medicamentos = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(medicamentosJson ?? "[]");
+
+                var medicRows = new System.Text.StringBuilder();
+                for (int i = 0; i < medicamentos.Count; i++)
+                {
+                    var m = medicamentos[i];
+                    medicRows.AppendLine($@"<tr>
+                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{i + 1}</td>
+                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'><strong>{m.GetValueOrDefault("medicamento", "")}</strong></td>
+                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{m.GetValueOrDefault("dosis", "")}</td>
+                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{m.GetValueOrDefault("posologia", "")}</td>
+                    </tr>");
+                }
+
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+                string logoEfectivo = logoPath;
+                string? logoTempPath = null;
+
+                if (!string.IsNullOrEmpty(institucion?.Logo))
+                {
+                    logoTempPath = Path.Combine(Path.GetTempPath(), $"logo_receta_{usuarioConectado.IdInstitucion}.png");
+                    System.IO.File.WriteAllBytes(logoTempPath, Convert.FromBase64String(institucion.Logo));
+                    logoEfectivo = logoTempPath;
+                }
+
+                string cuerpo = $@"<!DOCTYPE html><html><body style='font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;'>
+<div style='border-bottom:3px solid #0E96CC;padding-bottom:15px;margin-bottom:20px;display:flex;align-items:center;gap:16px;'>
+    <img src='cid:logoImage' style='max-height:60px;max-width:180px;' alt='{nombreInstitucion}'>
+    <div><h2 style='color:#0E96CC;margin:0;'>RECETA M&Eacute;DICA</h2><p style='color:#666;margin:4px 0 0;'>{nombreInstitucion}</p></div>
+</div>
+<table style='width:100%;margin-bottom:20px;border-collapse:collapse;'>
+    <tr><td style='padding:4px 0;width:50%;'><strong>M&eacute;dico:</strong> {nombreDoctor}</td><td style='padding:4px 0;'><strong>Fecha:</strong> {fechaConsulta}</td></tr>
+    <tr><td style='padding:4px 0;'><strong>Paciente:</strong> {nombrePaciente}</td><td style='padding:4px 0;'><strong>Documento:</strong> {rutPaciente}</td></tr>
+    <tr><td style='padding:4px 0;'><strong>Edad:</strong> {edadPaciente} a&ntilde;os</td><td></td></tr>
+</table>
+<h4 style='color:#0E96CC;border-bottom:1px solid #eee;padding-bottom:8px;'>Medicamentos</h4>
+<table style='width:100%;border-collapse:collapse;'>
+    <thead><tr style='background:#f0f8ff;'>
+        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;width:30px;'>#</th>
+        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;'>Medicamento</th>
+        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;'>Dosis</th>
+        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;'>Posolog&iacute;a</th>
+    </tr></thead>
+    <tbody>{medicRows}</tbody>
+</table>
+<div style='margin-top:50px;text-align:right;border-top:1px solid #ccc;padding-top:15px;'>
+    <p style='color:#444;margin:0;font-weight:bold;'>{nombreDoctor}</p>
+    <p style='color:#888;font-size:0.85rem;margin:4px 0 0;'>{nombreInstitucion}</p>
+</div>
+</body></html>";
+
+                var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
+                {
+                    (logoEfectivo, "logoImage", "image/png")
+                };
+
+                var correo = new EnvioCorreo
+                {
+                    Destinatarios = new List<string> { emailPaciente },
+                    Asunto = $"Receta Médica - {nombreDoctor} - {fechaConsulta}",
+                    CuerpoCorreo = cuerpo
+                };
+
+                new Utileria().EnviarCorreo(correo, imagenesCorreo, nombreInstitucion);
+
+                if (logoTempPath != null && System.IO.File.Exists(logoTempPath))
+                    System.IO.File.Delete(logoTempPath);
+
+                return Json(new { success = true, message = $"Receta enviada a {emailPaciente}" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error EnviarReceta: {ex}");
+                return Json(new { success = false, message = "Error al enviar la receta." });
+            }
+        }
+
         public ActionResult EliminarPlantilla(int id)
         {
             try

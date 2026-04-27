@@ -1,5 +1,6 @@
 ﻿
 var idPerfil = 0;
+var idPacienteActual = 0;
 
 var ModuloFichaPaciente = (function () {
     return {
@@ -213,29 +214,35 @@ var ModuloFichaPaciente = (function () {
                             $("#btnGuardarPaciente").hide();
                             $("#btnActualizarPaciente").show();
 
+                            idPacienteActual = response.Id;
                             ObtenerConsultasAnteriores(validacionRut, response.TipoDocumento);
+                            ModuloFichaPaciente.CargarExamenes(response.Id);
 
                             Swal.fire('Paciente encontrado', 'Se cargaron los datos del paciente', 'success')
                         }
                         else {
                             Swal.fire('Nuevo paciente', 'Favor complete los datos del nuevo paciente', 'info')
 
+                            idPacienteActual = 0;
                             $('#btnGuardarPaciente').prop('disabled', false);
                             $("#btnGuardarPaciente").show();
                             $("#btnActualizarPaciente").hide();
 
                             $("#ListConsultasAnteriores").html('<li class="list-group-item">Sin consultas anteriores</li>');
+                            $("#tablaExamenesContainer").html('<p class="text-muted" style="font-size:0.85rem">Sin exámenes registrados.</p>');
 
                             $("#inputRutData").val($("#inputRut").val());
                         }
                     } else {
                         Swal.fire('Nuevo paciente', 'Favor complete los datos del nuevo paciente', 'info')
 
+                        idPacienteActual = 0;
                         $('#btnGuardarPaciente').prop('disabled', false);
                         $("#btnGuardarPaciente").show();
                         $("#btnActualizarPaciente").hide();
 
                         $("#ListConsultasAnteriores").html('<li class="list-group-item">Sin consultas anteriores</li>');
+                        $("#tablaExamenesContainer").html('<p class="text-muted" style="font-size:0.85rem">Sin exámenes registrados.</p>');
 
                         $("#inputRutData").val($("#inputRut").val());
                     }
@@ -475,6 +482,104 @@ var ModuloFichaPaciente = (function () {
             showLoading(object);
 
             return objDatosPaciente;
+        },
+        CargarExamenes: function (idPaciente) {
+            $.get($('#hdnURL_ObtenerExamenes').val(), { idPaciente: idPaciente }, function (response) {
+                var container = $('#tablaExamenesContainer');
+                if (!response.success || !response.data || response.data.length === 0) {
+                    container.html('<p class="text-muted small fst-italic mb-0">Sin exámenes registrados.</p>');
+                    return;
+                }
+                var urlDescargar = $('#hdnURL_DescargarExamen').val();
+                var items = response.data.map(function (e) {
+                    var fecha = e.Fecha ? new Date(e.Fecha) : null;
+                    var fechaStr = fecha
+                        ? ('0' + fecha.getDate()).slice(-2) + '/' + ('0' + (fecha.getMonth() + 1)).slice(-2) + '/' + fecha.getFullYear()
+                        : '';
+                    var iconClass = e.NombreArchivo ? 'fa-file-medical' : 'fa-clipboard-list';
+                    var iconColor = e.NombreArchivo ? '#0E96CC' : '#aaa';
+                    var btnDescarga = e.NombreArchivo
+                        ? '<a href="' + urlDescargar + '?id=' + e.Id + '" target="_blank" class="btn btn-sm me-1" style="color:#0E96CC;background:#e8f4fa;border:1px solid #b8dff0;" title="Descargar archivo"><i class="fas fa-download"></i></a>'
+                        : '';
+                    var btnEliminar = '<button class="btn btn-sm" onclick="ModuloFichaPaciente.EliminarExamen(' + e.Id + ',' + idPaciente + ')" title="Eliminar" style="color:#dc3545;background:#fff5f5;border:1px solid #f5c2c7;"><i class="fas fa-trash-can"></i></button>';
+                    return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
+                        '<i class="fas ' + iconClass + ' flex-shrink-0" style="color:' + iconColor + ';font-size:1.2rem;width:20px;text-align:center;"></i>' +
+                        '<div class="flex-grow-1 min-w-0">' +
+                        '<div class="fw-semibold text-dark lh-sm text-truncate" style="font-size:0.9rem;">' + (e.Descripcion || '') + '</div>' +
+                        (fechaStr ? '<div class="text-muted mt-1" style="font-size:0.78rem;"><i class="fas fa-calendar-alt me-1"></i>' + fechaStr + '</div>' : '') +
+                        '</div>' +
+                        '<div class="d-flex gap-1 flex-shrink-0">' + btnDescarga + btnEliminar + '</div>' +
+                        '</div>';
+                }).join('');
+                container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+                var $collapse = $('#accordionFicha-examenes');
+                if (!$collapse.hasClass('show')) {
+                    new bootstrap.Collapse($collapse[0], { toggle: false }).show();
+                }
+            });
+        },
+        GuardarExamen: function (btn) {
+            if (idPacienteActual <= 0) {
+                Swal.fire('Primero busque un paciente', '', 'warning');
+                return;
+            }
+            var descripcion = $('#inputExamenDescripcion').val().trim();
+            var fecha = $('#inputExamenFecha').val();
+            if (!descripcion) { Swal.fire('Ingrese una descripción', '', 'warning'); return; }
+            if (!fecha) { Swal.fire('Ingrese una fecha', '', 'warning'); return; }
+
+            var formData = new FormData();
+            formData.append('idPaciente', idPacienteActual);
+            formData.append('descripcion', descripcion);
+            formData.append('fecha', fecha);
+            var archivo = $('#inputExamenArchivo')[0].files[0];
+            if (archivo) formData.append('archivo', archivo);
+
+            $(btn).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
+
+            $.ajax({
+                url: $('#hdnURL_GuardarExamen').val(),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        $('#inputExamenDescripcion').val('');
+                        $('#inputExamenFecha').val('');
+                        $('#inputExamenArchivo').val('');
+                        ModuloFichaPaciente.CargarExamenes(idPacienteActual);
+                        Swal.fire('Exámen guardado', response.message, 'success');
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'No se pudo guardar el exámen.', 'error');
+                },
+                complete: function () {
+                    $(btn).prop('disabled', false).html('<i class="fas fa-plus me-1"></i> Guardar Exámen');
+                }
+            });
+        },
+        EliminarExamen: function (id, idPaciente) {
+            Swal.fire({
+                title: 'Eliminar exámen',
+                text: '¿Está seguro de eliminar este exámen?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+                $.post($('#hdnURL_EliminarExamen').val(), { id: id }, function (response) {
+                    if (response.success) {
+                        ModuloFichaPaciente.CargarExamenes(idPaciente);
+                    } else {
+                        Swal.fire('Error', 'No se pudo eliminar el exámen.', 'error');
+                    }
+                });
+            });
         },
         BloquearCamposSegunPerfil: function (object) {
             idPerfil = object.IdPerfil;

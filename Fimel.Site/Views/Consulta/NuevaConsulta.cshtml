@@ -7,6 +7,15 @@
 <input type="hidden" id="hiddenRutPaciente" />
 <input type="hidden" id="hiddenNumDocumento" />
 
+<input type="hidden" id="hdnURL_ObtenerExamenes" value='@Url.Action("ObtenerExamenes", "Pacientes")' />
+<input type="hidden" id="hdnURL_GuardarExamen" value='@Url.Action("GuardarExamen", "Pacientes")' />
+<input type="hidden" id="hdnURL_EliminarExamen" value='@Url.Action("EliminarExamen", "Pacientes")' />
+<input type="hidden" id="hdnURL_DescargarExamen" value='@Url.Action("DescargarExamen", "Pacientes")' />
+<input type="hidden" id="hdnURL_EnviarReceta" value='@Url.Action("EnviarReceta", "Consulta")' />
+<input type="hidden" id="hdnNombreDoctor" value='@ViewBag.NombreDoctor' />
+<input type="hidden" id="hdnNombreInstitucion" value='@ViewBag.NombreInstitucion' />
+<input type="hidden" id="hdnIdInstitucion" value='@ViewBag.IdInstitucion' />
+
 <style>
     #accordionFicha-nuevaConsulta-head .accordion-button {
         background-color: #fff8f8;
@@ -258,6 +267,21 @@
                                         </div>
                                     </div>
                                 </div>
+                                @* Exámenes *@
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accordionFicha-examenes-head">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenes" aria-expanded="false" aria-controls="accordionFicha-examenes">
+                                            Exámenes
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-examenes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenes-head">
+                                        <div class="accordion-body">
+                                            <div id="tablaExamenesConsultaContainer">
+                                                <p class="text-muted small">Busca un paciente para ver sus exámenes.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 @* Historial *@
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="accordionFicha-historial-head">
@@ -339,8 +363,40 @@
                                                     <textarea class="form-control" id="inputIndicaciones" rows="3"></textarea>
                                                 </div>
                                                 <div class="col-md-12">
-                                                    <label for="exampleFormControlTextarea1" class="form-label">Receta</label>
-                                                    <textarea class="form-control" id="inputReceta" rows="3"></textarea>
+                                                    <label class="form-label fw-semibold">Receta</label>
+                                                    <div class="p-3 rounded border mb-2" style="background:#f8fcff;">
+                                                        <p class="small text-secondary mb-2 fw-semibold"><i class="fas fa-pills me-1" style="color:#0E96CC;"></i> Agregar medicamento</p>
+                                                        <div class="row g-2 align-items-end">
+                                                            <div class="col-md-5">
+                                                                <label class="form-label small mb-1 text-muted">Medicamento</label>
+                                                                <input type="text" class="form-control form-control-sm" id="inputNuevoMedicamento" placeholder="Ej: Paracetamol">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="form-label small mb-1 text-muted">Dosis</label>
+                                                                <input type="text" class="form-control form-control-sm" id="inputNuevaDosis" placeholder="Ej: 500mg">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="form-label small mb-1 text-muted">Posología</label>
+                                                                <input type="text" class="form-control form-control-sm" id="inputNuevaPosologia" placeholder="Ej: cada 8hrs">
+                                                            </div>
+                                                            <div class="col-md-1">
+                                                                <button type="button" class="btn btn-blue btn-sm w-100" onclick="ModuloConsulta.AgregarMedicamento()" title="Agregar medicamento">
+                                                                    <i class="fas fa-plus"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div id="listaMedicamentosConsulta" class="mb-3">
+                                                        <p class="text-muted small fst-italic mb-0">Sin medicamentos agregados.</p>
+                                                    </div>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ModuloConsulta.ImprimirReceta()">
+                                                            <i class="fas fa-print me-1"></i>Imprimir Receta
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm" style="background:#e8f4fa;color:#0E96CC;border:1px solid #b8dff0;" onclick="ModuloConsulta.EnviarRecetaCorreo(this)">
+                                                            <i class="fas fa-envelope me-1"></i>Enviar por Correo
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-12">
                                                     <label for="exampleFormControlTextarea1" class="form-label">Orden Exámenes</label>
@@ -398,6 +454,36 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="accordion mt-2" id="accordionExamenLateralConsulta">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-agregarExamenConsulta" aria-expanded="false">
+                                            Agregar Exámen
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-agregarExamenConsulta" class="accordion-collapse collapse">
+                                        <div class="accordion-body">
+                                            <div class="mb-2">
+                                                <label class="form-label">Descripción <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control form-control-sm" id="inputDescripcionExamenConsulta" maxlength="200" placeholder="Ej: Ecografía abdominal">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                                                <input type="date" class="form-control form-control-sm" id="inputFechaExamenConsulta">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Archivo (opcional)</label>
+                                                <input type="file" class="form-control form-control-sm" id="inputArchivoExamenConsulta" accept=".pdf,.jpg,.jpeg,.png">
+                                            </div>
+                                            <button type="button" class="btn btn-blue btn-sm w-100" onclick="ModuloConsulta.GuardarExamenConsulta(this)">
+                                                <i class="fas fa-save me-1"></i> Guardar Examen
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

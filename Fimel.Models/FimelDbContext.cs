@@ -29,6 +29,7 @@ namespace Fimel.Models
         public DbSet<Cita> Citas { get; set; }
         public DbSet<ConfiguracionUsuario> ConfiguracionesUsuario { get; set; }
         public DbSet<PlantillaConsulta> PlantillasConsulta { get; set; }
+        public DbSet<ExamenPaciente> ExamenesPaciente { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -56,6 +57,7 @@ namespace Fimel.Models
             modelBuilder.Entity<Cita>().ToTable("Citas");
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario");
             modelBuilder.Entity<PlantillaConsulta>().ToTable("PlantillasConsulta");
+            modelBuilder.Entity<ExamenPaciente>().ToTable("ExamenesPaciente");
 
         }
     }

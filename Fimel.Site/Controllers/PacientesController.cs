@@ -277,6 +277,86 @@ namespace Fimel.Site.Controllers
             }
         }
 
+        [HttpGet]
+        public ActionResult ObtenerExamenes(int idPaciente)
+        {
+            try
+            {
+                var examenes = APIBase.Get<List<ExamenPaciente>>($"ExamenesPaciente/{idPaciente}");
+                return Json(new { success = true, data = examenes ?? new List<ExamenPaciente>() });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ObtenerExamenes: {ex}");
+                return Json(new { success = false, data = new List<object>() });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult GuardarExamen(int idPaciente, string descripcion, string fecha, IFormFile? archivo)
+        {
+            try
+            {
+                var examen = new ExamenPaciente
+                {
+                    IdPaciente = idPaciente,
+                    Descripcion = descripcion,
+                    Fecha = DateTime.Parse(fecha)
+                };
+
+                if (archivo != null && archivo.Length > 0)
+                {
+                    using var ms = new MemoryStream();
+                    archivo.CopyTo(ms);
+                    examen.ContenidoArchivo = Convert.ToBase64String(ms.ToArray());
+                    examen.NombreArchivo = archivo.FileName;
+                    examen.MimeType = archivo.ContentType;
+                }
+
+                APIBase.Post<ExamenPaciente>("ExamenesPaciente", examen);
+                return Json(new { success = true, message = "Examen guardado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error GuardarExamen: {ex}");
+                return Json(new { success = false, message = "Error al guardar el examen." });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult EliminarExamen(int id)
+        {
+            try
+            {
+                APIBase.Delete<bool>($"ExamenesPaciente/{id}");
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error EliminarExamen: {ex}");
+                return Json(new { success = false });
+            }
+        }
+
+        [HttpGet]
+        public ActionResult DescargarExamen(int id)
+        {
+            try
+            {
+                ExamenPaciente examen = APIBase.Get<ExamenPaciente>($"ExamenesPaciente/GetById/{id}");
+                if (examen == null || string.IsNullOrEmpty(examen.ContenidoArchivo))
+                    return NotFound();
+
+                byte[] bytes = Convert.FromBase64String(examen.ContenidoArchivo);
+                return File(bytes, examen.MimeType ?? "application/octet-stream", examen.NombreArchivo ?? "archivo");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error DescargarExamen: {ex}");
+                return NotFound();
+            }
+        }
+
         public ActionResult Documentos()
         {
             return View();

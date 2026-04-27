@@ -9,6 +9,10 @@
 <input type="hidden" id="hdnURL_ObtenerConsulta" value='@Url.Action("ObtenerConsulta", "Consulta")' />
 <input type="hidden" id="hdnURL_GrabarNuevoPaciente" value='@Url.Action("GrabarNuevoPaciente", "Pacientes")' />
 <input type="hidden" id="hdnURL_ActualizarPaciente" value='@Url.Action("ActualizarPaciente", "Pacientes")' />
+<input type="hidden" id="hdnURL_ObtenerExamenes" value='@Url.Action("ObtenerExamenes", "Pacientes")' />
+<input type="hidden" id="hdnURL_GuardarExamen" value='@Url.Action("GuardarExamen", "Pacientes")' />
+<input type="hidden" id="hdnURL_EliminarExamen" value='@Url.Action("EliminarExamen", "Pacientes")' />
+<input type="hidden" id="hdnURL_DescargarExamen" value='@Url.Action("DescargarExamen", "Pacientes")' />
 <!-- fin sidebar -->
 <!-- contenido central -->
 <div id="content-wrapper" class="container-9">
@@ -273,6 +277,20 @@
                                     </div>
                                 </div>
                                 <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accordionFicha-examenes-head">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-examenes" aria-expanded="false" aria-controls="accordionFicha-examenes">
+                                            Ex&aacute;menes
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-examenes" class="accordion-collapse collapse" aria-labelledby="accordionFicha-examenes-head">
+                                        <div class="accordion-body p-2">
+                                            <div id="tablaExamenesContainer">
+                                                <p class="text-muted" style="font-size:0.85rem">Sin ex&aacute;menes registrados.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
                                     <h2 class="accordion-header" id="accordionFicha-historial-head">
                                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-historial" aria-expanded="true" aria-controls="accordionFicha-historial">
                                             Historial
@@ -362,6 +380,35 @@
                                                     <i class="fas fa-envelope icon-input-ficha"></i>
                                                 </div>
                                             </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion mt-2" id="accordionExamenLateral">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionExamenLateral-body" aria-expanded="false">
+                                            Agregar Ex&aacute;men
+                                        </button>
+                                    </h2>
+                                    <div id="accordionExamenLateral-body" class="accordion-collapse collapse">
+                                        <div class="accordion-body">
+                                            <div class="mb-2">
+                                                <label class="form-label">Descripci&oacute;n <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control form-control-sm" id="inputExamenDescripcion" maxlength="200" placeholder="Ej: Ecograf&iacute;a abdominal">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                                                <input type="date" class="form-control form-control-sm" id="inputExamenFecha">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Archivo (opcional)</label>
+                                                <input type="file" class="form-control form-control-sm" id="inputExamenArchivo" accept=".pdf,.png,.jpg,.jpeg">
+                                            </div>
+                                            <button class="btn btn-blue btn-sm w-100" onclick="ModuloFichaPaciente.GuardarExamen(this)">
+                                                <i class="fas fa-plus me-1"></i> Guardar Ex&aacute;men
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

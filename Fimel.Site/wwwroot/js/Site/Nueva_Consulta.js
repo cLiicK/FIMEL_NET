@@ -1,4 +1,7 @@
-﻿var ModuloConsulta = (function () {
+﻿var recetaMedicamentos = [];
+var idPacienteConsultaActual = 0;
+
+var ModuloConsulta = (function () {
     return {
         IniciarScripts: function () {
             $("#inputRut").keypress(function (e) { onlyNumbersWithK(e); });
@@ -79,6 +82,9 @@
             }
 
             LimpiarFormularioConsulta();
+            idPacienteConsultaActual = 0;
+            recetaMedicamentos = [];
+            ModuloConsulta.RenderizarMedicamentos();
 
             showLoading(object);
 
@@ -168,6 +174,9 @@
                             $("#btnActualizarPaciente").show();
 
                             ObtenerConsultasAnteriores(validacionRut, response.TipoDocumento);
+
+                            idPacienteConsultaActual = response.Id;
+                            ModuloConsulta.CargarExamenesConsulta(response.Id);
 
                             Swal.fire('Paciente encontrado', 'Se cargaron los datos del paciente', 'success')
 
@@ -294,7 +303,7 @@
             objDatosConsulta["ExamenFisico"] = $("#inputExamenFisico").val() || null;
             objDatosConsulta["Diagnostico"] = $("#inputDiagnostico").val() || null;
             objDatosConsulta["Indicaciones"] = $("#inputIndicaciones").val() || null;
-            objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
+            objDatosConsulta["Receta"] = recetaMedicamentos.length > 0 ? JSON.stringify(recetaMedicamentos) : null;
             objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val();
             objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val();
 
@@ -674,6 +683,247 @@
             });
         },
 
+        AgregarMedicamento: function () {
+            var medicamento = $('#inputNuevoMedicamento').val().trim();
+            var dosis = $('#inputNuevaDosis').val().trim();
+            var posologia = $('#inputNuevaPosologia').val().trim();
+            if (!medicamento) {
+                Swal.fire('Campo requerido', 'Ingrese el nombre del medicamento.', 'warning');
+                return;
+            }
+            recetaMedicamentos.push({ medicamento: medicamento, dosis: dosis, posologia: posologia });
+            $('#inputNuevoMedicamento').val('');
+            $('#inputNuevaDosis').val('');
+            $('#inputNuevaPosologia').val('');
+            ModuloConsulta.RenderizarMedicamentos();
+        },
+
+        EliminarMedicamento: function (index) {
+            recetaMedicamentos.splice(index, 1);
+            ModuloConsulta.RenderizarMedicamentos();
+        },
+
+        RenderizarMedicamentos: function () {
+            var container = $('#listaMedicamentosConsulta');
+            if (recetaMedicamentos.length === 0) {
+                container.html('<p class="text-muted small fst-italic mb-0">Sin medicamentos agregados.</p>');
+                return;
+            }
+            var items = recetaMedicamentos.map(function (m, i) {
+                var dosisTag = m.dosis
+                    ? '<span class="badge me-1" style="background:#e8f4fa;color:#0E96CC;border:1px solid #b8dff0;font-weight:500;">' + m.dosis + '</span>'
+                    : '';
+                var posTag = m.posologia
+                    ? '<span class="badge" style="background:#f0f0f0;color:#555;border:1px solid #ddd;font-weight:500;">' + m.posologia + '</span>'
+                    : '';
+                return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
+                    '<span class="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 text-white fw-bold" ' +
+                    'style="width:26px;height:26px;font-size:0.7rem;background:#0E96CC;">' + (i + 1) + '</span>' +
+                    '<div class="flex-grow-1">' +
+                    '<div class="fw-semibold text-dark lh-sm" style="font-size:0.9rem;">' + m.medicamento + '</div>' +
+                    (dosisTag || posTag ? '<div class="mt-1">' + dosisTag + posTag + '</div>' : '') +
+                    '</div>' +
+                    '<button type="button" class="btn p-0 flex-shrink-0 text-danger" onclick="ModuloConsulta.EliminarMedicamento(' + i + ')" title="Eliminar" style="font-size:1rem;line-height:1;">' +
+                    '<i class="fas fa-times-circle"></i></button>' +
+                    '</div>';
+            }).join('');
+            container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+        },
+
+        ImprimirReceta: function () {
+            if (recetaMedicamentos.length === 0) {
+                Swal.fire('Sin medicamentos', 'Agregue al menos un medicamento a la receta.', 'warning');
+                return;
+            }
+            var nombreDoctor = $('#hdnNombreDoctor').val() || '';
+            var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
+            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim();
+            var rutPaciente = $('#hiddenRutPaciente').val() || $('#hiddenNumDocumento').val() || '';
+            var edadPaciente = $('#inputEdad').val() || '';
+            var fechaConsulta = $('#inputFechaConsulta').val() || new Date().toISOString().split('T')[0];
+            var partesFecha = fechaConsulta.split('-');
+            var fechaFormateada = partesFecha.length === 3 ? partesFecha[2] + '/' + partesFecha[1] + '/' + partesFecha[0] : fechaConsulta;
+
+            var medicamentosHtml = recetaMedicamentos.map(function (m, i) {
+                return '<tr>' +
+                    '<td style="padding:8px;border:1px solid #ddd;">' + (i + 1) + '</td>' +
+                    '<td style="padding:8px;border:1px solid #ddd;">' + m.medicamento + '</td>' +
+                    '<td style="padding:8px;border:1px solid #ddd;">' + m.dosis + '</td>' +
+                    '<td style="padding:8px;border:1px solid #ddd;">' + m.posologia + '</td>' +
+                    '</tr>';
+            }).join('');
+
+            var html = '<!DOCTYPE html><html><head><title>Receta Médica</title>' +
+                '<style>' +
+                'body{font-family:Arial,sans-serif;margin:40px;color:#333;}' +
+                'h1{color:#333;border-bottom:2px solid #F89B9B;padding-bottom:10px;margin-bottom:20px;}' +
+                '.header{display:flex;justify-content:space-between;margin-bottom:20px;}' +
+                '.info-block{margin-bottom:20px;line-height:1.8;}' +
+                '.info-block label{font-weight:bold;}' +
+                'table{width:100%;border-collapse:collapse;margin-top:15px;}' +
+                'th{background-color:#F89B9B;color:white;padding:10px;text-align:left;border:1px solid #ddd;}' +
+                '.footer{margin-top:80px;text-align:right;border-top:1px solid #ddd;padding-top:15px;}' +
+                '@media print{button{display:none;}}' +
+                '</style></head><body>' +
+                '<h1>' + nombreInstitucion + '</h1>' +
+                '<div class="header"><div><strong>Dr/a. ' + nombreDoctor + '</strong></div><div>Fecha: ' + fechaFormateada + '</div></div>' +
+                '<div class="info-block">' +
+                '<label>Paciente:</label> ' + nombrePaciente + '<br>' +
+                '<label>RUT/Doc:</label> ' + rutPaciente + '<br>' +
+                '<label>Edad:</label> ' + edadPaciente + ' años' +
+                '</div>' +
+                '<table><thead><tr><th>#</th><th>Medicamento</th><th>Dosis</th><th>Posología</th></tr></thead>' +
+                '<tbody>' + medicamentosHtml + '</tbody></table>' +
+                '<div class="footer"><p>____________________________</p><p>Dr/a. ' + nombreDoctor + '</p></div>' +
+                '<script>window.onafterprint=function(){window.close();};window.onload=function(){window.print();};<\/script>' +
+                '</body></html>';
+
+            var w = window.open('', '_blank', 'width=800,height=600');
+            w.document.write(html);
+            w.document.close();
+        },
+
+        EnviarRecetaCorreo: function (btn) {
+            if (recetaMedicamentos.length === 0) {
+                Swal.fire('Sin medicamentos', 'Agregue al menos un medicamento a la receta.', 'warning');
+                return;
+            }
+            var email = $('#inputEmail').val();
+            if (!email) {
+                Swal.fire('Sin correo', 'El paciente no tiene un correo electrónico registrado.', 'warning');
+                return;
+            }
+            showLoading(btn);
+            $.ajax({
+                url: $('#hdnURL_EnviarReceta').val(),
+                method: 'POST',
+                data: {
+                    emailPaciente: email,
+                    nombrePaciente: ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim(),
+                    rutPaciente: $('#hiddenRutPaciente').val() || $('#hiddenNumDocumento').val() || '',
+                    edadPaciente: $('#inputEdad').val() || '',
+                    fechaConsulta: $('#inputFechaConsulta').val(),
+                    medicamentosJson: JSON.stringify(recetaMedicamentos)
+                },
+                success: function (response) {
+                    closeLoading(btn);
+                    if (response.success) {
+                        Swal.fire('Correo enviado', response.message, 'success');
+                    } else {
+                        Swal.fire('Error', response.message || 'Error al enviar el correo.', 'error');
+                    }
+                },
+                error: function () {
+                    closeLoading(btn);
+                    Swal.fire('Error', 'Error al enviar el correo.', 'error');
+                }
+            });
+        },
+
+        CargarExamenesConsulta: function (idPaciente) {
+            $.ajax({
+                url: $('#hdnURL_ObtenerExamenes').val(),
+                method: 'GET',
+                data: { idPaciente: idPaciente },
+                success: function (response) {
+                    var container = $('#tablaExamenesConsultaContainer');
+                    if (!response.success || !response.data || response.data.length === 0) {
+                        container.html('<p class="text-muted small fst-italic mb-0">No hay exámenes registrados.</p>');
+                        return;
+                    }
+                    var urlDescargar = $('#hdnURL_DescargarExamen').val();
+                    var items = response.data.map(function (e) {
+                        var fecha = e.Fecha ? new Date(e.Fecha) : null;
+                        var fechaStr = fecha
+                            ? ('0' + fecha.getDate()).slice(-2) + '/' + ('0' + (fecha.getMonth() + 1)).slice(-2) + '/' + fecha.getFullYear()
+                            : '';
+                        var iconClass = e.NombreArchivo ? 'fa-file-medical' : 'fa-clipboard-list';
+                        var iconColor = e.NombreArchivo ? '#0E96CC' : '#aaa';
+                        var btnDescarga = e.NombreArchivo
+                            ? '<a href="' + urlDescargar + '?id=' + e.Id + '" target="_blank" class="btn btn-sm me-1" style="color:#0E96CC;background:#e8f4fa;border:1px solid #b8dff0;" title="Descargar archivo"><i class="fas fa-download"></i></a>'
+                            : '';
+                        var btnEliminar = '<button class="btn btn-sm" onclick="ModuloConsulta.EliminarExamenConsulta(' + e.Id + ',' + idPaciente + ')" title="Eliminar" style="color:#dc3545;background:#fff5f5;border:1px solid #f5c2c7;"><i class="fas fa-trash-can"></i></button>';
+                        return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
+                            '<i class="fas ' + iconClass + ' flex-shrink-0" style="color:' + iconColor + ';font-size:1.2rem;width:20px;text-align:center;"></i>' +
+                            '<div class="flex-grow-1 min-w-0">' +
+                            '<div class="fw-semibold text-dark lh-sm text-truncate" style="font-size:0.9rem;">' + (e.Descripcion || '') + '</div>' +
+                            (fechaStr ? '<div class="text-muted mt-1" style="font-size:0.78rem;"><i class="fas fa-calendar-alt me-1"></i>' + fechaStr + '</div>' : '') +
+                            '</div>' +
+                            '<div class="d-flex gap-1 flex-shrink-0">' + btnDescarga + btnEliminar + '</div>' +
+                            '</div>';
+                    }).join('');
+                    container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+                    $('#accordionFicha-examenes').collapse('show');
+                }
+            });
+        },
+
+        GuardarExamenConsulta: function (btn) {
+            if (idPacienteConsultaActual <= 0) {
+                Swal.fire('Sin paciente', 'Busca un paciente primero.', 'warning');
+                return;
+            }
+            var descripcion = $('#inputDescripcionExamenConsulta').val().trim();
+            var fecha = $('#inputFechaExamenConsulta').val();
+            if (!descripcion || !fecha) {
+                Swal.fire('Campos requeridos', 'Ingrese descripción y fecha del examen.', 'warning');
+                return;
+            }
+            showLoading(btn);
+            var formData = new FormData();
+            formData.append('idPaciente', idPacienteConsultaActual);
+            formData.append('descripcion', descripcion);
+            formData.append('fecha', fecha);
+            var archivo = $('#inputArchivoExamenConsulta')[0].files[0];
+            if (archivo) { formData.append('archivo', archivo); }
+            $.ajax({
+                url: $('#hdnURL_GuardarExamen').val(),
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    closeLoading(btn);
+                    if (response.success) {
+                        $('#inputDescripcionExamenConsulta').val('');
+                        $('#inputFechaExamenConsulta').val('');
+                        $('#inputArchivoExamenConsulta').val('');
+                        ModuloConsulta.CargarExamenesConsulta(idPacienteConsultaActual);
+                        Swal.fire({ icon: 'success', title: 'Examen guardado', timer: 1500, showConfirmButton: false });
+                    } else {
+                        Swal.fire('Error', response.message || 'Error al guardar el examen.', 'error');
+                    }
+                },
+                error: function () {
+                    closeLoading(btn);
+                    Swal.fire('Error', 'Error al guardar el examen.', 'error');
+                }
+            });
+        },
+
+        EliminarExamenConsulta: function (id, idPaciente) {
+            Swal.fire({
+                title: '¿Eliminar examen?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: $('#hdnURL_EliminarExamen').val(),
+                        method: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                ModuloConsulta.CargarExamenesConsulta(idPaciente);
+                            }
+                        }
+                    });
+                }
+            });
+        },
+
         EliminarPlantilla: function (id, titulo) {
             // Confirmar eliminación
             Swal.fire({
@@ -742,5 +992,12 @@ $(function () {
     $("#inputPeso, #inputTalla").on("input", function () {
         ModuloConsulta.CalcularIMC();
     });
-     ModuloConsulta.SetFechaHoy('#inputFechaConsulta');
+    ModuloConsulta.SetFechaHoy('#inputFechaConsulta');
+
+    $('#inputNuevoMedicamento, #inputNuevaDosis, #inputNuevaPosologia').on('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            ModuloConsulta.AgregarMedicamento();
+        }
+    });
 });

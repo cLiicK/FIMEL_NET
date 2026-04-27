@@ -558,4 +558,107 @@ $(function () {
     $("#inputPeso, #inputTalla").on("input", function () {
         ModuloHistorialConsultas.CalcularIMC();
     });
+
+    if ($('#listaMedicamentosDetalle').length) {
+        RenderizarRecetaDetalle();
+    }
 });
+
+function RenderizarRecetaDetalle() {
+    var container = $('#listaMedicamentosDetalle');
+    if (!container.length) return;
+    var raw = $('#hdnRecetaJson').val();
+    if (!raw) {
+        container.html('<p class="text-muted small fst-italic mb-0">Sin receta registrada.</p>');
+        return;
+    }
+
+    var medicamentos = null;
+    try { medicamentos = JSON.parse(raw); } catch (e) { }
+
+    if (!Array.isArray(medicamentos) || medicamentos.length === 0) {
+        container.html(
+            '<div class="p-3 rounded border bg-white" style="white-space:pre-wrap;font-size:0.9rem;">' +
+            $('<div>').text(raw).html() + '</div>'
+        );
+        return;
+    }
+
+    var items = medicamentos.map(function (m, i) {
+        var dosisTag = m.dosis
+            ? '<span class="badge me-1" style="background:#e8f4fa;color:#0E96CC;border:1px solid #b8dff0;font-weight:500;">' + m.dosis + '</span>'
+            : '';
+        var posTag = m.posologia
+            ? '<span class="badge" style="background:#f0f0f0;color:#555;border:1px solid #ddd;font-weight:500;">' + m.posologia + '</span>'
+            : '';
+        return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
+            '<span class="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 text-white fw-bold" ' +
+            'style="width:26px;height:26px;font-size:0.7rem;background:#0E96CC;">' + (i + 1) + '</span>' +
+            '<div class="flex-grow-1">' +
+            '<div class="fw-semibold text-dark lh-sm" style="font-size:0.9rem;">' + m.medicamento + '</div>' +
+            (dosisTag || posTag ? '<div class="mt-1">' + dosisTag + posTag + '</div>' : '') +
+            '</div>' +
+            '</div>';
+    }).join('');
+
+    container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+    $('#divBotonesReceta').show();
+}
+
+function ImprimirRecetaDetalle() {
+    var raw = $('#hdnRecetaJson').val();
+    var medicamentos = [];
+    try { medicamentos = JSON.parse(raw); } catch (e) { }
+    if (!Array.isArray(medicamentos) || medicamentos.length === 0) return;
+
+    var nombreDoctor      = $('#hdnNombreDoctor').val() || '';
+    var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
+    var nombrePaciente    = $('#hdnNombrePaciente').val() || '';
+    var rutPaciente       = $('#hdnRutPaciente').val() || '';
+    var edadPaciente      = $('#hdnEdadPaciente').val() || '';
+    var fechaConsulta     = $('#hdnFechaConsulta').val() || '';
+
+    var medicamentosHtml = medicamentos.map(function (m, i) {
+        return '<tr>' +
+            '<td style="padding:6px 10px;border-bottom:1px solid #eee;">' + (i + 1) + '</td>' +
+            '<td style="padding:6px 10px;border-bottom:1px solid #eee;"><strong>' + (m.medicamento || '') + '</strong></td>' +
+            '<td style="padding:6px 10px;border-bottom:1px solid #eee;">' + (m.dosis || '') + '</td>' +
+            '<td style="padding:6px 10px;border-bottom:1px solid #eee;">' + (m.posologia || '') + '</td>' +
+            '</tr>';
+    }).join('');
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receta Medica</title>' +
+        '<style>' +
+        'body{font-family:Arial,sans-serif;margin:40px;color:#333;}' +
+        'h2{color:#0E96CC;border-bottom:3px solid #0E96CC;padding-bottom:10px;margin-bottom:20px;}' +
+        '.meta{width:100%;border-collapse:collapse;margin-bottom:20px;}' +
+        '.meta td{padding:4px 0;vertical-align:top;}' +
+        'table.meds{width:100%;border-collapse:collapse;}' +
+        'table.meds th{background:#0E96CC;color:#fff;padding:8px 10px;text-align:left;}' +
+        '.footer{margin-top:80px;text-align:right;border-top:1px solid #ccc;padding-top:15px;}' +
+        '</style></head><body>' +
+        '<h2>' + nombreInstitucion + ' &mdash; Receta M&eacute;dica</h2>' +
+        '<table class="meta"><tr>' +
+        '<td><strong>M&eacute;dico:</strong> ' + nombreDoctor + '</td>' +
+        '<td style="text-align:right;"><strong>Fecha:</strong> ' + fechaConsulta + '</td>' +
+        '</tr><tr>' +
+        '<td><strong>Paciente:</strong> ' + nombrePaciente + '</td>' +
+        '<td style="text-align:right;"><strong>RUT/Doc:</strong> ' + rutPaciente + '</td>' +
+        '</tr><tr>' +
+        '<td><strong>Edad:</strong> ' + edadPaciente + ' a&ntilde;os</td>' +
+        '<td></td></tr></table>' +
+        '<table class="meds"><thead><tr>' +
+        '<th style="width:30px;">#</th><th>Medicamento</th><th>Dosis</th><th>Posolog&iacute;a</th>' +
+        '</tr></thead><tbody>' + medicamentosHtml + '</tbody></table>' +
+        '<div class="footer">' +
+        '<p style="font-weight:bold;margin:0;">' + nombreDoctor + '</p>' +
+        '<p style="color:#888;font-size:0.85rem;margin:4px 0 0;">' + nombreInstitucion + '</p>' +
+        '</div>' +
+        '</body></html>';
+
+    var w = window.open('', '_blank', 'width=800,height=600');
+    w.document.write(html);
+    w.document.close();
+    w.onafterprint = function () { w.close(); };
+    setTimeout(function () { w.focus(); w.print(); }, 300);
+}
