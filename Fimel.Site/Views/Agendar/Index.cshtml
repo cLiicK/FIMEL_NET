@@ -134,7 +134,7 @@
 
         /* FORM */
         .ag-form label { font-size: 0.88rem; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
-        .ag-form input, .ag-form textarea {
+        .ag-form input, .ag-form select, .ag-form textarea {
             width: 100%; padding: 11px 14px;
             border: 1.5px solid #e0e8f0;
             border-radius: 10px;
@@ -145,7 +145,7 @@
             outline: none;
             margin-bottom: 14px;
         }
-        .ag-form input:focus, .ag-form textarea:focus { border-color: var(--f-blue); }
+        .ag-form input:focus, .ag-form select:focus, .ag-form textarea:focus { border-color: var(--f-blue); }
         .ag-form textarea { resize: none; height: 80px; }
 
         /* RESUMEN */
@@ -283,9 +283,33 @@
                     <p><i class="fas fa-user-doctor me-1" style="color:var(--f-blue)"></i> @profesionalNombre</p>
                 </div>
                 <form class="ag-form" id="formDatos" onsubmit="Agendar.confirmar(event)">
+                    <div class="row mb-0">
+                        <div class="col-5">
+                            <label>Tipo Documento <span style="color:red">*</span></label>
+                            <select id="inTipoDoc">
+                                <option value="RUT">RUT</option>
+                                <option value="Pasaporte">Pasaporte</option>
+                                <option value="DNIExtranjero">DNI Extranjero</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-7">
+                            <label>N° Documento <span style="color:red">*</span></label>
+                            <input type="text" id="inNumDocRut" placeholder="Ej. 12.325.369-9" maxlength="12">
+                            <input type="text" id="inNumDocNum" placeholder="N° Documento" style="display:none">
+                        </div>
+                    </div>
                     <div>
-                        <label>Nombre completo <span style="color:red">*</span></label>
-                        <input type="text" id="inNombre" placeholder="Ej: María González" required maxlength="120">
+                        <label>Nombres <span style="color:red">*</span></label>
+                        <input type="text" id="inNombres" placeholder="Ej: María" required maxlength="120">
+                    </div>
+                    <div>
+                        <label>Apellido Paterno</label>
+                        <input type="text" id="inApellidoPaterno" placeholder="Apellido paterno" maxlength="120">
+                    </div>
+                    <div>
+                        <label>Apellido Materno</label>
+                        <input type="text" id="inApellidoMaterno" placeholder="Apellido materno" maxlength="120">
                     </div>
                     <div>
                         <label>Correo electrónico <span style="color:red">*</span></label>
@@ -334,6 +358,34 @@
 
         const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         const DIAS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+        function formatearRut(val) {
+            val = val.replace(/\./g, '').replace(/-/g, '');
+            if (val.length > 9) val = val.substr(0, 9);
+            var concat = '', i = val.length - 1;
+            for (; i >= 0; i--) {
+                concat = val[i] + concat;
+                if (i + 1 === val.length && i > 0) concat = '-' + concat;
+                if (concat.length === 9 && val.length > 7) concat = '.' + concat;
+                if (concat.length === 5 && val.length > 4) concat = '.' + concat;
+            }
+            return concat;
+        }
+
+        function validarRutPublico(rutCompleto) {
+            var limpio = rutCompleto.replace(/\./g, '').replace(/-/g, '');
+            if (limpio.length < 2) return null;
+            var cuerpo = limpio.slice(0, -1);
+            var dvIngresado = limpio.slice(-1).toUpperCase();
+            var suma = 0, multiplo = 2;
+            for (var i = cuerpo.length - 1; i >= 0; i--) {
+                suma += parseInt(cuerpo[i]) * multiplo;
+                multiplo = multiplo < 7 ? multiplo + 1 : 2;
+            }
+            var resto = 11 - (suma % 11);
+            var dvCalculado = resto === 11 ? '0' : resto === 10 ? 'K' : String(resto);
+            return dvIngresado === dvCalculado ? cuerpo : null;
+        }
 
         var Agendar = (function () {
             var estado = {
@@ -473,6 +525,24 @@
 
             async function confirmar(e) {
                 e.preventDefault();
+
+                var tipoDoc = document.getElementById('inTipoDoc').value;
+                var numeroDoc;
+                if (tipoDoc === 'RUT') {
+                    var rutVal = validarRutPublico(document.getElementById('inNumDocRut').value);
+                    if (!rutVal) {
+                        alert('Ingrese un RUT válido.');
+                        return;
+                    }
+                    numeroDoc = rutVal;
+                } else {
+                    numeroDoc = document.getElementById('inNumDocNum').value.trim();
+                    if (!numeroDoc) {
+                        alert('Ingrese el número de documento.');
+                        return;
+                    }
+                }
+
                 var btn = document.getElementById('btnConfirmar');
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Confirmando...';
@@ -482,7 +552,11 @@
 
                 var params = new URLSearchParams({
                     token: TOKEN,
-                    nombre: document.getElementById('inNombre').value,
+                    nombre: document.getElementById('inNombres').value,
+                    apellidoPaciente: document.getElementById('inApellidoPaterno').value,
+                    segundoApellidoPaciente: document.getElementById('inApellidoMaterno').value,
+                    tipoDocumento: tipoDoc,
+                    numeroDocumento: numeroDoc,
                     correo: document.getElementById('inCorreo').value,
                     telefono: document.getElementById('inTelefono').value,
                     nota: document.getElementById('inNota').value,
@@ -498,6 +572,8 @@
                         document.getElementById('resumenCorreo').textContent = document.getElementById('inCorreo').value;
                         document.getElementById('resumenFechaFinal').textContent = labelFecha(estado.fechaSeleccionada);
                         document.getElementById('resumenHoraFinal').textContent = estado.slotSeleccionado.horaInicio;
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Confirmar cita';
                         irPaso(4);
                     } else {
                         alert(data.error || 'Error al confirmar la cita. Intenta nuevamente.');
@@ -515,6 +591,8 @@
                 estado.fechaSeleccionada = null;
                 estado.slotSeleccionado = null;
                 document.getElementById('formDatos').reset();
+                document.getElementById('inNumDocRut').style.display = '';
+                document.getElementById('inNumDocNum').style.display = 'none';
                 cargarMes(estado.anio, estado.mes);
                 irPaso(1);
             }
@@ -541,6 +619,27 @@
                         }
                         cargarMes(estado.anio, estado.mes);
                     });
+                    document.getElementById('inTipoDoc').addEventListener('change', function() {
+                        if (this.value === 'RUT') {
+                            document.getElementById('inNumDocRut').style.display = '';
+                            document.getElementById('inNumDocNum').style.display = 'none';
+                            document.getElementById('inNumDocNum').value = '';
+                        } else {
+                            document.getElementById('inNumDocRut').style.display = 'none';
+                            document.getElementById('inNumDocNum').style.display = '';
+                            document.getElementById('inNumDocRut').value = '';
+                        }
+                    });
+
+                    document.getElementById('inNumDocRut').addEventListener('keypress', function(e) {
+                        var char = String.fromCharCode(e.which);
+                        if (!/[0-9kK]/.test(char)) e.preventDefault();
+                    });
+
+                    document.getElementById('inNumDocRut').addEventListener('keyup', function() {
+                        this.value = formatearRut(this.value);
+                    });
+
                     cargarMes(estado.anio, estado.mes);
                 },
                 irPaso,

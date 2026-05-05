@@ -549,23 +549,23 @@ var ModuloFichaPaciente = (function () {
                         $('#inputExamenFecha').val('');
                         $('#inputExamenArchivo').val('');
                         ModuloFichaPaciente.CargarExamenes(idPacienteActual);
-                        Swal.fire('Exámen guardado', response.message, 'success');
+                        Swal.fire('Examen guardado', response.message, 'success');
                     } else {
                         Swal.fire('Error', response.message, 'error');
                     }
                 },
                 error: function () {
-                    Swal.fire('Error', 'No se pudo guardar el exámen.', 'error');
+                    Swal.fire('Error', 'No se pudo guardar el examen.', 'error');
                 },
                 complete: function () {
-                    $(btn).prop('disabled', false).html('<i class="fas fa-plus me-1"></i> Guardar Exámen');
+                    $(btn).prop('disabled', false).html('<i class="fas fa-plus me-1"></i> Guardar Examen');
                 }
             });
         },
         EliminarExamen: function (id, idPaciente) {
             Swal.fire({
-                title: 'Eliminar exámen',
-                text: '¿Está seguro de eliminar este exámen?',
+                title: 'Eliminar examen',
+                text: '¿Está seguro de eliminar este examen?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Eliminar',
@@ -576,7 +576,7 @@ var ModuloFichaPaciente = (function () {
                     if (response.success) {
                         ModuloFichaPaciente.CargarExamenes(idPaciente);
                     } else {
-                        Swal.fire('Error', 'No se pudo eliminar el exámen.', 'error');
+                        Swal.fire('Error', 'No se pudo eliminar el examen.', 'error');
                     }
                 });
             });

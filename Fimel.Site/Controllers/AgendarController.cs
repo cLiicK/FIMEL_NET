@@ -105,6 +105,8 @@ namespace Fimel.Site.Controllers
 
         [HttpPost("Agendar/Reservar")]
         public IActionResult Reservar([FromForm] string token, [FromForm] string nombre,
+            [FromForm] string? apellidoPaciente, [FromForm] string? segundoApellidoPaciente,
+            [FromForm] string? tipoDocumento, [FromForm] string? numeroDocumento,
             [FromForm] string correo, [FromForm] string? telefono, [FromForm] string? nota,
             [FromForm] DateTime fechaHoraInicio, [FromForm] DateTime fechaHoraFin)
         {
@@ -134,6 +136,10 @@ namespace Fimel.Site.Controllers
                     FechaHoraInicio = fechaHoraInicio,
                     FechaHoraFinal = fechaHoraFin,
                     NombrePaciente = nombre,
+                    ApellidoPaciente = apellidoPaciente,
+                    SegundoApellidoPaciente = segundoApellidoPaciente,
+                    TipoDocumento = tipoDocumento,
+                    NumeroDocumento = numeroDocumento,
                     CorreoPaciente = correo,
                     Telefono = telefono,
                     Nota = nota,
@@ -149,6 +155,9 @@ namespace Fimel.Site.Controllers
 
                 try { EnviarCorreoNotificacionProfesional(citaCreada, profesional); }
                 catch (Exception ex) { Logger.Log($"Error correo notificación profesional: {ex}"); }
+
+                try { CrearOActualizarPacienteDesde(citaCreada, cfg.Usuario.Id); }
+                catch (Exception ex) { Logger.Log($"Error al crear paciente desde cita pública: {ex}"); }
 
                 return Json(new { ok = true });
             }
@@ -179,8 +188,12 @@ namespace Fimel.Site.Controllers
             string ruta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-confirmacion-cita.html");
             string html = System.IO.File.ReadAllText(ruta);
 
+            string nombreCompletoPaciente = string.Join(" ",
+                new[] { cita.NombrePaciente, cita.ApellidoPaciente, cita.SegundoApellidoPaciente }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
             html = html
-                .Replace("{{paciente}}", cita.NombrePaciente)
+                .Replace("{{paciente}}", nombreCompletoPaciente)
                 .Replace("{{profesional}}", nombreProfesional)
                 .Replace("{{fecha_cita}}", fechaCita)
                 .Replace("{{hora_cita}}", horaCita)
@@ -201,6 +214,61 @@ namespace Fimel.Site.Controllers
             new Utileria().EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno}");
         }
 
+        private void CrearOActualizarPacienteDesde(Cita cita, int idUsuario)
+        {
+            if (string.IsNullOrEmpty(cita.NumeroDocumento) || string.IsNullOrEmpty(cita.TipoDocumento))
+                return;
+
+            Pacientes? pacienteExistente = null;
+
+            if (cita.TipoDocumento == "RUT" && int.TryParse(cita.NumeroDocumento, out int rut))
+            {
+                try { pacienteExistente = _api.Get<Pacientes>($"Pacientes/GetByRut/{rut}"); } catch { }
+            }
+            else
+            {
+                try { pacienteExistente = _api.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{Uri.EscapeDataString(cita.NumeroDocumento)}"); } catch { }
+            }
+
+            if (pacienteExistente != null && pacienteExistente.Id > 0)
+                return;
+
+            var nuevo = new Pacientes
+            {
+                Nombres = cita.NombrePaciente,
+                PrimerApellido = cita.ApellidoPaciente,
+                SegundoApellido = cita.SegundoApellidoPaciente,
+                Email = cita.CorreoPaciente,
+                Celular = int.TryParse(new string(cita.Telefono?.Where(char.IsDigit).ToArray()), out int tel) ? tel : null,
+                TipoDocumento = cita.TipoDocumento,
+                NumeroDocumento = cita.NumeroDocumento,
+                UsuarioCreacion = idUsuario
+            };
+
+            if (cita.TipoDocumento == "RUT" && int.TryParse(cita.NumeroDocumento, out int rutNum))
+            {
+                nuevo.Rut = rutNum;
+                nuevo.Dv = CalcularDvRut(rutNum);
+            }
+
+            _api.Post<Pacientes>("Pacientes", nuevo);
+        }
+
+        private static string CalcularDvRut(int rut)
+        {
+            int suma = 0, multiplicador = 2, numero = rut;
+            while (numero > 0)
+            {
+                suma += (numero % 10) * multiplicador;
+                numero /= 10;
+                multiplicador = multiplicador == 7 ? 2 : multiplicador + 1;
+            }
+            int dv = 11 - (suma % 11);
+            if (dv == 11) return "0";
+            if (dv == 10) return "K";
+            return dv.ToString();
+        }
+
         private void EnviarCorreoNotificacionProfesional(Cita cita, Usuarios profesional)
         {
             if (string.IsNullOrEmpty(profesional.Email)) return;
@@ -212,9 +280,13 @@ namespace Fimel.Site.Controllers
             string ruta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-nueva-cita-profesional.html");
             string html = System.IO.File.ReadAllText(ruta);
 
+            string nombreCompletoPaciente = string.Join(" ",
+                new[] { cita.NombrePaciente, cita.ApellidoPaciente, cita.SegundoApellidoPaciente }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
             html = html
                 .Replace("{{profesional}}", nombreProfesional)
-                .Replace("{{paciente}}", cita.NombrePaciente)
+                .Replace("{{paciente}}", nombreCompletoPaciente)
                 .Replace("{{correo_paciente}}", cita.CorreoPaciente)
                 .Replace("{{telefono}}", cita.Telefono ?? "No indicado")
                 .Replace("{{fecha_cita}}", fechaCita)
