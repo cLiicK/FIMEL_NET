@@ -26,11 +26,15 @@ namespace Fimel.Site.Controllers
             {
                 Instituciones? inst = APIBase.Get<Instituciones>($"Instituciones/{usuario.IdInstitucion}");
                 ViewBag.LogoBase64 = inst?.Logo;
+                vm.Institucion = inst;
             }
 
             string urlBase = config["URL_SITIO"]?.TrimEnd('/') ?? "";
             ViewBag.UrlPublica = !string.IsNullOrEmpty(vm.Configuracion.TokenPublico)
                 ? $"{urlBase}/Agendar/{vm.Configuracion.TokenPublico}"
+                : null;
+            ViewBag.UrlAgendaPublica = !string.IsNullOrEmpty(vm.Configuracion.TokenPublico)
+                ? $"{urlBase}/AgendaPublica/{vm.Configuracion.TokenPublico}"
                 : null;
 
             return View(vm);
@@ -149,6 +153,30 @@ namespace Fimel.Site.Controllers
             {
                 Logger.Log($"Error Usuario _SubirLogo: {ex}");
                 return Json(new { success = false, message = "Error al guardar el logo." });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult _ActualizarInstitucion(int id, Instituciones inst)
+        {
+            try
+            {
+                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+
+                if (!usuario.IdInstitucion.HasValue || usuario.IdInstitucion.Value != id)
+                    return Json(new { success = false, message = "No autorizado." });
+
+                Instituciones? resultado = APIBase.Put<Instituciones>($"Instituciones/{id}", inst);
+
+                if (resultado == null)
+                    return Json(new { success = false, message = "Error al actualizar la institución." });
+
+                return Json(new { success = true, message = "Institución actualizada correctamente." });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Usuario _ActualizarInstitucion: {ex}");
+                return Json(new { success = false, message = "Error al actualizar la institución." });
             }
         }
 

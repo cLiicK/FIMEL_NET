@@ -103,6 +103,41 @@ namespace Fimel.Site.Controllers
             }
         }
 
+        [HttpGet("Agendar/BuscarPaciente")]
+        public IActionResult BuscarPaciente(string token, int? rut, string? numDoc)
+        {
+            try
+            {
+                ConfiguracionUsuario? cfg = _api.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByToken/{token}");
+                if (cfg?.Usuario == null) return Json(new { ok = false });
+
+                Pacientes? paciente = null;
+
+                if (rut.HasValue)
+                    paciente = _api.Get<Pacientes>($"Pacientes/GetByRut/{rut.Value}");
+                else if (!string.IsNullOrWhiteSpace(numDoc))
+                    paciente = _api.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{Uri.EscapeDataString(numDoc)}");
+
+                if (paciente == null || paciente.Id == 0)
+                    return Json(new { ok = false });
+
+                return Json(new
+                {
+                    ok = true,
+                    nombres = paciente.Nombres,
+                    primerApellido = paciente.PrimerApellido,
+                    segundoApellido = paciente.SegundoApellido,
+                    email = paciente.Email,
+                    celular = paciente.Celular
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error AgendarController BuscarPaciente: {ex}");
+                return Json(new { ok = false });
+            }
+        }
+
         [HttpPost("Agendar/Reservar")]
         public IActionResult Reservar([FromForm] string token, [FromForm] string nombre,
             [FromForm] string? apellidoPaciente, [FromForm] string? segundoApellidoPaciente,
@@ -150,10 +185,12 @@ namespace Fimel.Site.Controllers
                 if (citaCreada == null)
                     return Json(new { ok = false, error = "No se pudo crear la cita." });
 
-                try { EnviarCorreoConfirmacion(citaCreada, profesional); }
+                string rutaLogo = ObtenerRutaLogo(profesional);
+
+                try { EnviarCorreoConfirmacion(citaCreada, profesional, rutaLogo); }
                 catch (Exception ex) { Logger.Log($"Error correo confirmación pública: {ex}"); }
 
-                try { EnviarCorreoNotificacionProfesional(citaCreada, profesional); }
+                try { EnviarCorreoNotificacionProfesional(citaCreada, profesional, rutaLogo); }
                 catch (Exception ex) { Logger.Log($"Error correo notificación profesional: {ex}"); }
 
                 try { CrearOActualizarPacienteDesde(citaCreada, cfg.Usuario.Id); }
@@ -168,7 +205,29 @@ namespace Fimel.Site.Controllers
             }
         }
 
-        private void EnviarCorreoConfirmacion(Cita cita, Usuarios profesional)
+        private string ObtenerRutaLogo(Usuarios profesional)
+        {
+            string rutaDefault = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+
+            if (!profesional.IdInstitucion.HasValue) return rutaDefault;
+
+            try
+            {
+                Instituciones? inst = _api.Get<Instituciones>($"Instituciones/{profesional.IdInstitucion}");
+                if (inst == null || string.IsNullOrEmpty(inst.Logo)) return rutaDefault;
+
+                string tempPath = Path.Combine(Path.GetTempPath(), $"logo_inst_{profesional.IdInstitucion}.png");
+                System.IO.File.WriteAllBytes(tempPath, Convert.FromBase64String(inst.Logo));
+                return tempPath;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al obtener logo de institución para correo: {ex.Message}");
+                return rutaDefault;
+            }
+        }
+
+        private void EnviarCorreoConfirmacion(Cita cita, Usuarios profesional, string rutaLogo)
         {
             string nombreProfesional = $"{profesional.Nombres} {profesional.ApellidoPaterno} {profesional.ApellidoMaterno}".Trim();
             string fechaCita = cita.FechaHoraInicio.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES"));
@@ -208,7 +267,7 @@ namespace Fimel.Site.Controllers
 
             var imagenes = new List<(string, string, string)>
             {
-                (Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png"), "logoImage", "image/png")
+                (rutaLogo, "logoImage", "image/png")
             };
 
             new Utileria().EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno}");
@@ -269,7 +328,7 @@ namespace Fimel.Site.Controllers
             return dv.ToString();
         }
 
-        private void EnviarCorreoNotificacionProfesional(Cita cita, Usuarios profesional)
+        private void EnviarCorreoNotificacionProfesional(Cita cita, Usuarios profesional, string rutaLogo)
         {
             if (string.IsNullOrEmpty(profesional.Email)) return;
 
@@ -302,7 +361,7 @@ namespace Fimel.Site.Controllers
 
             var imagenes = new List<(string, string, string)>
             {
-                (Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png"), "logoImage", "image/png")
+                (rutaLogo, "logoImage", "image/png")
             };
 
             new Utileria().EnviarCorreo(correo, imagenes, "Fimel");

@@ -37,6 +37,32 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public IActionResult Put(int id, Instituciones institucion)
+        {
+            try
+            {
+                Instituciones? dbInst = db.Instituciones.Find(id);
+
+                if (dbInst == null)
+                    return NotFound();
+
+                dbInst.RazonSocial = institucion.RazonSocial;
+                dbInst.Dirección = institucion.Dirección;
+                dbInst.Telefono = institucion.Telefono;
+                dbInst.Email = institucion.Email;
+
+                db.SaveChanges();
+
+                return Ok(dbInst);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al actualizar institución: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {

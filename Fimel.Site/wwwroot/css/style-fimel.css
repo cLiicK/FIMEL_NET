@@ -679,6 +679,10 @@ main {
     text-transform: capitalize !important;
 }
 
+.fc-day-today {
+    background-color: rgba(248, 155, 155, 0.18) !important;
+}
+
 .div-flotante-centro {
     position: fixed;
     bottom: 20px;
@@ -694,6 +698,6 @@ main {
     pointer-events: none; /* Desactiva clics */
     opacity: 0.8; /* Lo hace ver grisado */
     background-color: #e9ecef; /* Color gris claro */
-    color: #6c757d; /* Texto más apagado */
+    color: #6c757d; /* Texto mï¿½s apagado */
     cursor: not-allowed; /* Cursor de prohibido */
 }

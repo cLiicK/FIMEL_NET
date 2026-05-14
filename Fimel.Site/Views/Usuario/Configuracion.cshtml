@@ -1,10 +1,12 @@
-﻿@model ConfiguracionUsuarioVM
+@model ConfiguracionUsuarioVM
 
 <input type="hidden" id="hdnURL_GuardarConfiguracion" value='@Url.Action("_GuardarConfiguracion", "Usuario")' />
 <input type="hidden" id="hdnURL_ActualizarConfiguracion" value='@Url.Action("_ActualizarConfiguracion", "Usuario")' />
 <input type="hidden" id="hdnURL_SubirLogo" value='@Url.Action("_SubirLogo", "Usuario")' />
 <input type="hidden" id="hdnURL_GenerarToken" value='@Url.Action("_GenerarTokenPublico", "Usuario")' />
+<input type="hidden" id="hdnURL_ActualizarInstitucion" value='@Url.Action("_ActualizarInstitucion", "Usuario")' />
 <input type="hidden" id="idConfig" value='@Model.Configuracion.Id' />
+<input type="hidden" id="idInstitucion" value='@Model.Usuario.IdInstitucion' />
 
 
 
@@ -144,6 +146,7 @@
 								 Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Administrador)
 							{
 								string? urlPublica = ViewBag.UrlPublica as string;
+								string? urlAgendaPublica = ViewBag.UrlAgendaPublica as string;
 								<div class="accordion-item mt-2">
 									<h2 class="accordion-header">
 										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionConfig-EnlacePublico" aria-expanded="false">
@@ -153,19 +156,32 @@
 									<div id="accordionConfig-EnlacePublico" class="accordion-collapse collapse">
 										<div class="accordion-body">
 											<p class="text-muted" style="font-size:0.88rem">
-												Comparte este enlace para que tus pacientes puedan agendar una cita directamente,
-												sin necesidad de iniciar sesión.
+												Comparte estos enlaces con tus pacientes o compañeros de trabajo.
 											</p>
 											@if (!string.IsNullOrEmpty(urlPublica))
 											{
 												<div class="mb-3">
-													<label class="form-label fw-semibold">Tu enlace actual</label>
+													<label class="form-label fw-semibold">Enlace de agendamiento</label>
+													<p class="text-muted mb-1" style="font-size:0.82rem">Permite a tus pacientes agendar una cita sin iniciar sesión.</p>
 													<div class="input-group">
 														<input type="text" class="form-control form-control-sm" id="inputUrlPublica" value="@urlPublica" readonly>
-														<button class="btn btn-outline-secondary btn-sm" type="button" onclick="ModuloConfiguracionUsuario.CopiarEnlace()">
+														<button class="btn btn-outline-secondary btn-sm" type="button" onclick="ModuloConfiguracionUsuario.CopiarEnlace('inputUrlPublica')">
 															<i class="fas fa-copy"></i>
 														</button>
-														<a href="@urlPublica" target="_blank" class="btn btn-outline-secondary btn-sm">
+														<a id="linkUrlPublica" href="@urlPublica" target="_blank" class="btn btn-outline-secondary btn-sm">
+															<i class="fas fa-arrow-up-right-from-square"></i>
+														</a>
+													</div>
+												</div>
+												<div class="mb-3">
+													<label class="form-label fw-semibold">Enlace de agenda (solo lectura)</label>
+													<p class="text-muted mb-1" style="font-size:0.82rem">Muestra tu agenda con las citas agendadas, sin necesidad de iniciar sesión.</p>
+													<div class="input-group">
+														<input type="text" class="form-control form-control-sm" id="inputUrlAgendaPublica" value="@urlAgendaPublica" readonly>
+														<button class="btn btn-outline-secondary btn-sm" type="button" onclick="ModuloConfiguracionUsuario.CopiarEnlace('inputUrlAgendaPublica')">
+															<i class="fas fa-copy"></i>
+														</button>
+														<a id="linkUrlAgendaPublica" href="@urlAgendaPublica" target="_blank" class="btn btn-outline-secondary btn-sm">
 															<i class="fas fa-arrow-up-right-from-square"></i>
 														</a>
 													</div>
@@ -179,27 +195,54 @@
 											@if (!string.IsNullOrEmpty(urlPublica))
 											{
 												<p class="text-muted mt-2" style="font-size:0.8rem">
-													Al regenerar el enlace, el anterior dejará de funcionar.
+													Al regenerar el enlace, el anterior dejará de funcionar (para ambos enlaces).
 												</p>
 											}
 										</div>
 									</div>
 								</div>
 							}
-							@if (Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Especialista ||
-								 Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Administrador)
+							@if (Model.Institucion != null)
 							{
 								string? logoBase64 = ViewBag.LogoBase64 as string;
 								<div class="accordion-item mt-2">
 									<h2 class="accordion-header">
-										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionConfig-Logo" aria-expanded="false">
-											Logo para correos
+										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionConfig-Institucion" aria-expanded="false">
+											Mi Institución
 										</button>
 									</h2>
-									<div id="accordionConfig-Logo" class="accordion-collapse collapse">
+									<div id="accordionConfig-Institucion" class="accordion-collapse collapse">
 										<div class="accordion-body">
 											<p class="text-muted" style="font-size:0.88rem">
-												Este logo aparecerá en los correos de cumpleaños enviados a tus pacientes.
+												Esta información aparece en los correos de confirmación de citas enviados a tus pacientes.
+											</p>
+											<form class="row g-3">
+												<div class="col-md-8">
+													<label class="form-label">Razón Social</label>
+													<input type="text" class="form-control" id="inputRazonSocial" value="@Model.Institucion.RazonSocial" placeholder="Nombre de la institución">
+												</div>
+												<div class="col-md-12">
+													<label class="form-label">Dirección</label>
+													<input type="text" class="form-control" id="inputDireccionInst" value="@Model.Institucion.Dirección" placeholder="Ej: Av. Providencia 1234, Santiago">
+												</div>
+												<div class="col-md-4">
+													<label class="form-label">Teléfono</label>
+													<input type="number" class="form-control" id="inputTelefonoInst" value="@Model.Institucion.Telefono" placeholder="56912345678">
+												</div>
+												<div class="col-md-6">
+													<label class="form-label">Correo de la institución</label>
+													<input type="email" class="form-control" id="inputEmailInst" value="@Model.Institucion.Email" placeholder="contacto@institucion.cl">
+												</div>
+											</form>
+											<div class="mt-3 mb-4">
+												<button type="button" class="btn btn-blue btn-sm" onclick="ModuloConfiguracionUsuario.GuardarInstitucion(this)">
+													<i class="fas fa-save me-1"></i> Guardar institución
+												</button>
+											</div>
+											<hr class="my-3">
+											<p class="fw-semibold mb-1" style="font-size:0.9rem;">Logo para correos</p>
+											<p class="text-muted" style="font-size:0.88rem;">
+												Este logo aparecerá en los correos enviados a tus pacientes.
 												Si no subes uno, se usará el logo de Fimel.
 											</p>
 											@if (!string.IsNullOrEmpty(logoBase64))

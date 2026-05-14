@@ -285,7 +285,7 @@
                 <form class="ag-form" id="formDatos" onsubmit="Agendar.confirmar(event)">
                     <div class="row mb-0">
                         <div class="col-5">
-                            <label>Tipo Documento <span style="color:red">*</span></label>
+                            <label>Tipo Docto <span style="color:red">*</span></label>
                             <select id="inTipoDoc">
                                 <option value="RUT">RUT</option>
                                 <option value="Pasaporte">Pasaporte</option>
@@ -355,6 +355,7 @@
         const TOKEN = '@token';
         const URL_DISPONIBILIDAD = '@Url.Action("ObtenerDisponibilidad", "Agendar")';
         const URL_RESERVAR = '@Url.Action("Reservar", "Agendar")';
+        const URL_BUSCAR_PACIENTE = '@Url.Action("BuscarPaciente", "Agendar")';
 
         const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         const DIAS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -638,6 +639,38 @@
 
                     document.getElementById('inNumDocRut').addEventListener('keyup', function() {
                         this.value = formatearRut(this.value);
+                    });
+
+                    document.getElementById('inNumDocRut').addEventListener('blur', function() {
+                        var rutVal = validarRutPublico(this.value);
+                        if (!rutVal) return;
+                        fetch(`${URL_BUSCAR_PACIENTE}?token=${TOKEN}&rut=${encodeURIComponent(rutVal)}`)
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                if (!data.ok) return;
+                                if (data.nombres)         document.getElementById('inNombres').value = data.nombres;
+                                if (data.primerApellido)  document.getElementById('inApellidoPaterno').value = data.primerApellido;
+                                if (data.segundoApellido) document.getElementById('inApellidoMaterno').value = data.segundoApellido;
+                                if (data.email)           document.getElementById('inCorreo').value = data.email;
+                                if (data.celular)         document.getElementById('inTelefono').value = data.celular;
+                            })
+                            .catch(function() {});
+                    });
+
+                    document.getElementById('inNumDocNum').addEventListener('blur', function() {
+                        var numDoc = this.value.trim();
+                        if (!numDoc) return;
+                        fetch(`${URL_BUSCAR_PACIENTE}?token=${TOKEN}&numDoc=${encodeURIComponent(numDoc)}`)
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                if (!data.ok) return;
+                                if (data.nombres)         document.getElementById('inNombres').value = data.nombres;
+                                if (data.primerApellido)  document.getElementById('inApellidoPaterno').value = data.primerApellido;
+                                if (data.segundoApellido) document.getElementById('inApellidoMaterno').value = data.segundoApellido;
+                                if (data.email)           document.getElementById('inCorreo').value = data.email;
+                                if (data.celular)         document.getElementById('inTelefono').value = data.celular;
+                            })
+                            .catch(function() {});
                     });
 
                     cargarMes(estado.anio, estado.mes);

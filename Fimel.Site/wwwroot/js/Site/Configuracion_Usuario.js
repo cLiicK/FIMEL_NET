@@ -82,9 +82,20 @@
 
                 $.post($('#hdnURL_GenerarToken').val(), function (response) {
                     if (response.success) {
-                        $('#inputUrlPublica').val(response.url);
-                        if (!$('#inputUrlPublica').length) location.reload();
-                        else Swal.fire('¡Listo!', 'Enlace generado correctamente.', 'success');
+                        if (!$('#inputUrlPublica').length) {
+                            location.reload();
+                            return;
+                        }
+                        var urlAgendar = response.url;
+                        var urlAgenda  = urlAgendar.replace('/Agendar/', '/AgendaPublica/');
+
+                        $('#inputUrlPublica').val(urlAgendar);
+                        $('#linkUrlPublica').attr('href', urlAgendar);
+
+                        $('#inputUrlAgendaPublica').val(urlAgenda);
+                        $('#linkUrlAgendaPublica').attr('href', urlAgenda);
+
+                        Swal.fire('¡Listo!', 'Enlace generado correctamente.', 'success');
                     } else {
                         Swal.fire('Error', response.message, 'error');
                     }
@@ -95,8 +106,8 @@
                 });
             });
         },
-        CopiarEnlace: function () {
-            var input = document.getElementById('inputUrlPublica');
+        CopiarEnlace: function (inputId) {
+            var input = document.getElementById(inputId || 'inputUrlPublica');
             if (!input) return;
             navigator.clipboard.writeText(input.value).then(() => {
                 Swal.fire({ title: '¡Copiado!', icon: 'success', timer: 1200, showConfirmButton: false });
@@ -141,6 +152,50 @@
                     Swal.fire('Error', 'Favor comuníquese con un administrador', 'error');
                     $(btn).prop('disabled', false).html('<i class="fas fa-upload me-1"></i> Subir logo');
                 }
+            });
+        },
+        GuardarInstitucion: function (btn) {
+            var direccion = $('#inputDireccionInst').val().trim();
+            if (!direccion) {
+                Swal.fire('Campo requerido', 'Ingrese la dirección de la institución.', 'warning');
+                return;
+            }
+
+            var inst = {
+                RazonSocial: $('#inputRazonSocial').val().trim(),
+                Dirección: direccion,
+                Telefono: parseInt($('#inputTelefonoInst').val()) || null,
+                Email: $('#inputEmailInst').val().trim() || null
+            };
+
+            Swal.fire({
+                title: 'Guardar',
+                text: '¿Guardar los datos de la institución?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Guardar'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+
+                $(btn).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
+
+                $.ajax({
+                    url: $('#hdnURL_ActualizarInstitucion').val(),
+                    data: { id: $('#idInstitucion').val(), inst: inst },
+                    method: 'POST',
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire('Guardado', response.message, 'success');
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                        $(btn).prop('disabled', false).html('<i class="fas fa-save me-1"></i> Guardar institución');
+                    },
+                    error: function () {
+                        Swal.fire('Error', 'Favor comuníquese con un administrador', 'error');
+                        $(btn).prop('disabled', false).html('<i class="fas fa-save me-1"></i> Guardar institución');
+                    }
+                });
             });
         },
         ActualizarConfiguracion: function () {

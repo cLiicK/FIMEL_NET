@@ -1,0 +1,385 @@
+@model Fimel.Models.ConfiguracionUsuario
+@{
+    Layout = null;
+    string token = ViewBag.Token;
+    string profesionalNombre = $"{Model.Usuario.Nombres} {Model.Usuario.ApellidoPaterno} {Model.Usuario.ApellidoMaterno}".Trim();
+    string institucionNombre = Model.Usuario.Institucion?.RazonSocial ?? "Fimel";
+    string? logoBase64 = Model.Usuario.Institucion?.Logo;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Agenda — @profesionalNombre</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32x32.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Signika+Negative:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap-5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --f-blue: #0E96CC;
+            --f-dark: #0a6e96;
+            --f-light: #e8f7fd;
+            --f-bg: #F5F7FB;
+            --f-text: #444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Open Sans', sans-serif; background: var(--f-bg); color: var(--f-text); min-height: 100vh; }
+        h1,h2,h3,h4,h5 { font-family: 'Signika Negative', sans-serif; }
+
+        .ag-header {
+            background: #fff;
+            border-bottom: 1px solid #edf2f7;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .ag-header-logo {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: var(--f-light);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .ag-header-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+        .ag-header-logo .fa-stethoscope { font-size: 1.4rem; color: var(--f-blue); }
+        .ag-header-info h2 { font-size: 1.05rem; color: #1a2a3a; margin: 0; }
+        .ag-header-info p { font-size: 0.82rem; color: #888; margin: 0; }
+        .ag-header-badge {
+            margin-left: auto;
+            background: var(--f-light);
+            color: var(--f-blue);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .ag-body { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+        .ag-panel { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 16px; }
+        .ag-panel-title { font-size: 1rem; font-weight: 700; color: #1a2a3a; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .ag-panel-title i { color: var(--f-blue); }
+
+        .month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .month-nav button { background: var(--f-bg); border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; color: var(--f-text); font-size: 0.9rem; transition: background 0.15s; }
+        .month-nav button:hover { background: var(--f-light); color: var(--f-blue); }
+        .month-nav span { font-weight: 700; font-size: 0.95rem; color: #1a2a3a; }
+
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 6px; }
+        .days-header span { text-align: center; font-size: 0.7rem; color: #aaa; font-weight: 600; padding: 4px 0; }
+
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day-cell {
+            aspect-ratio: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: default;
+            color: #ccc;
+            position: relative;
+        }
+        .day-cell.has-citas {
+            background: var(--f-light);
+            color: var(--f-blue);
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .day-cell.has-citas:hover { background: #c5ecf9; transform: scale(1.05); }
+        .day-cell.selected { background: var(--f-blue) !important; color: #fff !important; }
+        .day-cell.today { border: 2px solid var(--f-blue); }
+        .day-cell.past { color: #ddd; }
+        .day-dot { width: 5px; height: 5px; background: var(--f-blue); border-radius: 50%; margin-top: 2px; }
+        .day-cell.selected .day-dot { background: rgba(255,255,255,0.7); }
+
+        /* LEYENDA */
+        .leyenda { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+        .leyenda-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #777; }
+        .leyenda-dot { width: 12px; height: 12px; border-radius: 4px; }
+
+        /* AGENDA DÍA */
+        .agenda-dia { min-height: 200px; }
+        .agenda-dia-vacio { text-align: center; padding: 40px 0; color: #bbb; }
+        .agenda-dia-vacio i { font-size: 2rem; display: block; margin-bottom: 10px; color: #e0e8f0; }
+
+        .cita-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: var(--f-bg);
+            margin-bottom: 8px;
+            border-left: 4px solid var(--f-blue);
+            transition: background 0.15s;
+        }
+        .cita-item:hover { background: var(--f-light); }
+        .cita-hora { font-size: 0.82rem; font-weight: 700; color: var(--f-blue); min-width: 90px; white-space: nowrap; }
+        .cita-paciente { font-size: 0.92rem; font-weight: 600; color: #1a2a3a; }
+
+        .ag-loading { text-align: center; padding: 30px 0; color: #aaa; font-size: 0.9rem; }
+
+        .ag-footer { text-align: center; padding: 16px; font-size: 0.78rem; color: #bbb; }
+        .ag-footer a { color: #bbb; text-decoration: none; }
+
+        @@media (min-width: 640px) {
+            .agenda-layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="ag-header">
+        <div class="ag-header-logo">
+            @if (!string.IsNullOrEmpty(logoBase64))
+            {
+                <img src="data:image/png;base64,@logoBase64" alt="Logo">
+            }
+            else
+            {
+                <i class="fas fa-stethoscope"></i>
+            }
+        </div>
+        <div class="ag-header-info">
+            <h2>@profesionalNombre</h2>
+            <p>@institucionNombre</p>
+        </div>
+        <span class="ag-header-badge"><i class="fas fa-calendar-days me-1"></i>Agenda</span>
+    </div>
+
+    <!-- BODY -->
+    <div class="ag-body">
+        <div class="agenda-layout">
+
+            <!-- COLUMNA IZQUIERDA: CALENDARIO -->
+            <div>
+                <div class="ag-panel">
+                    <div class="ag-panel-title"><i class="fas fa-calendar-days"></i> <span id="lblMes"></span></div>
+                    <div class="month-nav">
+                        <button id="btnPrevMonth"><i class="fas fa-chevron-left"></i></button>
+                        <span id="lblMesNav"></span>
+                        <button id="btnNextMonth"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="days-header">
+                        <span>Lu</span><span>Ma</span><span>Mi</span>
+                        <span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+                    </div>
+                    <div class="days-grid" id="daysGrid">
+                        <div class="ag-loading" style="grid-column:span 7"><i class="fas fa-spinner fa-spin"></i></div>
+                    </div>
+                    <div class="leyenda mt-3">
+                        <div class="leyenda-item">
+                            <div class="leyenda-dot" style="background:var(--f-light);border:2px solid var(--f-blue)"></div>
+                            <span>Con citas</span>
+                        </div>
+                        <div class="leyenda-item">
+                            <div class="leyenda-dot" style="background:var(--f-blue)"></div>
+                            <span>Día seleccionado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: CITAS DEL DÍA -->
+            <div>
+                <div class="ag-panel agenda-dia">
+                    <div class="ag-panel-title">
+                        <i class="fas fa-list-check"></i>
+                        <span id="lblDiaSeleccionado">Selecciona un día</span>
+                    </div>
+                    <div id="citasContainer">
+                        <div class="agenda-dia-vacio">
+                            <i class="fas fa-hand-pointer"></i>
+                            <p>Haz clic en un día del calendario para ver las citas agendadas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="ag-footer">
+        Powered by <a href="#">Fimel</a>
+    </div>
+
+    <script>
+        const TOKEN = '@token';
+        const URL_CITAS = '@Url.Action("ObtenerCitas", "AgendaPublica")';
+
+        const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        const DIAS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+        var Agenda = (function () {
+            var estado = {
+                anio: new Date().getFullYear(),
+                mes: new Date().getMonth(),
+                citasPorFecha: {},   // { 'yyyy-MM-dd': [{horaInicio, horaFin, paciente}] }
+                fechaSeleccionada: null,
+                cargando: false
+            };
+
+            function formatFecha(yyyy, mm, dd) {
+                return `${yyyy}-${String(mm+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+            }
+
+            function labelFecha(fechaStr) {
+                var d = new Date(fechaStr + 'T00:00:00');
+                return `${DIAS_ES[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
+            }
+
+            async function cargarMes(anio, mes) {
+                if (estado.cargando) return;
+                estado.cargando = true;
+
+                var desde = new Date(anio, mes, 1);
+                var hasta = new Date(anio, mes + 1, 0);
+
+                document.getElementById('daysGrid').innerHTML = '<div class="ag-loading" style="grid-column:span 7"><i class="fas fa-spinner fa-spin"></i></div>';
+                document.getElementById('citasContainer').innerHTML = '<div class="ag-loading"><i class="fas fa-spinner fa-spin"></i></div>';
+
+                try {
+                    var resp = await fetch(`${URL_CITAS}?token=${TOKEN}&desde=${desde.toISOString()}&hasta=${hasta.toISOString()}`);
+                    var data = await resp.json();
+
+                    estado.citasPorFecha = {};
+                    if (data.ok && data.citas) {
+                        data.citas.forEach(function(c) {
+                            if (!estado.citasPorFecha[c.fecha]) estado.citasPorFecha[c.fecha] = [];
+                            estado.citasPorFecha[c.fecha].push(c);
+                        });
+                        // Ordenar por hora
+                        Object.keys(estado.citasPorFecha).forEach(function(f) {
+                            estado.citasPorFecha[f].sort(function(a, b) { return a.horaInicio.localeCompare(b.horaInicio); });
+                        });
+                    }
+                } catch(e) {}
+
+                renderCalendario(anio, mes);
+
+                // Si había un día seleccionado del mes anterior, limpiar
+                if (estado.fechaSeleccionada) {
+                    var partes = estado.fechaSeleccionada.split('-');
+                    if (parseInt(partes[0]) !== anio || parseInt(partes[1]) - 1 !== mes) {
+                        estado.fechaSeleccionada = null;
+                        renderDia(null);
+                    } else {
+                        renderDia(estado.fechaSeleccionada);
+                    }
+                } else {
+                    renderDia(null);
+                }
+
+                estado.cargando = false;
+            }
+
+            function renderCalendario(anio, mes) {
+                document.getElementById('lblMesNav').textContent = `${MESES[mes]} ${anio}`;
+
+                var grid = document.getElementById('daysGrid');
+                grid.innerHTML = '';
+
+                var hoy = new Date(); hoy.setHours(0,0,0,0);
+                var primerDia = new Date(anio, mes, 1).getDay();
+                var offset = primerDia === 0 ? 6 : primerDia - 1;
+                var diasEnMes = new Date(anio, mes + 1, 0).getDate();
+
+                for (var i = 0; i < offset; i++) {
+                    grid.appendChild(document.createElement('div')).className = 'day-cell';
+                }
+
+                for (var d = 1; d <= diasEnMes; d++) {
+                    var fechaStr = formatFecha(anio, mes, d);
+                    var fecha = new Date(anio, mes, d);
+                    var cell = document.createElement('div');
+                    cell.className = 'day-cell';
+                    cell.textContent = d;
+
+                    var tieneCitas = !!estado.citasPorFecha[fechaStr];
+
+                    if (fecha < hoy && !tieneCitas) {
+                        cell.classList.add('past');
+                    } else if (tieneCitas) {
+                        cell.classList.add('has-citas');
+                        if (fecha.toDateString() === hoy.toDateString()) cell.classList.add('today');
+                        if (estado.fechaSeleccionada === fechaStr) cell.classList.add('selected');
+
+                        // punto indicador
+                        var dot = document.createElement('div');
+                        dot.className = 'day-dot';
+                        cell.appendChild(dot);
+
+                        cell.addEventListener('click', (function(fs) {
+                            return function() { seleccionarDia(fs); };
+                        })(fechaStr));
+                    } else {
+                        if (fecha.toDateString() === hoy.toDateString()) cell.classList.add('today');
+                    }
+
+                    grid.appendChild(cell);
+                }
+            }
+
+            function seleccionarDia(fechaStr) {
+                estado.fechaSeleccionada = fechaStr;
+                renderCalendario(estado.anio, estado.mes);
+                renderDia(fechaStr);
+            }
+
+            function renderDia(fechaStr) {
+                var container = document.getElementById('citasContainer');
+                var label = document.getElementById('lblDiaSeleccionado');
+
+                if (!fechaStr) {
+                    label.textContent = 'Selecciona un día';
+                    container.innerHTML = '<div class="agenda-dia-vacio"><i class="fas fa-hand-pointer"></i><p>Haz clic en un día del calendario para ver las citas agendadas.</p></div>';
+                    return;
+                }
+
+                label.textContent = labelFecha(fechaStr);
+                var citas = estado.citasPorFecha[fechaStr] || [];
+
+                if (citas.length === 0) {
+                    container.innerHTML = '<div class="agenda-dia-vacio"><i class="fas fa-calendar-xmark"></i><p>Sin citas para este día.</p></div>';
+                    return;
+                }
+
+                var html = '';
+                citas.forEach(function(c) {
+                    html += `
+                        <div class="cita-item">
+                            <div class="cita-hora"><i class="fas fa-clock me-1" style="opacity:.6"></i>${c.horaInicio} – ${c.horaFin}</div>
+                            <div class="cita-paciente"><i class="fas fa-user me-1" style="opacity:.4;font-size:.8rem"></i>${c.paciente || 'Paciente'}</div>
+                        </div>`;
+                });
+                container.innerHTML = html;
+            }
+
+            return {
+                init: function() {
+                    document.getElementById('btnPrevMonth').addEventListener('click', function() {
+                        if (estado.mes === 0) { estado.mes = 11; estado.anio--; }
+                        else estado.mes--;
+                        cargarMes(estado.anio, estado.mes);
+                    });
+                    document.getElementById('btnNextMonth').addEventListener('click', function() {
+                        if (estado.mes === 11) { estado.mes = 0; estado.anio++; }
+                        else estado.mes++;
+                        cargarMes(estado.anio, estado.mes);
+                    });
+                    cargarMes(estado.anio, estado.mes);
+                }
+            };
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() { Agenda.init(); });
+    </script>
+</body>
+</html>

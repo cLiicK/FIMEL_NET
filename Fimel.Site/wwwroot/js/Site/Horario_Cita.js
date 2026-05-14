@@ -265,7 +265,7 @@ var ModuloHorarioCita = (function () {
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'timeGridWeek,timeGridDay'
+                    right: 'timeGridWeek,timeGrid3Day,timeGridDay'
                 },
                 buttonText: {
                     today: 'Hoy',
@@ -307,6 +307,13 @@ var ModuloHorarioCita = (function () {
                     timeGridWeek: {
                         titleFormat: { year: 'numeric', month: 'long' }
                     },
+                    timeGrid3Day: {
+                        type: 'timeGrid',
+                        duration: { days: 3 },
+                        buttonText: '3 días',
+                        titleFormat: { day: 'numeric', month: 'long', year: 'numeric' },
+                        dayHeaderFormat: { weekday: 'short', day: 'numeric' }
+                    },
                     timeGridDay: {
                         titleFormat: { day: 'numeric', month: 'long', year: 'numeric' },
                         dayHeaderFormat: { weekday: 'long', day: 'numeric' }
@@ -315,6 +322,7 @@ var ModuloHorarioCita = (function () {
                 dayHeaderFormat: { weekday: 'long', day: 'numeric' },
                 selectable: true,
                 eventClick: function (info) {
+                    if (!info.event.extendedProps || !info.event.extendedProps.idCita) return;
                     let fechaSeleccionada = new Date(info.event.startStr);
                     let formatoFecha = fechaSeleccionada.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -352,12 +360,13 @@ var ModuloHorarioCita = (function () {
                     // Cambiar el cursor cuando hay una cita agendada
                     info.el.style.cursor = 'pointer';
                 },
-                select: function (info) {
-                    let fechaSeleccionada = new Date(info.startStr);
+                dateClick: function (info) {
+                    if (info.allDay) return;
+                    let fechaSeleccionada = info.date;
                     let formatoFecha = fechaSeleccionada.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
                     let horaInicio = String(fechaSeleccionada.getHours()).padStart(2, '0') + ':' + String(fechaSeleccionada.getMinutes()).padStart(2, '0');
                     $('#modalEventoNuevoLabel').text(formatoFecha);
-                    $('#fechaModal').val(info.startStr);
+                    $('#fechaModal').val(info.dateStr);
                     $('#horaInicioCitaNuevo').val(horaInicio);
 
                     let duracionStr = (configuracionUsuario && configuracionUsuario.DuracionBloqueHorario) ? configuracionUsuario.DuracionBloqueHorario : '00:30:00';
@@ -382,6 +391,15 @@ var ModuloHorarioCita = (function () {
 
                         if (toolbarTitle) {
                             toolbarTitle.innerText = title;
+                        }
+                    } else if (info.view.type === 'timeGrid3Day') {
+                        if (toolbarTitle) {
+                            let startDate = new Date(info.start);
+                            let endDate = new Date(info.end);
+                            endDate.setDate(endDate.getDate() - 1);
+                            let startLabel = startDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+                            let endLabel = endDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+                            toolbarTitle.innerText = `${startLabel} – ${endLabel}`;
                         }
                     } else if (info.view.type === 'timeGridDay') {
                         if (toolbarTitle) {
@@ -710,7 +728,7 @@ var ModuloHorarioCita = (function () {
             })
         },
         GuardarCitaModal: function () {
-            var btnGuardar = $('#btnGuardarModificacionCita');
+            var btnGuardar = $('#btnGuardarCitaModal');
 
             // Validar documento
             var tipoDoc = $('#tipoDocNuevo').val();
@@ -777,8 +795,7 @@ var ModuloHorarioCita = (function () {
             }).then((result) => {
                 if (result.isConfirmed) {
 
-                    btnGuardar.prop('disabled', true);
-                    btnGuardar.text('Guardando...');
+                    btnGuardar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
 
                     $.ajax({
                         url: $('#hdnURL_CrearCita').val(),
@@ -799,23 +816,20 @@ var ModuloHorarioCita = (function () {
                                 })
                             }
                             else {
-                                btnGuardar.prop('disabled', false);
-                                btnGuardar.text('Guardar');
+                                btnGuardar.prop('disabled', false).text('Guardar');
                                 Swal.fire('Error', response.message, 'error');
                                 return;
                             }
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
                             Swal.fire('Error', 'Favor comuniquese con un administrador', 'error');
-                            btnGuardar.prop('disabled', false);
-                            btnGuardar.text('Guardar');
+                            btnGuardar.prop('disabled', false).text('Guardar');
                             return;
                         }
                     });
                 }
                 else {
-                    btnGuardar.prop('disabled', false);
-                    btnGuardar.text('Guardar');
+                    btnGuardar.prop('disabled', false).text('Guardar');
                 }
             })
         },
@@ -871,8 +885,7 @@ var ModuloHorarioCita = (function () {
             }).then((result) => {
                 if (result.isConfirmed) {
 
-                    btnGuardar.prop('disabled', true);
-                    btnGuardar.text('Guardando...');
+                    btnGuardar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
 
                     $.ajax({
                         url: $('#hdnURL_CrearCita').val(),
@@ -893,23 +906,20 @@ var ModuloHorarioCita = (function () {
                                 })
                             }
                             else {
-                                btnGuardar.prop('disabled', false);
-                                btnGuardar.text('Guardar');
+                                btnGuardar.prop('disabled', false).text('Guardar');
                                 Swal.fire('Error', response.message, 'error');
                                 return;
                             }
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
                             Swal.fire('Error', 'Favor comuniquese con un administrador', 'error');
-                            btnGuardar.prop('disabled', false);
-                            btnGuardar.text('Guardar');
+                            btnGuardar.prop('disabled', false).text('Guardar');
                             return;
                         }
                     });
                 }
                 else {
-                    btnGuardar.prop('disabled', false);
-                    btnGuardar.text('Guardar');
+                    btnGuardar.prop('disabled', false).text('Guardar');
                 }
             })
         },
@@ -1068,8 +1078,7 @@ var ModuloHorarioCita = (function () {
             }).then((result) => {
                 if (result.isConfirmed) {
 
-                    btnGuardar.prop('disabled', true);
-                    btnGuardar.text('Guardando...');
+                    btnGuardar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
 
                     $.ajax({
                         url: $('#hdnURL_ActualizarCitaConCorreo').val(),
@@ -1092,23 +1101,20 @@ var ModuloHorarioCita = (function () {
                                 })
                             }
                             else {
-                                btnGuardar.prop('disabled', false);
-                                btnGuardar.text('Guardar Cambios');
+                                btnGuardar.prop('disabled', false).text('Guardar Cambios');
                                 Swal.fire('Error', response.message || 'Error al modificar la cita', 'error');
                                 return;
                             }
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
                             Swal.fire('Error', 'Favor comuníquese con un administrador', 'error');
-                            btnGuardar.prop('disabled', false);
-                            btnGuardar.text('Guardar Cambios');
+                            btnGuardar.prop('disabled', false).text('Guardar Cambios');
                             return;
                         }
                     });
                 }
                 else {
-                    btnGuardar.prop('disabled', false);
-                    btnGuardar.text('Guardar Cambios');
+                    btnGuardar.prop('disabled', false).text('Guardar Cambios');
                 }
             })
         },

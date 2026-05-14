@@ -325,8 +325,13 @@ namespace Fimel.Site.Controllers
                 if (citaPost == null)
                     return Json(new { success = false, message = "Error al crear cita" });
 
-                try { EnviarCorreoConfirmacionCita(citaPost, usuarioDestino); }
+                string rutaLogo = ObtenerRutaLogo(usuarioDestino);
+
+                try { EnviarCorreoConfirmacionCita(citaPost, usuarioDestino, rutaLogo); }
                 catch (Exception ex) { Logger.Log($"Error al enviar correo de confirmación: {ex}"); }
+
+                try { EnviarCorreoNotificacionProfesional(citaPost, usuarioDestino, rutaLogo); }
+                catch (Exception ex) { Logger.Log($"Error al enviar correo de notificación al profesional: {ex}"); }
 
                 CrearOActualizarPacienteDesde(citaPost, idUsuarioFinal);
 
@@ -339,7 +344,7 @@ namespace Fimel.Site.Controllers
             }
         }
 
-        private void EnviarCorreoConfirmacionCita(Cita cita, Usuarios profesional)
+        private void EnviarCorreoConfirmacionCita(Cita cita, Usuarios profesional, string rutaLogo)
         {
             try
             {
@@ -354,7 +359,7 @@ namespace Fimel.Site.Controllers
 
                 var imagenes = new List<(string, string, string)>
                 {
-                    (Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png"), "logoImage", "image/png")
+                    (rutaLogo, "logoImage", "image/png")
                 };
 
                 Utileria utileria = new Utileria();
@@ -364,6 +369,67 @@ namespace Fimel.Site.Controllers
             {
                 Logger.Log($"Error al enviar correo de confirmación de cita: {ex}");
             }
+        }
+
+        private string ObtenerRutaLogo(Usuarios profesional)
+        {
+            string rutaDefault = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+
+            if (!profesional.IdInstitucion.HasValue) return rutaDefault;
+
+            try
+            {
+                Instituciones? inst = APIBase.Get<Instituciones>($"Instituciones/{profesional.IdInstitucion}");
+                if (inst == null || string.IsNullOrEmpty(inst.Logo)) return rutaDefault;
+
+                string tempPath = Path.Combine(Path.GetTempPath(), $"logo_inst_{profesional.IdInstitucion}.png");
+                System.IO.File.WriteAllBytes(tempPath, Convert.FromBase64String(inst.Logo));
+                return tempPath;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al obtener logo de institución para correo: {ex.Message}");
+                return rutaDefault;
+            }
+        }
+
+        private void EnviarCorreoNotificacionProfesional(Cita cita, Usuarios profesional, string rutaLogo)
+        {
+            if (string.IsNullOrEmpty(profesional.Email)) return;
+
+            string nombreProfesional = $"{profesional.Nombres} {profesional.ApellidoPaterno}".Trim();
+            string fechaCita = cita.FechaHoraInicio.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES"));
+            string horaCita = cita.FechaHoraInicio.ToString("HH:mm");
+
+            string ruta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-nueva-cita-profesional.html");
+            string html = System.IO.File.ReadAllText(ruta);
+
+            string nombreCompletoPaciente = string.Join(" ",
+                new[] { cita.NombrePaciente, cita.ApellidoPaciente, cita.SegundoApellidoPaciente }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+            html = html
+                .Replace("{{profesional}}", nombreProfesional)
+                .Replace("{{paciente}}", nombreCompletoPaciente)
+                .Replace("{{correo_paciente}}", cita.CorreoPaciente)
+                .Replace("{{telefono}}", cita.Telefono ?? "No indicado")
+                .Replace("{{fecha_cita}}", fechaCita)
+                .Replace("{{hora_cita}}", horaCita)
+                .Replace("{{nota}}", string.IsNullOrEmpty(cita.Nota) ? "Sin nota" : cita.Nota);
+
+            var correo = new EnvioCorreo
+            {
+                Destinatarios = new List<string> { profesional.Email },
+                Asunto = $"Nueva cita agendada — {cita.FechaHoraInicio:dd/MM/yyyy HH:mm}",
+                CuerpoCorreo = html
+            };
+
+            var imagenes = new List<(string, string, string)>
+            {
+                (rutaLogo, "logoImage", "image/png")
+            };
+
+            new Utileria().EnviarCorreo(correo, imagenes, "Fimel");
         }
 
         private string GenerarContenidoCorreoConfirmacion(Cita cita, Usuarios profesional)
@@ -497,7 +563,7 @@ namespace Fimel.Site.Controllers
 
                 try
                 {
-                    EnviarCorreoConfirmacionCita(citaActualizada, usuario);
+                    EnviarCorreoConfirmacionCita(citaActualizada, usuario, ObtenerRutaLogo(usuario));
                 }
                 catch (Exception ex)
                 {
