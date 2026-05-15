@@ -25,6 +25,13 @@ builder.Services.AddControllers()
 builder.Services.AddHostedService<CumpleanosBackgroundService>();
 builder.Services.AddHostedService<ProximoControlBackgroundService>();
 
+builder.Services.AddDistributedSqlServerCache(options =>
+{
+    options.ConnectionString = builder.Configuration.GetConnectionString("Fimel");
+    options.SchemaName = "dbo";
+    options.TableName = "SessionCache";
+});
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(4);
