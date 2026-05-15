@@ -7,8 +7,8 @@ namespace Fimel.Site.Controllers
 {
     public class AgendarController : Controller
     {
-        private static readonly IConfiguration _config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        private readonly APIClient _api = new APIClient(_config["API_URL"]);
+        private readonly APIClient _api;
+        public AgendarController(IConfiguration config) => _api = new APIClient(config["API_URL"]);
 
         private static readonly Dictionary<string, DayOfWeek> _diasSemana = new()
         {

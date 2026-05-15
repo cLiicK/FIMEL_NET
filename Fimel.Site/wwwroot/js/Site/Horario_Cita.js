@@ -253,7 +253,7 @@ var ModuloHorarioCita = (function () {
         IniciarCalendario: function () {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
+                initialView: 'timeGrid3Day',
                 locale: 'es',
                 timeZone: 'local',
                 slotDuration: configuracionUsuario ? configuracionUsuario.DuracionBloqueHorario : '00:30:00',
@@ -312,7 +312,7 @@ var ModuloHorarioCita = (function () {
                         duration: { days: 3 },
                         buttonText: '3 días',
                         titleFormat: { day: 'numeric', month: 'long', year: 'numeric' },
-                        dayHeaderFormat: { weekday: 'short', day: 'numeric' }
+                        dayHeaderFormat: { weekday: 'long', day: 'numeric' }
                     },
                     timeGridDay: {
                         titleFormat: { day: 'numeric', month: 'long', year: 'numeric' },

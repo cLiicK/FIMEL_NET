@@ -6,8 +6,8 @@ namespace Fimel.Site.Controllers
 {
     public class AgendaPublicaController : Controller
     {
-        private static readonly IConfiguration _config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        private readonly APIClient _api = new APIClient(_config["API_URL"]);
+        private readonly APIClient _api;
+        public AgendaPublicaController(IConfiguration config) => _api = new APIClient(config["API_URL"]);
 
         [Route("AgendaPublica/{token}")]
         public IActionResult Index(string token)

@@ -9,8 +9,9 @@ namespace Fimel.Site.Controllers
 {
     public class UsuarioController : Controller
     {
-        private static IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        private readonly APIClient APIBase = new APIClient(config["API_URL"]);
+        private readonly IConfiguration config;
+        private readonly APIClient APIBase;
+        public UsuarioController(IConfiguration configuration) { config = configuration; APIBase = new APIClient(config["API_URL"]); }
 
         public ActionResult Configuracion()
         {

@@ -11,8 +11,8 @@ namespace Fimel.Site.Controllers
 {
     public class HorarioController : Controller
     {
-        private static IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        private readonly APIClient APIBase = new APIClient(config["API_URL"]);
+        private readonly APIClient APIBase;
+        public HorarioController(IConfiguration config) => APIBase = new APIClient(config["API_URL"]);
 
         public IActionResult MiHorario()
         {

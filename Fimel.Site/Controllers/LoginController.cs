@@ -13,8 +13,9 @@ namespace Fimel.Site.Controllers
 {
     public class LoginController : Controller
     {
-        private static IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        private readonly APIClient APIBase = new APIClient(config["API_URL"]);
+        private readonly IConfiguration config;
+        private readonly APIClient APIBase;
+        public LoginController(IConfiguration config) { this.config = config; APIBase = new APIClient(config["API_URL"]); }
 
         public IActionResult Index()
         {
