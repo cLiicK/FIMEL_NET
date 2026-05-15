@@ -29,10 +29,12 @@ namespace Fimel.Site.Controllers
                 {
                     Instituciones inst = APIBase.Get<Instituciones>($"Instituciones/{usuario.IdInstitucion}");
                     ViewBag.NombreInstitucion = inst?.RazonSocial ?? "FIMEL";
+                    ViewBag.LogoInstitucion = inst?.Logo ?? "";
                 }
                 else
                 {
                     ViewBag.NombreInstitucion = "FIMEL";
+                    ViewBag.LogoInstitucion = "";
                 }
             }
             return View();

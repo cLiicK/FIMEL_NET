@@ -738,49 +738,59 @@ var ModuloConsulta = (function () {
             var nombreDoctor = $('#hdnNombreDoctor').val() || '';
             var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
             var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim();
-            var rutPaciente = $('#hiddenRutPaciente').val() || $('#hiddenNumDocumento').val() || '';
+            var tipoDoc = $('#comboTipoDocumento').val();
+            var rutPaciente;
+            if (tipoDoc === 'RUT') {
+                var rutNum = parseInt($('#hiddenRutPaciente').val());
+                var dv = getDV(rutNum).toString();
+                rutPaciente = ObtenerRutSTR(rutNum, dv);
+            } else {
+                rutPaciente = $('#hiddenNumDocumento').val() || '';
+            }
             var edadPaciente = $('#inputEdad').val() || '';
             var fechaConsulta = $('#inputFechaConsulta').val() || new Date().toISOString().split('T')[0];
             var partesFecha = fechaConsulta.split('-');
             var fechaFormateada = partesFecha.length === 3 ? partesFecha[2] + '/' + partesFecha[1] + '/' + partesFecha[0] : fechaConsulta;
 
+            var ahora = new Date();
+            var horaFormateada = String(ahora.getHours()).padStart(2, '0') + ':' + String(ahora.getMinutes()).padStart(2, '0');
+
+            var logoBase64 = $('#hdnLogoInstitucion').val();
+            var logoUrl = logoBase64
+                ? 'data:image/png;base64,' + logoBase64
+                : (window.location.origin + '/img/logo_fimel_correo.png');
+
             var medicamentosHtml = recetaMedicamentos.map(function (m, i) {
-                return '<tr>' +
-                    '<td style="padding:8px;border:1px solid #ddd;">' + (i + 1) + '</td>' +
-                    '<td style="padding:8px;border:1px solid #ddd;">' + m.medicamento + '</td>' +
-                    '<td style="padding:8px;border:1px solid #ddd;">' + m.dosis + '</td>' +
-                    '<td style="padding:8px;border:1px solid #ddd;">' + m.posologia + '</td>' +
-                    '</tr>';
+                var detalle = [];
+                if (m.dosis) detalle.push(m.dosis);
+                if (m.posologia) detalle.push(m.posologia);
+                return '<li class="med-item">' +
+                    '<div class="med-bullet">' + (i + 1) + '</div>' +
+                    '<div class="med-body">' +
+                        '<div class="med-nombre">' + m.medicamento + '</div>' +
+                        (detalle.length ? '<div class="med-detalle">' + detalle.join(' &nbsp;·&nbsp; ') + '</div>' : '') +
+                    '</div>' +
+                '</li>';
             }).join('');
 
-            var html = '<!DOCTYPE html><html><head><title>Receta Médica</title>' +
-                '<style>' +
-                'body{font-family:Arial,sans-serif;margin:40px;color:#333;}' +
-                'h1{color:#333;border-bottom:2px solid #F89B9B;padding-bottom:10px;margin-bottom:20px;}' +
-                '.header{display:flex;justify-content:space-between;margin-bottom:20px;}' +
-                '.info-block{margin-bottom:20px;line-height:1.8;}' +
-                '.info-block label{font-weight:bold;}' +
-                'table{width:100%;border-collapse:collapse;margin-top:15px;}' +
-                'th{background-color:#F89B9B;color:white;padding:10px;text-align:left;border:1px solid #ddd;}' +
-                '.footer{margin-top:80px;text-align:right;border-top:1px solid #ddd;padding-top:15px;}' +
-                '@media print{button{display:none;}}' +
-                '</style></head><body>' +
-                '<h1>' + nombreInstitucion + '</h1>' +
-                '<div class="header"><div><strong>Dr/a. ' + nombreDoctor + '</strong></div><div>Fecha: ' + fechaFormateada + '</div></div>' +
-                '<div class="info-block">' +
-                '<label>Paciente:</label> ' + nombrePaciente + '<br>' +
-                '<label>RUT/Doc:</label> ' + rutPaciente + '<br>' +
-                '<label>Edad:</label> ' + edadPaciente + ' años' +
-                '</div>' +
-                '<table><thead><tr><th>#</th><th>Medicamento</th><th>Dosis</th><th>Posología</th></tr></thead>' +
-                '<tbody>' + medicamentosHtml + '</tbody></table>' +
-                '<div class="footer"><p>____________________________</p><p>Dr/a. ' + nombreDoctor + '</p></div>' +
-                '<script>window.onafterprint=function(){window.close();};window.onload=function(){window.print();};<\/script>' +
-                '</body></html>';
+            fetch('/mails/receta-medica.html?v=' + Date.now())
+                .then(function (r) { return r.text(); })
+                .then(function (template) {
+                    var html = template
+                        .replace(/\{\{logo_url\}\}/g, logoUrl)
+                        .replace(/\{\{institucion\}\}/g, nombreInstitucion)
+                        .replace(/\{\{doctor\}\}/g, nombreDoctor)
+                        .replace(/\{\{fecha\}\}/g, fechaFormateada)
+                        .replace(/\{\{hora\}\}/g, horaFormateada)
+                        .replace(/\{\{paciente\}\}/g, nombrePaciente)
+                        .replace(/\{\{rut_doc\}\}/g, rutPaciente)
+                        .replace(/\{\{edad\}\}/g, edadPaciente)
+                        .replace(/\{\{medicamentos\}\}/g, medicamentosHtml);
 
-            var w = window.open('', '_blank', 'width=800,height=600');
-            w.document.write(html);
-            w.document.close();
+                    var w = window.open('', '_blank', 'width=800,height=600');
+                    w.document.write(html);
+                    w.document.close();
+                });
         },
 
         EnviarRecetaCorreo: function (btn) {
