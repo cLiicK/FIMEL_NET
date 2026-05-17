@@ -13,5 +13,6 @@ namespace Fimel.Models
         public TimeSpan DuracionBloqueHorario { get; set; }
         public string? TokenPublico { get; set; }
         public int DiasAvisoPrevioControl { get; set; } = 5;
+        public string? TituloProfesional { get; set; } = "Matrón/a";
     }
 }

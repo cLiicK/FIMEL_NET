@@ -736,6 +736,7 @@ var ModuloConsulta = (function () {
                 return;
             }
             var nombreDoctor = $('#hdnNombreDoctor').val() || '';
+            var tituloProfesional = $('#hdnTituloProfesional').val() || 'Matrón/a';
             var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
             var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim();
             var tipoDoc = $('#comboTipoDocumento').val();
@@ -779,6 +780,7 @@ var ModuloConsulta = (function () {
                     var html = template
                         .replace(/\{\{logo_url\}\}/g, logoUrl)
                         .replace(/\{\{institucion\}\}/g, nombreInstitucion)
+                        .replace(/\{\{titulo\}\}/g, tituloProfesional)
                         .replace(/\{\{doctor\}\}/g, nombreDoctor)
                         .replace(/\{\{fecha\}\}/g, fechaFormateada)
                         .replace(/\{\{hora\}\}/g, horaFormateada)

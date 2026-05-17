@@ -25,6 +25,9 @@ namespace Fimel.Site.Controllers
                 ViewBag.NombreDoctor = $"{usuario.Nombres} {usuario.ApellidoPaterno}".Trim();
                 ViewBag.IdInstitucion = usuario.IdInstitucion;
 
+                ConfiguracionUsuario configUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuario.Id}");
+                ViewBag.TituloProfesional = configUsuario?.TituloProfesional ?? "Matrón/a";
+
                 if (usuario.IdInstitucion.HasValue)
                 {
                     Instituciones inst = APIBase.Get<Instituciones>($"Instituciones/{usuario.IdInstitucion}");
@@ -381,6 +384,9 @@ namespace Fimel.Site.Controllers
                 string nombreDoctor = $"{usuarioConectado.Nombres} {usuarioConectado.ApellidoPaterno}".Trim();
                 string nombreInstitucion = institucion?.RazonSocial ?? "FIMEL";
 
+                ConfiguracionUsuario configUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuarioConectado.Id}");
+                string tituloProfesional = configUsuario?.TituloProfesional ?? "Matrón/a";
+
                 var medicamentos = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(medicamentosJson ?? "[]");
 
                 var medicRows = new System.Text.StringBuilder();
@@ -412,7 +418,7 @@ namespace Fimel.Site.Controllers
     <div><h2 style='color:#0E96CC;margin:0;'>RECETA M&Eacute;DICA</h2><p style='color:#666;margin:4px 0 0;'>{nombreInstitucion}</p></div>
 </div>
 <table style='width:100%;margin-bottom:20px;border-collapse:collapse;'>
-    <tr><td style='padding:4px 0;width:50%;'><strong>M&eacute;dico:</strong> {nombreDoctor}</td><td style='padding:4px 0;'><strong>Fecha:</strong> {fechaConsulta}</td></tr>
+    <tr><td style='padding:4px 0;width:50%;'><strong>M&eacute;dico:</strong> {tituloProfesional} {nombreDoctor}</td><td style='padding:4px 0;'><strong>Fecha:</strong> {fechaConsulta}</td></tr>
     <tr><td style='padding:4px 0;'><strong>Paciente:</strong> {nombrePaciente}</td><td style='padding:4px 0;'><strong>Documento:</strong> {rutPaciente}</td></tr>
     <tr><td style='padding:4px 0;'><strong>Edad:</strong> {edadPaciente} a&ntilde;os</td><td></td></tr>
 </table>
@@ -427,7 +433,7 @@ namespace Fimel.Site.Controllers
     <tbody>{medicRows}</tbody>
 </table>
 <div style='margin-top:50px;text-align:right;border-top:1px solid #ccc;padding-top:15px;'>
-    <p style='color:#444;margin:0;font-weight:bold;'>{nombreDoctor}</p>
+    <p style='color:#444;margin:0;font-weight:bold;'>{tituloProfesional} {nombreDoctor}</p>
     <p style='color:#888;font-size:0.85rem;margin:4px 0 0;'>{nombreInstitucion}</p>
 </div>
 </body></html>";

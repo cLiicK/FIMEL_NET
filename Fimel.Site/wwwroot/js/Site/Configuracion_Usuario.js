@@ -14,7 +14,8 @@
 
             let config = {
                 DuracionBloqueHorario: $('#inputBloqueHorarioConfig').val(),
-                DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0
+                DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0,
+                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a'
             }
 
             var btnGuardar = $('#btnGuardarConfigUser');
@@ -202,7 +203,8 @@
 
             let config = {
                 DuracionBloqueHorario: $('#inputBloqueHorarioConfig').val(),
-                DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0
+                DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0,
+                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a'
             }
 
             var btnGuardar = $('#btnActualizarConfigUser');

@@ -72,6 +72,18 @@
 													</select>
 												</div>
 												<div class="col-md-4">
+													<label for="inputTituloProfesional" class="form-label">
+														T&#237;tulo profesional en receta
+														<i class="fas fa-circle-info ms-1 text-muted"
+														   data-bs-toggle="tooltip" data-bs-placement="top"
+														   title="Texto que aparece antes del nombre del profesional en la receta m&#233;dica. Ej: Dr/a., Matr&#243;n/a"
+														   style="cursor:help;"></i>
+													</label>
+													<input type="text" class="form-control" id="inputTituloProfesional" maxlength="30"
+														value="@(Model.Configuracion != null ? Model.Configuracion.TituloProfesional : "Matrón/a")"
+														placeholder="Ej: Dr/a., Matrón/a, Kinesiólogo/a">
+												</div>
+												<div class="col-md-4">
 													<label for="inputDiasAvisoControl" class="form-label">
 														D&#237;as de aviso previo al control
 														<i class="fas fa-circle-info ms-1 text-muted"
@@ -318,5 +330,5 @@
 	<!--Contenido-->
 </div>
 @section scripts {
-	<script src="~/js/Site/Configuracion_Usuario.js?v=1.0" type="text/javascript"></script>
+	<script src="~/js/Site/Configuracion_Usuario.js?v=1.1" type="text/javascript"></script>
 }

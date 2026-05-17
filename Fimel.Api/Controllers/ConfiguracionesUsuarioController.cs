@@ -59,6 +59,7 @@ namespace Fimel.Api.Controllers
 
                 dbConfig.DuracionBloqueHorario = config.DuracionBloqueHorario;
                 dbConfig.DiasAvisoPrevioControl = config.DiasAvisoPrevioControl;
+                dbConfig.TituloProfesional = config.TituloProfesional;
 
                 db.SaveChanges();
 
