@@ -30,6 +30,13 @@ namespace Fimel.Models
         public DbSet<ConfiguracionUsuario> ConfiguracionesUsuario { get; set; }
         public DbSet<PlantillaConsulta> PlantillasConsulta { get; set; }
         public DbSet<ExamenPaciente> ExamenesPaciente { get; set; }
+        public DbSet<PlantillaInforme> PlantillasInforme { get; set; }
+        public DbSet<PlantillaCampo> PlantillasCampo { get; set; }
+        public DbSet<InformeGenerado> InformesGenerados { get; set; }
+        public DbSet<InformeCampoValor> InformesCampoValor { get; set; }
+        public DbSet<DictadoSesion> DictadoSesiones { get; set; }
+        public DbSet<CategoriaFinanciera> CategoriasFinancieras { get; set; }
+        public DbSet<MovimientoFinanciero> MovimientosFinancieros { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -58,6 +65,13 @@ namespace Fimel.Models
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario");
             modelBuilder.Entity<PlantillaConsulta>().ToTable("PlantillasConsulta");
             modelBuilder.Entity<ExamenPaciente>().ToTable("ExamenesPaciente");
+            modelBuilder.Entity<PlantillaInforme>().ToTable("PlantillasInforme");
+            modelBuilder.Entity<PlantillaCampo>().ToTable("PlantillasCampo");
+            modelBuilder.Entity<InformeGenerado>().ToTable("InformesGenerados");
+            modelBuilder.Entity<InformeCampoValor>().ToTable("InformesCampoValor");
+            modelBuilder.Entity<DictadoSesion>().ToTable("DictadoSesiones");
+            modelBuilder.Entity<CategoriaFinanciera>().ToTable("CategoriasFinancieras");
+            modelBuilder.Entity<MovimientoFinanciero>().ToTable("MovimientosFinancieros");
 
         }
     }

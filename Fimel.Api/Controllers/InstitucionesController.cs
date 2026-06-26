@@ -63,6 +63,26 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetAll")]
+        public IActionResult GetAll()
+        {
+            try
+            {
+                var instituciones = db.Instituciones
+                    .Where(x => x.Vigente == "S")
+                    .OrderBy(x => x.RazonSocial)
+                    .ToList();
+
+                return Ok(instituciones);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error GetAll Instituciones: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {

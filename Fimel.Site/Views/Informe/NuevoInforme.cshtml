@@ -1,0 +1,158 @@
+@using Fimel.Models
+@{
+    var plantillas = ViewBag.Plantillas as List<PlantillaInforme> ?? new List<PlantillaInforme>();
+}
+
+<input type="hidden" id="hdnURL_BuscarPaciente"        value='@Url.Action("BuscarPaciente", "Pacientes")' />
+<input type="hidden" id="hdnURL_BuscarPorNumDoc"       value='@Url.Action("BuscarPacientePorNumDocumento", "Pacientes")' />
+<input type="hidden" id="hdnURL_ObtenerPlantilla"      value='@Url.Action("_ObtenerPlantilla", "Informe")' />
+<input type="hidden" id="hdnURL_IniciarDictadoCelular" value='@Url.Action("_IniciarDictadoCelular", "Informe")' />
+<input type="hidden" id="hdnURL_PollDictado"           value='@Url.Action("_PollDictado", "Informe")' />
+<input type="hidden" id="hdnURL_CerrarDictado"         value='@Url.Action("_CerrarDictado", "Informe")' />
+<input type="hidden" id="hdnURL_RecibirTexto"          value='@Url.Action("_RecibirTextoDictado", "Informe")' />
+<input type="hidden" id="hdnURL_GuardarInforme"        value='@Url.Action("_GuardarInforme", "Informe")' />
+<input type="hidden" id="hdnNombreDoctor"              value='@ViewBag.NombreDoctor' />
+<input type="hidden" id="hdnTituloProfesional"         value='@ViewBag.TituloProfesional' />
+<input type="hidden" id="hdnUsuarioId"                 value='@ViewBag.UsuarioId' />
+<input type="hidden" id="hdnUrlBase"                   value='@ViewBag.UrlBase' />
+<input type="hidden" id="hiddenIdPaciente" />
+
+<div id="content-wrapper" class="container-9">
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="container">
+                <h2 class="colorfimel-blue">Nuevo Informe Ecográfico</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+
+            <!-- BUSCAR PACIENTE -->
+            <div class="card mb-3">
+                <div class="card-header fw-semibold">Paciente</div>
+                <div class="card-body">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label form-label-sm">RUT</label>
+                            <input type="text" class="form-control form-control-sm" id="inputRutBusqueda"
+                                   placeholder="12345678-9"
+                                   onkeydown="if(event.key==='Enter') ModuloNuevoInforme.BuscarPaciente()">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label form-label-sm">N° Documento</label>
+                            <input type="text" class="form-control form-control-sm" id="inputNumDocBusqueda"
+                                   placeholder="Pasaporte u otro"
+                                   onkeydown="if(event.key==='Enter') ModuloNuevoInforme.BuscarPaciente()">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-blue btn-sm w-100"
+                                    onclick="ModuloNuevoInforme.BuscarPaciente()">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="divDatosPaciente" class="mt-3" style="display:none">
+                        <div class="alert alert-info py-2 mb-0 d-flex align-items-center gap-2">
+                            <i class="fas fa-user-circle fa-lg"></i>
+                            <div>
+                                <span id="lblNombrePaciente" class="fw-semibold"></span>
+                                <small class="ms-2 text-muted" id="lblInfoPaciente"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLANTILLA -->
+            <div class="card mb-3">
+                <div class="card-header fw-semibold">Plantilla</div>
+                <div class="card-body">
+                    <select class="form-select" id="selectPlantilla"
+                            onchange="ModuloNuevoInforme.CargarPlantilla(this.value)">
+                        <option value="">Seleccione una plantilla...</option>
+                        @foreach (var p in plantillas)
+                        {
+                            <option value="@p.Id">@p.Nombre @(!string.IsNullOrEmpty(p.TipoExamen) ? $"— {p.TipoExamen}" : "")</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- CAMPOS DEL INFORME -->
+            <div id="divCamposInforme" class="card mb-3" style="display:none">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">Campos del informe</span>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="btnDictadoContinuo"
+                                onclick="ModuloNuevoInforme.ToggleDictadoContinuo(this)"
+                                title="Dictar todo de corrido y distribuir automáticamente">
+                            <i class="fas fa-microphone-lines me-1"></i> Dictado continuo
+                        </button>
+                        <button class="btn btn-sm btn-blue" id="btnDictarCelular"
+                                onclick="ModuloNuevoInforme.IniciarDictadoCelular(this)">
+                            <i class="fas fa-mobile-alt me-1"></i> Dictar desde celular
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="contenedorCampos"></div>
+            </div>
+
+            <!-- BOTONES GENERAR -->
+            <div id="divAcciones" style="display:none" class="d-flex gap-2 mb-4">
+                <button class="btn btn-blue" onclick="ModuloNuevoInforme.GenerarInforme()">
+                    <i class="fas fa-file-medical me-1"></i> Generar informe
+                </button>
+                <button class="btn btn-outline-secondary" onclick="ModuloNuevoInforme.LimpiarFormulario()">
+                    <i class="fas fa-broom me-1"></i> Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- LATERAL: estado dictado celular -->
+        <div class="col-md-4">
+            <div id="cardDictadoCelular" class="card" style="display:none">
+                <div class="card-header fw-semibold d-flex justify-content-between">
+                    <span><i class="fas fa-mobile-alt me-1 text-primary"></i> Dictado desde celular</span>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="ModuloNuevoInforme.DetenerDictadoCelular()">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-2" style="font-size:.82rem">
+                        Escanea el QR con tu celular para dictar.
+                    </p>
+                    <div id="divQR" class="d-flex justify-content-center mb-3"></div>
+                    <div id="divEstadoDictado" class="badge bg-success mb-2">Sesión activa</div>
+                    <div id="divUltimoTexto" class="text-muted mt-2" style="font-size:.8rem;min-height:2rem"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL QR (fallback por si el card lateral no es visible) -->
+<div class="modal fade" id="modalQR" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Escanea con tu celular</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="divQRModal" class="d-flex justify-content-center mb-3"></div>
+                <p class="text-muted" style="font-size:.82rem">
+                    Abre la cámara y escanea para dictar desde el celular.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="~/js/Site/NuevoInforme.js?v=1.0"></script>
+}

@@ -1,0 +1,174 @@
+@using Fimel.Models
+@{
+    var plantillas = ViewBag.Plantillas as List<PlantillaInforme> ?? new List<PlantillaInforme>();
+    int usuarioId = ViewBag.UsuarioId ?? 0;
+}
+
+<input type="hidden" id="hdnURL_GuardarPlantilla"    value='@Url.Action("_GuardarPlantilla", "Informe")' />
+<input type="hidden" id="hdnURL_ActualizarPlantilla" value='@Url.Action("_ActualizarPlantilla", "Informe")' />
+<input type="hidden" id="hdnURL_EliminarPlantilla"   value='@Url.Action("_EliminarPlantilla", "Informe")' />
+<input type="hidden" id="hdnURL_ObtenerPlantilla"    value='@Url.Action("_ObtenerPlantilla", "Informe")' />
+<input type="hidden" id="hdnURL_GuardarCampo"        value='@Url.Action("_GuardarCampo", "Informe")' />
+<input type="hidden" id="hdnURL_ActualizarCampo"     value='@Url.Action("_ActualizarCampo", "Informe")' />
+<input type="hidden" id="hdnURL_EliminarCampo"       value='@Url.Action("_EliminarCampo", "Informe")' />
+<input type="hidden" id="hdnUsuarioId"               value='@usuarioId' />
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row align-items-center mb-3">
+                    <div class="col">
+                        <h2 class="colorfimel-blue mb-0">Plantillas de Informes</h2>
+                        <p class="text-muted" style="font-size:.88rem">Crea y edita las plantillas para tus informes ecográficos.</p>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-blue btn-sm" onclick="ModuloMantenedorPlantillas.NuevaPlantilla()">
+                            <i class="fas fa-plus me-1"></i> Nueva plantilla
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <!-- LISTA DE PLANTILLAS -->
+        <div class="col-md-4">
+            <div id="listadoPlantillas">
+                @if (!plantillas.Any())
+                {
+                    <div class="text-muted text-center py-5">
+                        <i class="fas fa-file-medical fa-2x mb-2 d-block"></i>
+                        Sin plantillas. Crea la primera.
+                    </div>
+                }
+                else
+                {
+                    @foreach (var p in plantillas)
+                    {
+                        <div class="card mb-2 plantilla-card" data-id="@p.Id" style="cursor:pointer"
+                             onclick="ModuloMantenedorPlantillas.SeleccionarPlantilla(@p.Id)">
+                            <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold" style="font-size:.93rem">@p.Nombre</div>
+                                    @if (!string.IsNullOrEmpty(p.TipoExamen))
+                                    {
+                                        <small class="text-muted">@p.TipoExamen</small>
+                                    }
+                                </div>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                            onclick="event.stopPropagation(); ModuloMantenedorPlantillas.EliminarPlantilla(@p.Id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- EDITOR -->
+        <div class="col-md-8">
+            <div id="divEditorPlantilla" class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span id="lblTituloEditor" class="fw-semibold">Nueva plantilla</span>
+                    <div>
+                        <button class="btn btn-blue btn-sm" id="btnGuardarPlantilla"
+                                onclick="ModuloMantenedorPlantillas.GuardarPlantilla(this)">
+                            <i class="fas fa-save me-1"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" id="inputIdPlantilla" value="0" />
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="inputNombrePlantilla"
+                                   placeholder="Ej: Ecografía Ginecológica">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de examen</label>
+                            <input type="text" class="form-control" id="inputTipoExamen"
+                                   placeholder="Ej: Ecografía, Doppler...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">
+                                HTML base
+                                <i class="fas fa-circle-info ms-1 text-muted"
+                                   data-bs-toggle="tooltip"
+                                   title="Usa {{nombreCampo}} como variable. Ej: {{utero}}"
+                                   style="cursor:help"></i>
+                            </label>
+                            <textarea class="form-control font-monospace" id="inputHtmlBase" rows="8"
+                                      placeholder="<p><strong>Útero:</strong> {{utero}}</p>&#10;<p><strong>Conclusión:</strong> {{conclusion}}</p>"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkActiva" checked>
+                                <label class="form-check-label" for="checkActiva">Plantilla activa</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CAMPOS -->
+                    <div id="divCampos" style="display:none">
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-semibold" style="font-size:.92rem">Campos</span>
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="ModuloMantenedorPlantillas.MostrarFormCampo()">
+                                <i class="fas fa-plus me-1"></i> Agregar campo
+                            </button>
+                        </div>
+
+                        <!-- Form nuevo campo -->
+                        <div id="divFormCampo" class="card bg-light mb-3" style="display:none">
+                            <div class="card-body py-2">
+                                <div class="row g-2 align-items-end">
+                                    <input type="hidden" id="inputIdCampo" value="0" />
+                                    <div class="col-md-3">
+                                        <label class="form-label form-label-sm">Variable</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputNombreCampo"
+                                               placeholder="utero">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label form-label-sm">Etiqueta</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputEtiquetaCampo"
+                                               placeholder="Útero">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label form-label-sm">Orden</label>
+                                        <input type="number" class="form-control form-control-sm" id="inputOrdenCampo"
+                                               value="1" min="1">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="checkbox" id="checkObligatorio">
+                                            <label class="form-check-label form-label-sm">Obligatorio</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 text-end">
+                                        <button class="btn btn-blue btn-sm"
+                                                onclick="ModuloMantenedorPlantillas.GuardarCampo(this)">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tablaCampos"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/Site/MantenedorPlantillas.js?v=1.0"></script>
+}

@@ -107,9 +107,15 @@
                 if (usuarioConectado != null && (usuarioConectado.IdPerfil == 1 || usuarioConectado.IdPerfil == 2))
                 {
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "NuevaConsulta" ? "active" : "")"
                            aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">
                             <span>Nueva Consulta</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Informe" ? "active" : "")"
+                           aria-current="page" href="@Url.Action("NuevoInforme", "Informe")">
+                            <span>Informes Ecográficos</span>
                         </a>
                     </li>
                 }
@@ -118,6 +124,12 @@
                 <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "MiHorario" || ViewContext.RouteData.Values["action"].ToString() == "MiHorario" ? "active" : "")"
                    aria-current="page" href="@Url.Action("MiHorario", "Horario")">
                     <span>Horario</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Financiero" ? "active" : "")"
+                   aria-current="page" href="@Url.Action("Index", "Financiero")">
+                    <span>Financiero</span>
                 </a>
             </li>
             <div class="text-center footer-sidebar">
