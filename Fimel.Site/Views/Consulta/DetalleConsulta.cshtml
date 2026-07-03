@@ -25,6 +25,8 @@
 <input type="hidden" id="hdnEdadPaciente" value='@(edad.HasValue ? edad.ToString() : "")' />
 <input type="hidden" id="hdnFechaConsulta" value='@fechaConsulta' />
 <input type="hidden" id="hdnRecetaJson" value="@(Model.Consulta.Receta ?? "")" />
+<input type="hidden" id="hdnURL_GetSugerenciasExamen" value='@Url.Action("GetSugerencias", "Examenes")' />
+<input type="hidden" id="hdnOrdenExamenesJson" value="@(Model.Consulta.OrdenExamenes ?? "")" />
 
 <style>
     #accordionFicha-nuevaConsulta-head .accordion-button {
@@ -227,8 +229,30 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-12">
-                                                <label for="exampleFormControlTextarea1" class="form-label">Orden Exámenes</label>
-                                                <textarea class="form-control" rows="3" id="inputOrdenExamenes" disabled>@Model.Consulta.OrdenExamenes</textarea>
+                                                <label class="form-label fw-semibold">Orden de Exámenes</label>
+                                                <div id="panelAgregarExamenDetalle" style="display:none;" class="p-3 rounded border mb-2" style="background:#f0f9ff;">
+                                                    <div class="row g-2 align-items-end">
+                                                        <div class="col-md-7">
+                                                            <label class="form-label small mb-1 text-muted">Examen</label>
+                                                            <input type="text" class="form-control form-control-sm" id="inputNuevoExamenDetalle" placeholder="Ej: Hemograma completo">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label small mb-1 text-muted">Indicaciones (opcional)</label>
+                                                            <input type="text" class="form-control form-control-sm" id="inputIndicacionesExamenDetalle" placeholder="Ej: Ayuno de 8 horas">
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <button type="button" class="btn btn-blue btn-sm w-100" onclick="AgregarExamenOrdenDetalle()" title="Agregar examen">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="listaExamenesDetalle" class="mb-2"></div>
+                                                <div class="d-flex gap-2" id="divBotonesOrdenExamenes" style="display:none!important;">
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ImprimirOrdenExamenesDetalle()">
+                                                        <i class="fas fa-print me-1"></i>Imprimir Orden
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <label for="" class="form-label">Fecha Próximo Control</label>

@@ -1,4 +1,7 @@
-﻿var ModuloHistorialConsultas = (function () {
+﻿var ordenExamenesDetalle = [];
+var _catalogoExamenesDetalle = [];
+
+var ModuloHistorialConsultas = (function () {
     return {
         IniciarScripts: function () {
             $("#inputRutBusq").keypress(function (e) { onlyNumbersWithK(e); });
@@ -161,7 +164,12 @@
             $('#inputDiagnostico').prop('disabled', bool);
             $('#inputIndicaciones').prop('disabled', bool);
             $('#inputReceta').prop('disabled', bool);
-            $('#inputOrdenExamenes').prop('disabled', bool);
+            if (bool) {
+                $('#panelAgregarExamenDetalle').hide();
+            } else {
+                $('#panelAgregarExamenDetalle').show();
+            }
+            RenderizarOrdenExamenesDetalle(bool);
             //$('#inputFechaProximoControl').prop('disabled', bool);
             //$('#inputFechaConsulta').prop('disabled', bool);
             //$('#inputReceta').prop('disabled', bool);
@@ -241,7 +249,7 @@
             objDatosConsulta["Diagnostico"] = $("#inputDiagnostico").val() || null;
             objDatosConsulta["Indicaciones"] = $("#inputIndicaciones").val() || null;
             objDatosConsulta["Receta"] = $("#inputReceta").val() || null;
-            objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val() || null;
+            objDatosConsulta["OrdenExamenes"] = ordenExamenesDetalle.length > 0 ? JSON.stringify(ordenExamenesDetalle) : null;
             objDatosConsulta["FechaProximoControl"] = $("#inputFechaProximoControl").val() || null;
             objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val() || null;
 
@@ -562,6 +570,48 @@ $(function () {
     if ($('#listaMedicamentosDetalle').length) {
         RenderizarRecetaDetalle();
     }
+
+    if ($('#listaExamenesDetalle').length) {
+        var rawOrden = $('#hdnOrdenExamenesJson').val();
+        if (rawOrden) {
+            try { ordenExamenesDetalle = JSON.parse(rawOrden); } catch (e) { ordenExamenesDetalle = []; }
+        }
+        RenderizarOrdenExamenesDetalle(true);
+    }
+
+    var urlSugDet = $('#hdnURL_GetSugerenciasExamen').val();
+    if (urlSugDet) {
+        $.ajax({ url: urlSugDet, method: 'GET', success: function (resp) {
+            if (resp.success && resp.data) _catalogoExamenesDetalle = resp.data;
+        }});
+    }
+
+    $(document).on('input', '#inputNuevoExamenDetalle', function () {
+        var q = $(this).val().trim().toLowerCase();
+        $('#autocompleteExamenDetalle').remove();
+        if (q.length < 2) return;
+        var filtrado = _catalogoExamenesDetalle.filter(function (e) {
+            return (e.NombreExamen || '').toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 20);
+        if (!filtrado.length) return;
+        var $dd = $('<div id="autocompleteExamenDetalle" class="list-group" style="position:absolute;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);min-width:300px;"></div>');
+        filtrado.forEach(function (e) {
+            var nombreSafe = (e.NombreExamen || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            $dd.append(
+                '<a href="#" class="list-group-item list-group-item-action py-1 px-2" ' +
+                'onclick="SeleccionarSugerenciaExamenDetalle(\'' + nombreSafe + '\'); return false;">' +
+                '<span class="fw-semibold">' + (e.NombreExamen || '') + '</span>' +
+                '<small class="text-muted ms-2">' + (e.CategoriaNombre || '') + '</small>' +
+                '</a>'
+            );
+        });
+        $('#inputNuevoExamenDetalle').after($dd);
+    });
+
+    $(document).on('click', function (ev) {
+        if (!$(ev.target).closest('#inputNuevoExamenDetalle, #autocompleteExamenDetalle').length)
+            $('#autocompleteExamenDetalle').remove();
+    });
 });
 
 function RenderizarRecetaDetalle() {
@@ -650,6 +700,115 @@ function ImprimirRecetaDetalle() {
         '<table class="meds"><thead><tr>' +
         '<th style="width:30px;">#</th><th>Medicamento</th><th>Dosis</th><th>Posolog&iacute;a</th>' +
         '</tr></thead><tbody>' + medicamentosHtml + '</tbody></table>' +
+        '<div class="footer">' +
+        '<p style="font-weight:bold;margin:0;">' + nombreDoctor + '</p>' +
+        '<p style="color:#888;font-size:0.85rem;margin:4px 0 0;">' + nombreInstitucion + '</p>' +
+        '</div>' +
+        '</body></html>';
+
+    var w = window.open('', '_blank', 'width=800,height=600');
+    w.document.write(html);
+    w.document.close();
+    w.onafterprint = function () { w.close(); };
+    setTimeout(function () { w.focus(); w.print(); }, 300);
+}
+
+function RenderizarOrdenExamenesDetalle(soloLectura) {
+    var container = $('#listaExamenesDetalle');
+    if (!container.length) return;
+
+    if (ordenExamenesDetalle.length === 0) {
+        container.html('<p class="text-muted small fst-italic mb-0">Sin exámenes registrados.</p>');
+        $('#divBotonesOrdenExamenes').hide();
+        return;
+    }
+
+    var items = ordenExamenesDetalle.map(function (e, i) {
+        var indTag = e.indicaciones
+            ? '<span class="badge" style="background:#e8f4fa;color:#0E96CC;border:1px solid #b8dff0;font-weight:500;">' + e.indicaciones + '</span>'
+            : '';
+        var btnEliminar = !soloLectura
+            ? '<button type="button" class="btn p-0 flex-shrink-0 text-danger" onclick="EliminarExamenOrdenDetalle(' + i + ')" title="Eliminar" style="font-size:1rem;line-height:1;"><i class="fas fa-times-circle"></i></button>'
+            : '';
+        return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
+            '<span class="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 text-white fw-bold" ' +
+            'style="width:26px;height:26px;font-size:0.7rem;background:#0E96CC;">' + (i + 1) + '</span>' +
+            '<div class="flex-grow-1">' +
+            '<div class="fw-semibold text-dark lh-sm" style="font-size:0.9rem;">' + e.examen + '</div>' +
+            (indTag ? '<div class="mt-1">' + indTag + '</div>' : '') +
+            '</div>' +
+            btnEliminar +
+            '</div>';
+    }).join('');
+
+    container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+    $('#divBotonesOrdenExamenes').show();
+}
+
+function SeleccionarSugerenciaExamenDetalle(nombre) {
+    $('#inputNuevoExamenDetalle').val(nombre);
+    $('#autocompleteExamenDetalle').remove();
+}
+
+function AgregarExamenOrdenDetalle() {
+    var examen = $('#inputNuevoExamenDetalle').val().trim();
+    var indicaciones = $('#inputIndicacionesExamenDetalle').val().trim();
+    if (!examen) {
+        Swal.fire('Campo requerido', 'Ingrese el nombre del examen.', 'warning');
+        return;
+    }
+    ordenExamenesDetalle.push({ examen: examen, indicaciones: indicaciones });
+    $('#inputNuevoExamenDetalle').val('');
+    $('#inputIndicacionesExamenDetalle').val('');
+    RenderizarOrdenExamenesDetalle(false);
+}
+
+function EliminarExamenOrdenDetalle(index) {
+    ordenExamenesDetalle.splice(index, 1);
+    RenderizarOrdenExamenesDetalle(false);
+}
+
+function ImprimirOrdenExamenesDetalle() {
+    if (ordenExamenesDetalle.length === 0) return;
+
+    var nombreDoctor      = $('#hdnNombreDoctor').val() || '';
+    var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
+    var nombrePaciente    = $('#hdnNombrePaciente').val() || '';
+    var rutPaciente       = $('#hdnRutPaciente').val() || '';
+    var edadPaciente      = $('#hdnEdadPaciente').val() || '';
+    var fechaConsulta     = $('#hdnFechaConsulta').val() || '';
+
+    var examenesHtml = ordenExamenesDetalle.map(function (e, i) {
+        return '<tr>' +
+            '<td style="padding:6px 10px;border-bottom:1px solid #eee;">' + (i + 1) + '</td>' +
+            '<td style="padding:6px 10px;border-bottom:1px solid #eee;"><strong>' + (e.examen || '') + '</strong></td>' +
+            '<td style="padding:6px 10px;border-bottom:1px solid #eee;">' + (e.indicaciones || '') + '</td>' +
+            '</tr>';
+    }).join('');
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Orden de Exámenes</title>' +
+        '<style>' +
+        'body{font-family:Arial,sans-serif;margin:40px;color:#333;}' +
+        'h2{color:#0E96CC;border-bottom:3px solid #0E96CC;padding-bottom:10px;margin-bottom:20px;}' +
+        '.meta{width:100%;border-collapse:collapse;margin-bottom:20px;}' +
+        '.meta td{padding:4px 0;vertical-align:top;}' +
+        'table.exams{width:100%;border-collapse:collapse;}' +
+        'table.exams th{background:#0E96CC;color:#fff;padding:8px 10px;text-align:left;}' +
+        '.footer{margin-top:80px;text-align:right;border-top:1px solid #ccc;padding-top:15px;}' +
+        '</style></head><body>' +
+        '<h2>' + nombreInstitucion + ' &mdash; Orden de Ex&aacute;menes</h2>' +
+        '<table class="meta"><tr>' +
+        '<td><strong>M&eacute;dico:</strong> ' + nombreDoctor + '</td>' +
+        '<td style="text-align:right;"><strong>Fecha:</strong> ' + fechaConsulta + '</td>' +
+        '</tr><tr>' +
+        '<td><strong>Paciente:</strong> ' + nombrePaciente + '</td>' +
+        '<td style="text-align:right;"><strong>RUT/Doc:</strong> ' + rutPaciente + '</td>' +
+        '</tr><tr>' +
+        '<td><strong>Edad:</strong> ' + edadPaciente + ' a&ntilde;os</td>' +
+        '<td></td></tr></table>' +
+        '<table class="exams"><thead><tr>' +
+        '<th style="width:30px;">#</th><th>Ex&aacute;men</th><th>Indicaciones</th>' +
+        '</tr></thead><tbody>' + examenesHtml + '</tbody></table>' +
         '<div class="footer">' +
         '<p style="font-weight:bold;margin:0;">' + nombreDoctor + '</p>' +
         '<p style="color:#888;font-size:0.85rem;margin:4px 0 0;">' + nombreInstitucion + '</p>' +

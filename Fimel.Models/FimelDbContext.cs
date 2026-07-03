@@ -37,6 +37,8 @@ namespace Fimel.Models
         public DbSet<DictadoSesion> DictadoSesiones { get; set; }
         public DbSet<CategoriaFinanciera> CategoriasFinancieras { get; set; }
         public DbSet<MovimientoFinanciero> MovimientosFinancieros { get; set; }
+        public DbSet<CategoriaExamen> CategoriasExamen { get; set; }
+        public DbSet<TipoExamen> TiposExamen { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -72,7 +74,12 @@ namespace Fimel.Models
             modelBuilder.Entity<DictadoSesion>().ToTable("DictadoSesiones");
             modelBuilder.Entity<CategoriaFinanciera>().ToTable("CategoriasFinancieras");
             modelBuilder.Entity<MovimientoFinanciero>().ToTable("MovimientosFinancieros");
-
+            modelBuilder.Entity<CategoriaExamen>().ToTable("CategoriasExamen");
+            modelBuilder.Entity<TipoExamen>().ToTable("TiposExamen");
+            modelBuilder.Entity<TipoExamen>()
+                .HasOne(t => t.Categoria)
+                .WithMany(c => c.TiposExamen)
+                .HasForeignKey(t => t.CategoriaExamenId);
         }
     }
 }

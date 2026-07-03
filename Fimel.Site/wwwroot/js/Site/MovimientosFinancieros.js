@@ -104,6 +104,27 @@ var ModuloFinanciero = (function () {
             $('#filtroFechaHasta').val(hoy.toISOString().split('T')[0]);
 
             ModuloFinanciero.Buscar();
+
+            // Auto-formato RUT y Enter para buscar paciente
+            $(document).on('keyup', '#modalBuscarPaciente', function (e) {
+                if (e.key === 'Enter') { ModuloFinanciero.BuscarPaciente(); return; }
+                var val = $(this).val();
+                // Solo auto-formatear si el contenido parece un RUT (dígitos, puntos, guión, K)
+                if (!/^[0-9.\-kK]*$/.test(val)) return;
+                var cadena = val.replace(/[.]/gi, '').replace('-', '');
+                if (!cadena) return;
+                if (cadena.length > 9) cadena = cadena.substr(0, 9);
+                var concatenar = '';
+                var i = cadena.length - 1;
+                for (; i >= 0;) {
+                    concatenar = cadena[i] + concatenar;
+                    if (i + 1 == cadena.length && i > 0) concatenar = '-' + concatenar;
+                    if (concatenar.length == 9 && cadena.length > 7) concatenar = '.' + concatenar;
+                    if (concatenar.length == 5 && cadena.length > 4) concatenar = '.' + concatenar;
+                    i--;
+                }
+                $(this).val(concatenar);
+            });
         },
 
         Buscar: function () {
@@ -172,7 +193,8 @@ var ModuloFinanciero = (function () {
             if (!criterio) return;
 
             var data = {};
-            var limpio = criterio.replace(/\./g, '').replace(/-/g, '').replace(/[kK]$/, '');
+            var sinPuntos = criterio.replace(/\./g, '');
+            var limpio = sinPuntos.indexOf('-') !== -1 ? sinPuntos.split('-')[0] : sinPuntos.replace(/[kK]$/, '');
             if (/^\d+$/.test(limpio)) {
                 data.rut = parseInt(limpio);
             } else {

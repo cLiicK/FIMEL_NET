@@ -512,10 +512,6 @@ var ModuloFichaPaciente = (function () {
                         '</div>';
                 }).join('');
                 container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
-                var $collapse = $('#accordionFicha-examenes');
-                if (!$collapse.hasClass('show')) {
-                    new bootstrap.Collapse($collapse[0], { toggle: false }).show();
-                }
             });
         },
         GuardarExamen: function (btn) {

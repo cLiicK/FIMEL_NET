@@ -1,5 +1,7 @@
 ﻿var recetaMedicamentos = [];
+var ordenExamenes = [];
 var idPacienteConsultaActual = 0;
+var _catalogoExamenes = [];
 
 var ModuloConsulta = (function () {
     return {
@@ -304,7 +306,7 @@ var ModuloConsulta = (function () {
             objDatosConsulta["Diagnostico"] = $("#inputDiagnostico").val() || null;
             objDatosConsulta["Indicaciones"] = $("#inputIndicaciones").val() || null;
             objDatosConsulta["Receta"] = recetaMedicamentos.length > 0 ? JSON.stringify(recetaMedicamentos) : null;
-            objDatosConsulta["OrdenExamenes"] = $("#inputOrdenExamenes").val();
+            objDatosConsulta["OrdenExamenes"] = ordenExamenes.length > 0 ? JSON.stringify(ordenExamenes) : null;
             objDatosConsulta["FechaConsulta"] = $("#inputFechaConsulta").val();
 
             if ($("#inputFechaProximoControl").val() != "") {
@@ -832,6 +834,113 @@ var ModuloConsulta = (function () {
             });
         },
 
+        SeleccionarSugerenciaExamen: function (nombre) {
+            $('#inputNuevoExamen').val(nombre);
+            $('#autocompleteNuevoExamen').remove();
+        },
+
+        AgregarExamenOrden: function () {
+            var examen = $('#inputNuevoExamen').val().trim();
+            var indicaciones = $('#inputIndicacionesExamen').val().trim();
+            if (!examen) {
+                Swal.fire('Campo requerido', 'Ingrese el nombre del examen.', 'warning');
+                return;
+            }
+            ordenExamenes.push({ examen: examen, indicaciones: indicaciones });
+            $('#inputNuevoExamen').val('');
+            $('#inputIndicacionesExamen').val('');
+            ModuloConsulta.RenderizarOrdenExamenes();
+        },
+
+        EliminarExamenOrden: function (index) {
+            ordenExamenes.splice(index, 1);
+            ModuloConsulta.RenderizarOrdenExamenes();
+        },
+
+        RenderizarOrdenExamenes: function () {
+            var container = $('#listaExamenesConsulta');
+            if (ordenExamenes.length === 0) {
+                container.html('<p class="text-muted small fst-italic mb-0">Sin exámenes agregados.</p>');
+                return;
+            }
+            var items = ordenExamenes.map(function (e, i) {
+                var indTag = e.indicaciones
+                    ? '<span class="badge" style="background:#e8f4fa;color:#0E96CC;border:1px solid #b8dff0;font-weight:500;">' + e.indicaciones + '</span>'
+                    : '';
+                return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
+                    '<span class="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 text-white fw-bold" ' +
+                    'style="width:26px;height:26px;font-size:0.7rem;background:#0E96CC;">' + (i + 1) + '</span>' +
+                    '<div class="flex-grow-1">' +
+                    '<div class="fw-semibold text-dark lh-sm" style="font-size:0.9rem;">' + e.examen + '</div>' +
+                    (indTag ? '<div class="mt-1">' + indTag + '</div>' : '') +
+                    '</div>' +
+                    '<button type="button" class="btn p-0 flex-shrink-0 text-danger" onclick="ModuloConsulta.EliminarExamenOrden(' + i + ')" title="Eliminar" style="font-size:1rem;line-height:1;">' +
+                    '<i class="fas fa-times-circle"></i></button>' +
+                    '</div>';
+            }).join('');
+            container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+        },
+
+        ImprimirOrdenExamenes: function () {
+            if (ordenExamenes.length === 0) {
+                Swal.fire('Sin exámenes', 'Agregue al menos un examen a la orden.', 'warning');
+                return;
+            }
+            var nombreDoctor = $('#hdnNombreDoctor').val() || '';
+            var tituloProfesional = $('#hdnTituloProfesional').val() || 'Matrón/a';
+            var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
+            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim();
+            var tipoDoc = $('#comboTipoDocumento').val();
+            var rutPaciente;
+            if (tipoDoc === 'RUT') {
+                var rutNum = parseInt($('#hiddenRutPaciente').val());
+                var dv = getDV(rutNum).toString();
+                rutPaciente = ObtenerRutSTR(rutNum, dv);
+            } else {
+                rutPaciente = $('#hiddenNumDocumento').val() || '';
+            }
+            var edadPaciente = $('#inputEdad').val() || '';
+            var fechaConsulta = $('#inputFechaConsulta').val() || new Date().toISOString().split('T')[0];
+            var partesFecha = fechaConsulta.split('-');
+            var fechaFormateada = partesFecha.length === 3 ? partesFecha[2] + '/' + partesFecha[1] + '/' + partesFecha[0] : fechaConsulta;
+            var ahora = new Date();
+            var horaFormateada = String(ahora.getHours()).padStart(2, '0') + ':' + String(ahora.getMinutes()).padStart(2, '0');
+            var logoBase64 = $('#hdnLogoInstitucion').val();
+            var logoUrl = logoBase64
+                ? 'data:image/png;base64,' + logoBase64
+                : (window.location.origin + '/img/logo_fimel_correo.png');
+
+            var examenesHtml = ordenExamenes.map(function (e, i) {
+                return '<li class="exam-item">' +
+                    '<div class="exam-bullet">' + (i + 1) + '</div>' +
+                    '<div class="exam-body">' +
+                    '<div class="exam-nombre">' + e.examen + '</div>' +
+                    (e.indicaciones ? '<div class="exam-detalle">' + e.indicaciones + '</div>' : '') +
+                    '</div>' +
+                    '</li>';
+            }).join('');
+
+            fetch('/mails/orden-examenes.html?v=' + Date.now())
+                .then(function (r) { return r.text(); })
+                .then(function (template) {
+                    var html = template
+                        .replace(/\{\{logo_url\}\}/g, logoUrl)
+                        .replace(/\{\{institucion\}\}/g, nombreInstitucion)
+                        .replace(/\{\{titulo\}\}/g, tituloProfesional)
+                        .replace(/\{\{doctor\}\}/g, nombreDoctor)
+                        .replace(/\{\{fecha\}\}/g, fechaFormateada)
+                        .replace(/\{\{hora\}\}/g, horaFormateada)
+                        .replace(/\{\{paciente\}\}/g, nombrePaciente)
+                        .replace(/\{\{rut_doc\}\}/g, rutPaciente)
+                        .replace(/\{\{edad\}\}/g, edadPaciente)
+                        .replace(/\{\{examenes\}\}/g, examenesHtml);
+
+                    var w = window.open('', '_blank', 'width=800,height=600');
+                    w.document.write(html);
+                    w.document.close();
+                });
+        },
+
         CargarExamenesConsulta: function (idPaciente) {
             $.ajax({
                 url: $('#hdnURL_ObtenerExamenes').val(),
@@ -865,7 +974,6 @@ var ModuloConsulta = (function () {
                             '</div>';
                     }).join('');
                     container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
-                    $('#accordionFicha-examenes').collapse('show');
                 }
             });
         },
@@ -1011,5 +1119,43 @@ $(function () {
             e.preventDefault();
             ModuloConsulta.AgregarMedicamento();
         }
+    });
+
+    $('#inputNuevoExamen, #inputIndicacionesExamen').on('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); ModuloConsulta.AgregarExamenOrden(); }
+    });
+
+    var urlSug = $('#hdnURL_GetSugerenciasExamen').val();
+    if (urlSug) {
+        $.ajax({ url: urlSug, method: 'GET', success: function (resp) {
+            if (resp.success && resp.data) _catalogoExamenes = resp.data;
+        }});
+    }
+
+    $(document).on('input', '#inputNuevoExamen', function () {
+        var q = $(this).val().trim().toLowerCase();
+        $('#autocompleteNuevoExamen').remove();
+        if (q.length < 2) return;
+        var filtrado = _catalogoExamenes.filter(function (e) {
+            return (e.NombreExamen || '').toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 20);
+        if (!filtrado.length) return;
+        var $dd = $('<div id="autocompleteNuevoExamen" class="list-group" style="position:absolute;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);min-width:300px;"></div>');
+        filtrado.forEach(function (e) {
+            var nombreSafe = (e.NombreExamen || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            $dd.append(
+                '<a href="#" class="list-group-item list-group-item-action py-1 px-2" ' +
+                'onclick="ModuloConsulta.SeleccionarSugerenciaExamen(\'' + nombreSafe + '\'); return false;">' +
+                '<span class="fw-semibold">' + (e.NombreExamen || '') + '</span>' +
+                '<small class="text-muted ms-2">' + (e.CategoriaNombre || '') + '</small>' +
+                '</a>'
+            );
+        });
+        $('#inputNuevoExamen').after($dd);
+    });
+
+    $(document).on('click', function (ev) {
+        if (!$(ev.target).closest('#inputNuevoExamen, #autocompleteNuevoExamen').length)
+            $('#autocompleteNuevoExamen').remove();
     });
 });
