@@ -15,7 +15,9 @@
             let config = {
                 DuracionBloqueHorario: $('#inputBloqueHorarioConfig').val(),
                 DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0,
-                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a'
+                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a',
+                MinAntHoras: $('#inputMinAntHoras').val() !== '' ? parseInt($('#inputMinAntHoras').val()) : null,
+                MaxAntDias: $('#inputMaxAntDias').val() !== '' ? parseInt($('#inputMaxAntDias').val()) : null
             }
 
             var btnGuardar = $('#btnGuardarConfigUser');
@@ -155,6 +157,21 @@
                 }
             });
         },
+        GuardarCorreo: function (btn) {
+            var email = $('#inputCorreoConfig').val().trim();
+            if (!email) { Swal.fire('Campo requerido', 'Ingrese un correo electrónico.', 'warning'); return; }
+            showLoading(btn);
+            $.ajax({
+                url: $('#hdnURL_GuardarCorreo').val(), method: 'POST',
+                data: { email: email },
+                success: function (r) {
+                    closeLoading(btn);
+                    if (r.success) Swal.fire('Listo', r.message, 'success');
+                    else Swal.fire('Error', r.message, 'error');
+                },
+                error: function () { closeLoading(btn); Swal.fire('Error', 'No se pudo guardar el correo.', 'error'); }
+            });
+        },
         GuardarInstitucion: function (btn) {
             var direccion = $('#inputDireccionInst').val().trim();
             if (!direccion) {
@@ -204,7 +221,9 @@
             let config = {
                 DuracionBloqueHorario: $('#inputBloqueHorarioConfig').val(),
                 DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0,
-                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a'
+                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a',
+                MinAntHoras: $('#inputMinAntHoras').val() !== '' ? parseInt($('#inputMinAntHoras').val()) : null,
+                MaxAntDias: $('#inputMaxAntDias').val() !== '' ? parseInt($('#inputMaxAntDias').val()) : null
             }
 
             var btnGuardar = $('#btnActualizarConfigUser');

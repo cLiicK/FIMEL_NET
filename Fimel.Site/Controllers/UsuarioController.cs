@@ -84,6 +84,26 @@ namespace Fimel.Site.Controllers
         }
 
         [HttpPost]
+        public ActionResult _GuardarCorreo(string email)
+        {
+            try
+            {
+                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (string.IsNullOrWhiteSpace(email))
+                    return Json(new { success = false, message = "El correo no puede estar vacío." });
+
+                usuario.Email = email.Trim();
+                APIBase.Put<Usuarios>($"Usuarios/{usuario.Id}", usuario);
+                return Json(new { success = true, message = "Correo actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Usuario _GuardarCorreo: {ex}");
+                return Json(new { success = false, message = "Error al guardar el correo." });
+            }
+        }
+
+        [HttpPost]
         public ActionResult _GenerarTokenPublico()
         {
             try

@@ -49,6 +49,13 @@ namespace Fimel.Site.Controllers
                     ? TimeSpan.FromMinutes(30)
                     : cfg.DuracionBloqueHorario;
 
+                DateTime minPermitido = cfg.MinAntHoras.HasValue
+                    ? DateTime.Now.AddHours(cfg.MinAntHoras.Value)
+                    : DateTime.MinValue;
+                DateTime maxPermitido = cfg.MaxAntDias.HasValue
+                    ? DateTime.Now.AddDays(cfg.MaxAntDias.Value)
+                    : DateTime.MaxValue;
+
                 var horariosSemanales = _api.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{userId}") ?? new();
                 var horariosEspecificos = _api.Get<List<HorarioEspecifico>>($"HorariosEspecificos/GetByUser/{userId}") ?? new();
                 var citas = _api.Get<List<Cita>>($"Citas/GetByCriteria", new
@@ -81,6 +88,8 @@ namespace Fimel.Site.Controllers
                             var dtFin = dtInicio.Add(duracion);
 
                             if (dtInicio <= DateTime.Now) continue;
+                            if (dtInicio < minPermitido) continue;
+                            if (dtInicio > maxPermitido) continue;
 
                             bool ocupado = citas.Any(c => c.FechaHoraInicio < dtFin && c.FechaHoraFinal > dtInicio);
                             if (!ocupado)
@@ -150,6 +159,13 @@ namespace Fimel.Site.Controllers
                 ConfiguracionUsuario? cfg = _api.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByToken/{token}");
                 if (cfg?.Usuario == null)
                     return Json(new { ok = false, error = "Enlace no válido." });
+
+                // Validar límites de anticipación
+                if (cfg.MinAntHoras.HasValue && fechaHoraInicio < DateTime.Now.AddHours(cfg.MinAntHoras.Value))
+                    return Json(new { ok = false, error = $"Debes agendar con al menos {cfg.MinAntHoras.Value} hora(s) de anticipación." });
+
+                if (cfg.MaxAntDias.HasValue && fechaHoraInicio > DateTime.Now.AddDays(cfg.MaxAntDias.Value))
+                    return Json(new { ok = false, error = $"Solo puedes agendar dentro de los próximos {cfg.MaxAntDias.Value} día(s)." });
 
                 // Verificar que el slot siga disponible
                 var citasExistentes = _api.Get<List<Cita>>($"Citas/GetByCriteria", new
