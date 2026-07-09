@@ -83,6 +83,24 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpPut("{id}/Email")]
+        public IActionResult ActualizarEmail(int id, [FromBody] string email)
+        {
+            try
+            {
+                Usuarios? dbUsuario = db.Usuarios.Find(id);
+                if (dbUsuario == null) return NotFound();
+                dbUsuario.Email = email?.Trim();
+                db.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ActualizarEmail Usuario: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet]
         [Route("GetByInstitucion/{idInstitucion}")]
         public IActionResult GetByInstitucion(int idInstitucion)

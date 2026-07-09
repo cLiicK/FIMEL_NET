@@ -38,6 +38,11 @@ namespace Fimel.Site.Controllers
                 ? $"{urlBase}/AgendaPublica/{vm.Configuracion.TokenPublico}"
                 : null;
 
+            var horarios = APIBase.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{usuario.Id}") ?? new();
+            ViewBag.HorariosJson = System.Text.Json.JsonSerializer.Serialize(
+                horarios.Select(h => new { h.DiaSemana, inicio = h.HoraInicio.ToString(@"hh\:mm"), fin = h.HoraFin.ToString(@"hh\:mm") })
+            );
+
             return View(vm);
         }
 
@@ -62,7 +67,7 @@ namespace Fimel.Site.Controllers
             }
         }
 
-        public ActionResult _ActualizarConfiguracion(int id, ConfiguracionUsuario config)
+        public ActionResult _ActualizarConfiguracion(int id, ConfiguracionUsuario config, string? email)
         {
             try
             {
@@ -71,35 +76,19 @@ namespace Fimel.Site.Controllers
 
                 ConfiguracionUsuario? configPut = APIBase.Put<ConfiguracionUsuario>($"ConfiguracionesUsuario/{id}", config);
 
-                if (configPut == null)
-                    return Json(new { success = true, message = "Error interno al actualizar configuración..." });
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    APIBase.Put<object>($"Usuarios/{usuario.Id}/Email", email.Trim());
+                    usuario.Email = email.Trim();
+                    HttpContext.Session.SetString("UsuarioConectado", System.Text.Json.JsonSerializer.Serialize(usuario));
+                }
 
                 return Json(new { success = true, message = "Configuración Actualizada!" });
             }
             catch (Exception ex)
             {
                 Logger.Log($"Error Usuario _ActualizarConfiguracion: {ex}");
-                return null;
-            }
-        }
-
-        [HttpPost]
-        public ActionResult _GuardarCorreo(string email)
-        {
-            try
-            {
-                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
-                if (string.IsNullOrWhiteSpace(email))
-                    return Json(new { success = false, message = "El correo no puede estar vacío." });
-
-                usuario.Email = email.Trim();
-                APIBase.Put<Usuarios>($"Usuarios/{usuario.Id}", usuario);
-                return Json(new { success = true, message = "Correo actualizado correctamente." });
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"Error Usuario _GuardarCorreo: {ex}");
-                return Json(new { success = false, message = "Error al guardar el correo." });
+                return Json(new { success = false, message = "Error al actualizar configuración." });
             }
         }
 

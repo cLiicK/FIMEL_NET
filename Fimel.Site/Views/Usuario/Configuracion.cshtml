@@ -5,9 +5,9 @@
 <input type="hidden" id="hdnURL_SubirLogo" value='@Url.Action("_SubirLogo", "Usuario")' />
 <input type="hidden" id="hdnURL_GenerarToken" value='@Url.Action("_GenerarTokenPublico", "Usuario")' />
 <input type="hidden" id="hdnURL_ActualizarInstitucion" value='@Url.Action("_ActualizarInstitucion", "Usuario")' />
-<input type="hidden" id="hdnURL_GuardarCorreo" value='@Url.Action("_GuardarCorreo", "Usuario")' />
 <input type="hidden" id="idConfig" value='@Model.Configuracion.Id' />
 <input type="hidden" id="idInstitucion" value='@Model.Usuario.IdInstitucion' />
+<input type="hidden" id="hdnHorariosAtencion" value='@Html.Raw(ViewBag.HorariosJson ?? "[]")' />
 
 
 
@@ -72,12 +72,20 @@
 														}
 													</select>
 												</div>
+												<div class="col-12" id="divAlertaBloqueHorario" style="display:none">
+													<div class="alert alert-warning py-2 px-3 mb-0" style="font-size:0.83rem">
+														<i class="fas fa-triangle-exclamation me-1"></i>
+														<strong>Atenci&#243;n:</strong> Con este bloque, los siguientes horarios de atenci&#243;n dejan tiempo sin cubrir al final:
+														<ul class="mb-1 mt-1" id="listaHorariosConflicto"></ul>
+														Para aprovechar el tiempo completo, ajusta la hora de t&#233;rmino de esos bloques en <strong>Mi Horario &rsaquo; Bloques de atenci&#243;n</strong>.
+													</div>
+												</div>
 												<div class="col-md-4">
 													<label for="inputTituloProfesional" class="form-label">
 														T&#237;tulo profesional en receta
 														<i class="fas fa-circle-info ms-1 text-muted"
 														   data-bs-toggle="tooltip" data-bs-placement="top"
-														   title="Texto que aparece antes del nombre del profesional en la receta m&#233;dica. Ej: Dr/a., Matr&#243;n/a"
+														   title="Texto que aparece antes del nombre del profesional en receta m&#233;dica. Ej: Dr/a., Matr&#243;n/a"
 														   style="cursor:help;"></i>
 													</label>
 													<input type="text" class="form-control" id="inputTituloProfesional" maxlength="30"
@@ -343,11 +351,6 @@
 													<input type="email" class="form-control" id="inputCorreoConfig" value="@Model.Usuario.Email">
 													<i class="fas fa-envelope icon-input-ficha"></i>
 												</div>
-														<div class="col-md-12" style="margin-top:8px">
-															<button type="button" class="btn btn-blue btn-sm w-100" onclick="ModuloConfiguracionUsuario.GuardarCorreo(this)">
-																<i class="fas fa-save me-1"></i>Guardar correo
-															</button>
-														</div>
 											</form>
 										</div>
 									</div>
