@@ -24,6 +24,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddHostedService<CumpleanosBackgroundService>();
 builder.Services.AddHostedService<ProximoControlBackgroundService>();
+builder.Services.AddHostedService<RecordatorioBackgroundService>();
 
 builder.Services.AddDistributedSqlServerCache(options =>
 {

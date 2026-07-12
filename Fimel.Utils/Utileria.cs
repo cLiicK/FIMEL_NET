@@ -247,6 +247,20 @@ namespace Fimel.Utils
             }
         }
 
+        public static DateTime CalcularProximaFechaRecordatorio(DateTime fechaBase, string? repetirCada)
+        {
+            return repetirCada switch
+            {
+                "Semana" => fechaBase.AddDays(7),
+                "Mensual" => fechaBase.AddMonths(1),
+                "Trimestral" => fechaBase.AddMonths(3),
+                "Anual" => fechaBase.AddYears(1),
+                "3Anios" => fechaBase.AddYears(3),
+                "5Anios" => fechaBase.AddYears(5),
+                _ => fechaBase.AddMonths(1)
+            };
+        }
+
         public void EliminarArchivo(string rutaArchivo)
         {
             try

@@ -179,6 +179,7 @@ var ModuloConsulta = (function () {
 
                             idPacienteConsultaActual = response.Id;
                             ModuloConsulta.CargarExamenesConsulta(response.Id);
+                            ModuloConsulta.CargarRecordatoriosConsulta(response.Id);
 
                             Swal.fire('Paciente encontrado', 'Se cargaron los datos del paciente', 'success')
 
@@ -1098,6 +1099,128 @@ var ModuloConsulta = (function () {
                                 title: 'Error',
                                 text: 'Error al eliminar la plantilla. Por favor intente nuevamente.'
                             });
+                        }
+                    });
+                }
+            });
+        },
+
+        AbrirModalRecordatorio: function () {
+            if (idPacienteConsultaActual <= 0) {
+                Swal.fire('Primero busque un paciente', '', 'warning');
+                return;
+            }
+            $('#inputTituloRecordatorio').val('');
+            $('#inputCuerpoRecordatorio').val('');
+            $('#inputFechaInicioRecordatorio').val('');
+            $('#selectRepetirCadaRecordatorio').val('Mensual');
+
+            const modalElement = document.getElementById('modalRecordatorioManual');
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalElement);
+            }
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(function (backdrop) { backdrop.remove(); });
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }, { once: true });
+            modal.show();
+        },
+
+        GuardarRecordatorioManual: function (btn) {
+            var titulo = $('#inputTituloRecordatorio').val().trim();
+            var cuerpo = $('#inputCuerpoRecordatorio').val().trim();
+            var fechaInicio = $('#inputFechaInicioRecordatorio').val();
+            var repetirCada = $('#selectRepetirCadaRecordatorio').val();
+
+            if (!titulo) { Swal.fire('Ingrese un título', '', 'warning'); return; }
+            if (!cuerpo) { Swal.fire('Ingrese el cuerpo del recordatorio', '', 'warning'); return; }
+            if (!fechaInicio) { Swal.fire('Ingrese la fecha de inicio', '', 'warning'); return; }
+
+            showLoading(btn);
+            $.ajax({
+                url: $('#hdnURL_GuardarRecordatorioManual').val(),
+                method: 'POST',
+                data: {
+                    idPaciente: idPacienteConsultaActual,
+                    titulo: titulo,
+                    cuerpo: cuerpo,
+                    repetirCada: repetirCada,
+                    fechaInicio: fechaInicio
+                },
+                success: function (response) {
+                    closeLoading(btn);
+                    if (response.success) {
+                        const modalElement = document.getElementById('modalRecordatorioManual');
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) modal.hide();
+                        Swal.fire('Recordatorio creado', response.message, 'success');
+                        ModuloConsulta.CargarRecordatoriosConsulta(idPacienteConsultaActual);
+                    } else {
+                        Swal.fire('Error', response.message || 'Error al guardar el recordatorio.', 'error');
+                    }
+                },
+                error: function () {
+                    closeLoading(btn);
+                    Swal.fire('Error', 'Error al guardar el recordatorio.', 'error');
+                }
+            });
+        },
+
+        CargarRecordatoriosConsulta: function (idPaciente) {
+            var etiquetasRepetirCada = {
+                'Semana': 'Semana',
+                'Mensual': 'Mensual',
+                'Trimestral': 'Trimestral',
+                'Anual': 'Anual',
+                '3Anios': 'Cada 3 años',
+                '5Anios': 'Cada 5 años'
+            };
+            $.get($('#hdnURL_ObtenerRecordatorios').val(), { idPaciente: idPaciente }, function (response) {
+                var container = $('#tablaRecordatoriosContainerConsulta');
+                if (!response.success || !response.data || response.data.length === 0) {
+                    container.html('<p class="text-muted small fst-italic mb-0">Sin recordatorios registrados.</p>');
+                    return;
+                }
+                var items = response.data.map(function (r) {
+                    var fecha = r.FechaProximoEnvio ? new Date(r.FechaProximoEnvio) : null;
+                    var fechaStr = fecha
+                        ? ('0' + fecha.getDate()).slice(-2) + '/' + ('0' + (fecha.getMonth() + 1)).slice(-2) + '/' + fecha.getFullYear()
+                        : '';
+                    var etiqueta = etiquetasRepetirCada[r.RepetirCada] || r.RepetirCada || '';
+                    var btnEliminar = '<button class="btn btn-sm" onclick="ModuloConsulta.EliminarRecordatorioConsulta(' + r.Id + ',' + idPaciente + ')" title="Eliminar" style="color:#dc3545;background:#fff5f5;border:1px solid #f5c2c7;"><i class="fas fa-trash-can"></i></button>';
+                    return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
+                        '<i class="fas fa-bell flex-shrink-0" style="color:#0E96CC;font-size:1.2rem;width:20px;text-align:center;"></i>' +
+                        '<div class="flex-grow-1 min-w-0">' +
+                        '<div class="fw-semibold text-dark lh-sm text-truncate" style="font-size:0.9rem;">' + (r.Titulo || '') + '</div>' +
+                        '<div class="text-muted mt-1" style="font-size:0.78rem;">' +
+                        (fechaStr ? '<i class="fas fa-calendar-alt me-1"></i>' + fechaStr + ' &middot; ' : '') +
+                        etiqueta + '</div>' +
+                        '</div>' +
+                        '<div class="d-flex gap-1 flex-shrink-0">' + btnEliminar + '</div>' +
+                        '</div>';
+                }).join('');
+                container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+            });
+        },
+
+        EliminarRecordatorioConsulta: function (id, idPaciente) {
+            Swal.fire({
+                title: '¿Eliminar recordatorio?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    $.post($('#hdnURL_EliminarRecordatorio').val(), { id: id }, function (response) {
+                        if (response.success) {
+                            ModuloConsulta.CargarRecordatoriosConsulta(idPaciente);
+                        } else {
+                            Swal.fire('Error', 'No se pudo eliminar el recordatorio.', 'error');
                         }
                     });
                 }

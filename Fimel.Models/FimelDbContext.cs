@@ -39,6 +39,7 @@ namespace Fimel.Models
         public DbSet<MovimientoFinanciero> MovimientosFinancieros { get; set; }
         public DbSet<CategoriaExamen> CategoriasExamen { get; set; }
         public DbSet<TipoExamen> TiposExamen { get; set; }
+        public DbSet<Recordatorio> Recordatorios { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -80,6 +81,7 @@ namespace Fimel.Models
                 .HasOne(t => t.Categoria)
                 .WithMany(c => c.TiposExamen)
                 .HasForeignKey(t => t.CategoriaExamenId);
+            modelBuilder.Entity<Recordatorio>().ToTable("Recordatorios");
         }
     }
 }
