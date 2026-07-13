@@ -741,7 +741,7 @@ var ModuloConsulta = (function () {
             var nombreDoctor = $('#hdnNombreDoctor').val() || '';
             var tituloProfesional = $('#hdnTituloProfesional').val() || 'Matrón/a';
             var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
-            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim();
+            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim();
             var tipoDoc = $('#comboTipoDocumento').val();
             var rutPaciente;
             if (tipoDoc === 'RUT') {
@@ -814,7 +814,7 @@ var ModuloConsulta = (function () {
                 method: 'POST',
                 data: {
                     emailPaciente: email,
-                    nombrePaciente: ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim(),
+                    nombrePaciente: ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim(),
                     rutPaciente: $('#hiddenRutPaciente').val() || $('#hiddenNumDocumento').val() || '',
                     edadPaciente: $('#inputEdad').val() || '',
                     fechaConsulta: $('#inputFechaConsulta').val(),
@@ -890,7 +890,7 @@ var ModuloConsulta = (function () {
             var nombreDoctor = $('#hdnNombreDoctor').val() || '';
             var tituloProfesional = $('#hdnTituloProfesional').val() || 'Matrón/a';
             var nombreInstitucion = $('#hdnNombreInstitucion').val() || 'FIMEL';
-            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim();
+            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim();
             var tipoDoc = $('#comboTipoDocumento').val();
             var rutPaciente;
             if (tipoDoc === 'RUT') {
