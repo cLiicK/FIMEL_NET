@@ -1172,7 +1172,7 @@ var ModuloConsulta = (function () {
 
         CargarRecordatoriosConsulta: function (idPaciente) {
             var etiquetasRepetirCada = {
-                'Semana': 'Semana',
+                'Semana': 'Cada semana',
                 'Mensual': 'Mensual',
                 'Trimestral': 'Trimestral',
                 'Anual': 'Anual',
@@ -1191,19 +1191,24 @@ var ModuloConsulta = (function () {
                         ? ('0' + fecha.getDate()).slice(-2) + '/' + ('0' + (fecha.getMonth() + 1)).slice(-2) + '/' + fecha.getFullYear()
                         : '';
                     var etiqueta = etiquetasRepetirCada[r.RepetirCada] || r.RepetirCada || '';
+                    var cuerpoEsc = (r.Cuerpo || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     var btnEliminar = '<button class="btn btn-sm" onclick="ModuloConsulta.EliminarRecordatorioConsulta(' + r.Id + ',' + idPaciente + ')" title="Eliminar" style="color:#dc3545;background:#fff5f5;border:1px solid #f5c2c7;"><i class="fas fa-trash-can"></i></button>';
-                    return '<div class="d-flex align-items-center gap-2 px-3 py-2 mb-1 rounded border bg-white">' +
-                        '<i class="fas fa-bell flex-shrink-0" style="color:#0E96CC;font-size:1.2rem;width:20px;text-align:center;"></i>' +
+                    return '<div class="px-3 py-2 mb-1 rounded border bg-white">' +
+                        '<div class="d-flex align-items-start gap-2">' +
+                        '<i class="fas fa-bell flex-shrink-0 mt-1" style="color:#0E96CC;font-size:1rem;width:18px;text-align:center;"></i>' +
                         '<div class="flex-grow-1 min-w-0">' +
-                        '<div class="fw-semibold text-dark lh-sm text-truncate" style="font-size:0.9rem;">' + (r.Titulo || '') + '</div>' +
-                        '<div class="text-muted mt-1" style="font-size:0.78rem;">' +
-                        (fechaStr ? '<i class="fas fa-calendar-alt me-1"></i>' + fechaStr + ' &middot; ' : '') +
-                        etiqueta + '</div>' +
+                        '<div class="fw-semibold text-dark lh-sm" style="font-size:0.88rem;">' + (r.Titulo || '') + '</div>' +
+                        (cuerpoEsc ? '<div class="text-secondary mt-1" style="font-size:0.82rem;white-space:pre-line;">' + cuerpoEsc + '</div>' : '') +
+                        '<div class="text-muted mt-1" style="font-size:0.75rem;">' +
+                        '<i class="fas fa-rotate me-1"></i>' + etiqueta +
+                        (fechaStr ? ' &middot; pr&oacute;ximo env&iacute;o: <strong>' + fechaStr + '</strong>' : '') +
                         '</div>' +
-                        '<div class="d-flex gap-1 flex-shrink-0">' + btnEliminar + '</div>' +
+                        '</div>' +
+                        '<div class="flex-shrink-0">' + btnEliminar + '</div>' +
+                        '</div>' +
                         '</div>';
                 }).join('');
-                container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+                container.html('<div style="background:#fafafa;">' + items + '</div>');
             });
         },
 

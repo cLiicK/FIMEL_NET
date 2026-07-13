@@ -503,7 +503,7 @@ namespace Fimel.Site.Controllers
                     PrimerApellido = cita.ApellidoPaciente,
                     SegundoApellido = cita.SegundoApellidoPaciente,
                     Email = cita.CorreoPaciente,
-                    Celular = int.TryParse(new string(cita.Telefono?.Where(char.IsDigit).ToArray()), out int tel) ? tel : null,
+                    Celular = ParsearCelular(cita.Telefono),
                     TipoDocumento = cita.TipoDocumento,
                     NumeroDocumento = cita.NumeroDocumento,
                     UsuarioCreacion = idUsuario
@@ -521,6 +521,15 @@ namespace Fimel.Site.Controllers
             {
                 Logger.Log($"Error al crear paciente desde cita: {ex}");
             }
+        }
+
+        private static int? ParsearCelular(string? telefono)
+        {
+            if (string.IsNullOrWhiteSpace(telefono)) return null;
+            var digits = new string(telefono.Where(char.IsDigit).ToArray());
+            if (digits.Length > 9 && digits.StartsWith("56"))
+                digits = digits.Substring(2);
+            return int.TryParse(digits, out int cel) ? cel : null;
         }
 
         private static string CalcularDvRut(int rut)

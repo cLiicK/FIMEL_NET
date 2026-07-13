@@ -434,12 +434,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
-                                                    <label for="" class="form-label">Fecha Proximo Control</label>
-                                                    <input type="date" class="form-control" id="inputFechaProximoControl" maxlength="10">
-                                                </div>
-                                                <div class="col-md-3">
                                                     <label for="" class="form-label">Fecha Consulta</label>
                                                     <input type="date" class="form-control" id="inputFechaConsulta" maxlength="10">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="" class="form-label">Fecha Pr&#243;ximo Control</label>
+                                                    <input type="date" class="form-control" id="inputFechaProximoControl" maxlength="10">
+                                                </div>
+                                                <div class="col-md-auto d-flex align-items-end">
+                                                    <button type="button" class="btn btn-outline-primary" id="btnAbrirModalRecordatorio" onclick="ModuloConsulta.AbrirModalRecordatorio()">
+                                                        <i class="fas fa-bell me-1"></i> Crear Recordatorio Manual
+                                                    </button>
                                                 </div>
                                             </form>
                                         </div>
@@ -450,11 +455,6 @@
                             <div class="text-center mt-4">
                                 <button class="btn btn-blue" id="btnGuardarConsulta" onclick="ModuloConsulta.GrabarConsulta(this)" disabled>
                                     Guardar Consulta
-                                </button>
-                            </div>
-                            <div class="text-center mt-2">
-                                <button type="button" class="btn btn-outline-primary" id="btnAbrirModalRecordatorio" onclick="ModuloConsulta.AbrirModalRecordatorio()">
-                                    <i class="fas fa-bell me-1"></i> Crear Recordatorio Manual
                                 </button>
                             </div>
 
