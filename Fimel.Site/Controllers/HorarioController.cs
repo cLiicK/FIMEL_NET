@@ -1,4 +1,5 @@
 ﻿using Fimel.Models;
+using Fimel.Models.Extensions;
 using Fimel.Models.Integraciones;
 using Fimel.Site.ViewModels;
 using Fimel.Utils;
@@ -35,7 +36,7 @@ namespace Fimel.Site.Controllers
 
             vm.ConfiguracionUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuario.Id}");
 
-            if (usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+            if (usuario.TienePerfil(EnumPerfiles.Administrativo))
             {
                 List<Usuarios> listaUsuarios = APIBase.Get<List<Usuarios>>($"Usuarios/GetByInstitucion/{usuario.IdInstitucion}");
                 vm.ListaUsuarios = listaUsuarios.Where(t => t.IdPerfil == (int)EnumPerfiles.Especialista).Select(u => new UsuarioVM
@@ -46,7 +47,7 @@ namespace Fimel.Site.Controllers
             }
 
             // Pasar el perfil del usuario a la vista
-            ViewBag.IdPerfilUsuario = usuario.IdPerfil;
+            ViewBag.EsEspecialista = usuario.TienePerfil(EnumPerfiles.Especialista);
 
             HttpContext.Session.SetString("HorarioUser", JsonSerializer.Serialize(vm.HorariosAtencion));
 
@@ -59,7 +60,7 @@ namespace Fimel.Site.Controllers
 
             // Determinar de qué usuario obtener las citas
             int idUsuarioFinal;
-            if (idUsuario.HasValue && usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+            if (idUsuario.HasValue && usuario.TienePerfil(EnumPerfiles.Administrativo))
             {
                 // Si es administrativo y se especifica un usuario, usar ese
                 idUsuarioFinal = idUsuario.Value;
@@ -155,7 +156,7 @@ namespace Fimel.Site.Controllers
 
                 // Determinar para qué usuario se crea el bloque de horario
                 int idUsuarioFinal;
-                if (idUsuarioDestino.HasValue && usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+                if (idUsuarioDestino.HasValue && usuario.TienePerfil(EnumPerfiles.Administrativo))
                 {
                     // Si es administrativo y se especifica un usuario destino, usar ese
                     idUsuarioFinal = idUsuarioDestino.Value;
@@ -212,7 +213,7 @@ namespace Fimel.Site.Controllers
 
                 // Determinar para qué usuario se crea el horario específico
                 int idUsuarioFinal;
-                if (idUsuarioDestino.HasValue && usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+                if (idUsuarioDestino.HasValue && usuario.TienePerfil(EnumPerfiles.Administrativo))
                 {
                     // Si es administrativo y se especifica un usuario destino, usar ese
                     idUsuarioFinal = idUsuarioDestino.Value;
@@ -295,7 +296,7 @@ namespace Fimel.Site.Controllers
 
                 // Determinar para qué usuario se crea la cita
                 int idUsuarioFinal;
-                if (idUsuarioDestino.HasValue && usuario.IdPerfil == (int)EnumPerfiles.Administrativo)
+                if (idUsuarioDestino.HasValue && usuario.TienePerfil(EnumPerfiles.Administrativo))
                 {
                     // Si es administrativo y se especifica un usuario destino, usar ese
                     idUsuarioFinal = idUsuarioDestino.Value;

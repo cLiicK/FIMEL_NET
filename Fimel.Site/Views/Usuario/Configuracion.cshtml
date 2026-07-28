@@ -201,8 +201,7 @@
 								</div> *@
 							</div>
 
-							@if (Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Especialista ||
-								 Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Administrador)
+							@if (Model.Usuario.TieneAlgunPerfil(EnumPerfiles.Especialista, EnumPerfiles.Administrador))
 							{
 								string? urlPublica = ViewBag.UrlPublica as string;
 								string? urlAgendaPublica = ViewBag.UrlAgendaPublica as string;

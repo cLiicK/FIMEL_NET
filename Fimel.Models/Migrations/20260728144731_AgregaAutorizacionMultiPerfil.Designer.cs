@@ -4,6 +4,7 @@ using Fimel.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Fimel.Models.Migrations
 {
     [DbContext(typeof(FimelDbContext))]
-    partial class FimelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728144731_AgregaAutorizacionMultiPerfil")]
+    partial class AgregaAutorizacionMultiPerfil
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -331,9 +334,6 @@ namespace Fimel.Models.Migrations
 
                     b.Property<string>("TipoConsulta")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TipoConsultaId")
-                        .HasColumnType("int");
 
                     b.Property<int?>("UsuarioCreacion")
                         .HasColumnType("int");
@@ -1077,32 +1077,6 @@ namespace Fimel.Models.Migrations
                         {
                             t.ExcludeFromMigrations();
                         });
-                });
-
-            modelBuilder.Entity("Fimel.Models.TipoConsulta", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("FechaCreacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Orden")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Vigente")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TipoConsulta", (string)null);
                 });
 
             modelBuilder.Entity("Fimel.Models.TipoExamen", b =>

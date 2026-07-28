@@ -37,6 +37,24 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpPost]
+        public IActionResult Post(Instituciones institucion)
+        {
+            try
+            {
+                institucion.Vigente = "S";
+                institucion.FechaCreacion = DateTime.Now;
+                db.Instituciones.Add(institucion);
+                db.SaveChanges();
+                return Ok(institucion);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error POST Institucion: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpPut("{id}")]
         public IActionResult Put(int id, Instituciones institucion)
         {

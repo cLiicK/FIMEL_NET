@@ -27,6 +27,9 @@
 <input type="hidden" id="hdnRecetaJson" value="@(Model.Consulta.Receta ?? "")" />
 <input type="hidden" id="hdnURL_GetSugerenciasExamen" value='@Url.Action("GetSugerencias", "Examenes")' />
 <input type="hidden" id="hdnOrdenExamenesJson" value="@(Model.Consulta.OrdenExamenes ?? "")" />
+<input type="hidden" id="hdnURL_GetTiposConsulta" value='@Url.Action("GetTiposConsulta", "Consulta")' />
+<input type="hidden" id="hdnTipoConsultaId" value="@Model.Consulta.TipoConsultaId" />
+<input type="hidden" id="hdnTipoConsultaTexto" value="@Model.Consulta.TipoConsulta" />
 
 <style>
     #accordionFicha-nuevaConsulta-head .accordion-button {
@@ -156,24 +159,9 @@
                                             <div class="col-md-3">
                                                 <label for="" class="form-label">Tipo de consulta</label>
 
-                                                @Html.DropDownListFor(model => model.Consulta.TipoConsulta,
-                                                new List<SelectListItem>
-                                                {
-                                                    new SelectListItem { Value = "Regulacion Fecundidad", Text = "Regulación Fecundidad" },
-                                                    new SelectListItem { Value = "Control Ginecologico", Text = "Control Ginecológico" },
-                                                    new SelectListItem { Value = "Consulta Ginecologica", Text = "Consulta Ginecológica" },
-                                                    new SelectListItem { Value = "Control Adolescente", Text = "Control Adolescente" },
-                                                    new SelectListItem { Value = "Control Prenatal", Text = "Control Prenatal" },
-                                                    new SelectListItem { Value = "Lactancia Materna", Text = "Lactancia Materna" },
-                                                    new SelectListItem { Value = "Menopausia y Climaterio", Text = "Menopausia y Climaterio" },
-                                                    new SelectListItem { Value = "Otra Consejeria", Text = "Otra Consejería" },
-                                                    new SelectListItem { Value = "Ecografia", Text = "Ecografía" },
-                                                    new SelectListItem { Value = "HIFU", Text = "HIFU" },
-                                                    new SelectListItem { Value = "Piso Pélvico", Text = "Piso Pélvico" },
-                                                    new SelectListItem { Value = "Otros", Text = "Otros" }
-                                                },
-                                                    new { @class = "form-control", disabled = "disabled" }  // aquí puedes agregar atributos HTML extra
-                                                )
+                                                <select class="form-control" id="Consulta_TipoConsulta" name="Consulta.TipoConsulta" disabled>
+                                                    <option value="">Seleccione...</option>
+                                                </select>
 
                                             </div>
                                             <div class="col-md-2">
@@ -267,7 +255,8 @@
                                 </div>
                             </div>
                         </div>
-
+                        <br />
+                        <br />
                         <div class="text-center mt-4 div-flotante-centro">
                             <button class="btn btn-blue" id="btnEditarConsulta">Editar Consulta</button>
                             <button class="btn btn-blue" id="btnGuardarEdicion" onclick="ModuloHistorialConsultas.ActualizarConsulta(this)">Guardar Cambios</button>

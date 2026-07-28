@@ -1,4 +1,5 @@
 using Fimel.Models;
+using Fimel.Models.Extensions;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
 using static Fimel.Models.Enums;
@@ -27,8 +28,8 @@ namespace Fimel.Site.Controllers
             if (usuario == null) return RedirectToAction("Index", "Login");
 
             bool esSuperAdmin = usuario.IdInstitucion == null;
-            bool esAdmin = !esSuperAdmin && usuario.IdPerfil == (int)EnumPerfiles.Administrador;
-            bool esEspecialista = usuario.IdPerfil == (int)EnumPerfiles.Especialista;
+            bool esAdmin = !esSuperAdmin && usuario.TienePerfil(EnumPerfiles.Administrador);
+            bool esEspecialista = usuario.TienePerfil(EnumPerfiles.Especialista);
 
             ViewBag.UsuarioId = usuario.Id;
             ViewBag.InstitucionId = usuario.IdInstitucion;
@@ -57,7 +58,7 @@ namespace Fimel.Site.Controllers
 
             bool esSuperAdmin = usuario.IdInstitucion == null;
 
-            if (!esSuperAdmin && usuario.IdPerfil == (int)EnumPerfiles.Especialista)
+            if (!esSuperAdmin && usuario.TienePerfil(EnumPerfiles.Especialista))
                 return RedirectToAction("Index");
 
             ViewBag.EsSuperAdmin = esSuperAdmin;
@@ -89,7 +90,7 @@ namespace Fimel.Site.Controllers
             try
             {
                 bool esSuperAdmin = usuario.IdInstitucion == null;
-                bool esEspecialista = usuario.IdPerfil == (int)EnumPerfiles.Especialista;
+                bool esEspecialista = usuario.TienePerfil(EnumPerfiles.Especialista);
 
                 // Aplicar restricciones según rol
                 if (!esSuperAdmin)

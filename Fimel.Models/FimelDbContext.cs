@@ -40,6 +40,10 @@ namespace Fimel.Models
         public DbSet<CategoriaExamen> CategoriasExamen { get; set; }
         public DbSet<TipoExamen> TiposExamen { get; set; }
         public DbSet<Recordatorio> Recordatorios { get; set; }
+        public DbSet<Modulos> Modulos { get; set; }
+        public DbSet<ModuloPerfil> ModuloPerfil { get; set; }
+        public DbSet<UsuarioPerfil> UsuarioPerfil { get; set; }
+        public DbSet<TipoConsulta> TiposConsulta { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -82,6 +86,33 @@ namespace Fimel.Models
                 .WithMany(c => c.TiposExamen)
                 .HasForeignKey(t => t.CategoriaExamenId);
             modelBuilder.Entity<Recordatorio>().ToTable("Recordatorios");
+
+            modelBuilder.Entity<Modulos>().ToTable("Modulos");
+
+            modelBuilder.Entity<ModuloPerfil>().ToTable("ModuloPerfil");
+            modelBuilder.Entity<ModuloPerfil>()
+                .HasOne(mp => mp.Modulo)
+                .WithMany()
+                .HasForeignKey(mp => mp.ModuloId);
+            modelBuilder.Entity<ModuloPerfil>()
+                .HasOne(mp => mp.Perfil)
+                .WithMany()
+                .HasForeignKey(mp => mp.PerfilId)
+                .HasPrincipalKey(p => p.Id);
+
+            modelBuilder.Entity<UsuarioPerfil>().ToTable("UsuarioPerfil");
+            modelBuilder.Entity<UsuarioPerfil>()
+                .HasOne(up => up.Usuario)
+                .WithMany()
+                .HasForeignKey(up => up.UsuarioId)
+                .HasPrincipalKey(u => u.Id);
+            modelBuilder.Entity<UsuarioPerfil>()
+                .HasOne(up => up.Perfil)
+                .WithMany()
+                .HasForeignKey(up => up.PerfilId)
+                .HasPrincipalKey(p => p.Id);
+
+            modelBuilder.Entity<TipoConsulta>().ToTable("TipoConsulta");
         }
     }
 }

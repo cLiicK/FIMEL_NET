@@ -1,0 +1,121 @@
+@{
+    ViewBag.Title = "Administración - Usuarios";
+}
+
+<input type="hidden" id="hdnURL_ObtenerUsuarios" value='@Url.Action("_ObtenerUsuarios", "Administracion")' />
+<input type="hidden" id="hdnURL_GuardarUsuario" value='@Url.Action("_GuardarUsuario", "Administracion")' />
+<input type="hidden" id="hdnURL_AsignarPerfil" value='@Url.Action("_AsignarPerfil", "Administracion")' />
+<input type="hidden" id="hdnURL_QuitarPerfil" value='@Url.Action("_QuitarPerfil", "Administracion")' />
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="colorfimel-blue">Usuarios</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-3">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-blue btn-sm" onclick="ModuloAdminUsuarios.AbrirModalUsuario()">
+                <i class="fas fa-plus me-1"></i>Nuevo Usuario
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Institución</th>
+                        <th>Perfiles</th>
+                        <th class="text-end" style="width:70px"></th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyUsuarios">
+                    <tr><td colspan="6" class="text-center text-muted py-3">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NUEVO USUARIO -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="usrNombres" maxlength="100">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Apellido paterno</label>
+                        <input type="text" class="form-control" id="usrApellidoPaterno" maxlength="50">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Apellido materno</label>
+                        <input type="text" class="form-control" id="usrApellidoMaterno" maxlength="50">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre de usuario <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="usrUsuario" maxlength="50">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="usrEmail" maxlength="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Institución</label>
+                        <select class="form-select" id="usrInstitucion">
+                            <option value="">Sin institución (SuperAdmin)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Perfiles <span class="text-danger">*</span></label>
+                        <div id="usrPerfiles" class="d-flex flex-wrap gap-3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue" onclick="ModuloAdminUsuarios.GuardarUsuario(this)">
+                    <i class="fas fa-save me-1"></i>Crear Usuario
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PERFILES DE USUARIO -->
+<div class="modal fade" id="modalPerfilesUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Perfiles de <span id="lblNombreUsuarioPerfiles"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="perfilesUsuarioCheckboxes" class="d-flex flex-column gap-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/Site/Administracion_Usuarios.js?v=1.0" type="text/javascript"></script>
+}

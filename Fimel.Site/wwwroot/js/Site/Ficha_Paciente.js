@@ -604,6 +604,15 @@ var ModuloFichaPaciente = (function () {
                 $('#accordionFicha-antecedentesGine-head .accordion-button').prop('disabled', true).addClass('disabled-visual');;
 
                 $('a[name="linkConsultasAnteriores"]').hide();
+
+                $('#accordionFicha-examenes').collapse('hide');
+                $('#accordionFicha-examenes-head .accordion-button').prop('disabled', true).addClass('disabled-visual');
+
+                $('#accordionExamenLateral-body').collapse('hide');
+                $('#accordionExamenLateral .accordion-button').prop('disabled', true).addClass('disabled-visual');
+
+                $('#accordionFicha-recordatorios').collapse('hide');
+                $('#accordionRecordatoriosLateral .accordion-button').prop('disabled', true).addClass('disabled-visual');
             }
 
         },

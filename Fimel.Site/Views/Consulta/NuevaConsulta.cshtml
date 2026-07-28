@@ -12,7 +12,9 @@
 <input type="hidden" id="hdnURL_EliminarExamen" value='@Url.Action("EliminarExamen", "Pacientes")' />
 <input type="hidden" id="hdnURL_DescargarExamen" value='@Url.Action("DescargarExamen", "Pacientes")' />
 <input type="hidden" id="hdnURL_EnviarReceta" value='@Url.Action("EnviarReceta", "Consulta")' />
+<input type="hidden" id="hdnURL_EnviarOrdenExamenes" value='@Url.Action("EnviarOrdenExamenes", "Consulta")' />
 <input type="hidden" id="hdnURL_GetSugerenciasExamen" value='@Url.Action("GetSugerencias", "Examenes")' />
+<input type="hidden" id="hdnURL_GetTiposConsulta" value='@Url.Action("GetTiposConsulta", "Consulta")' />
 <input type="hidden" id="hdnURL_ObtenerRecordatorios" value='@Url.Action("ObtenerRecordatorios", "Pacientes")' />
 <input type="hidden" id="hdnURL_GuardarRecordatorioManual" value='@Url.Action("GuardarRecordatorioManual", "Pacientes")' />
 <input type="hidden" id="hdnURL_EliminarRecordatorio" value='@Url.Action("EliminarRecordatorio", "Pacientes")' />
@@ -311,18 +313,6 @@
                                                     <label for="" class="form-label">Tipo de consulta</label>
                                                     <select class="form-select" id="comboTipoConsulta">
                                                         <option value="" selected="selected">Seleccione...</option>
-                                                        <option value="Regulacion Fecundidad">Regulación Fecundidad</option>
-                                                        <option value="Control Ginecologico">Control Ginecológico</option>
-                                                        <option value="Consulta Ginecologica">Consulta Ginecológica</option>
-                                                        <option value="Control Adolescente">Control Adolescente</option>
-                                                        <option value="Control Prenatal">Control Prenatal</option>
-                                                        <option value="Lactancia Materna">Lactancia Materna</option>
-                                                        <option value="Menopausia y Climaterio">Menopausia y Climaterio</option>
-                                                        <option value="Otra Consejeria">Otra Consejeria</option>
-                                                        <option value="Ecografia">Ecografía</option>
-                                                        <option value="Ecografia">HIFU</option>
-                                                        <option value="Ecografia">Piso Pélvico</option>
-                                                        <option value="Otros">Otros</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-md-2">
@@ -404,8 +394,9 @@
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-12">
+                                                <div class="col-md-12 position-relative">
                                                     <label class="form-label fw-semibold">Orden de Exámenes</label>
+                                                    <i class="fas fa-flask-vial position-absolute top-0 end-0 me-2 mt-2" style="cursor: pointer; z-index: 10; color: #0d6efd; font-size: 1.1rem;" onmouseover="this.style.color='#0a58ca'" onmouseout="this.style.color='#0d6efd'" onclick="ModuloConsulta.AbrirModalBateriasExamenes()" title="Baterías de Exámenes"></i>
                                                     <div class="p-3 rounded border mb-2" style="background:#f0f9ff;">
                                                         <p class="small text-secondary mb-2 fw-semibold"><i class="fas fa-flask me-1" style="color:#0E96CC;"></i> Agregar examen</p>
                                                         <div class="row g-2 align-items-end">
@@ -431,6 +422,9 @@
                                                         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ModuloConsulta.ImprimirOrdenExamenes()">
                                                             <i class="fas fa-print me-1"></i>Imprimir Orden
                                                         </button>
+                                                        <button type="button" class="btn btn-sm" style="background:#e8f4fa;color:#0E96CC;border:1px solid #b8dff0;" onclick="ModuloConsulta.EnviarOrdenExamenesCorreo(this)">
+                                                            <i class="fas fa-envelope me-1"></i>Enviar por Correo
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
@@ -440,11 +434,6 @@
                                                 <div class="col-md-3">
                                                     <label for="" class="form-label">Fecha Pr&#243;ximo Control</label>
                                                     <input type="date" class="form-control" id="inputFechaProximoControl" maxlength="10">
-                                                </div>
-                                                <div class="col-md-auto d-flex align-items-end">
-                                                    <button type="button" class="btn btn-outline-primary" id="btnAbrirModalRecordatorio" onclick="ModuloConsulta.AbrirModalRecordatorio()">
-                                                        <i class="fas fa-bell me-1"></i> Crear Recordatorio Manual
-                                                    </button>
                                                 </div>
                                             </form>
                                         </div>
@@ -530,6 +519,11 @@
                                     </h2>
                                     <div id="accordionFicha-recordatoriosConsulta" class="accordion-collapse collapse">
                                         <div class="accordion-body p-2">
+                                            <div class="text-end mb-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="ModuloConsulta.AbrirModalRecordatorio()">
+                                                    <i class="fas fa-bell me-1"></i> Crear Recordatorio Manual
+                                                </button>
+                                            </div>
                                             <div id="tablaRecordatoriosContainerConsulta">
                                                 <p class="text-muted small fst-italic mb-0">Sin recordatorios registrados.</p>
                                             </div>
@@ -589,6 +583,66 @@
         </div>
     </div>
 
+    <!-- Modal Baterías de Exámenes -->
+    <div class="modal fade" id="modalBateriasExamenes" tabindex="-1" aria-labelledby="modalBateriasExamenesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalBateriasExamenesLabel">Baterías de Exámenes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="contenedorBaterias" class="list-group">
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Formulario para crear/editar batería -->
+                    <div id="formularioNuevaBateria" style="display: none;">
+                        <hr>
+                        <h6 class="mb-3" id="tituloFormularioBateria">Crear Nueva Batería</h6>
+                        <input type="hidden" id="inputIdBateriaEditar" value="">
+                        <div class="mb-3">
+                            <label for="inputTituloBateria" class="form-label">Título</label>
+                            <input type="text" class="form-control" id="inputTituloBateria" placeholder="Ej: Perfil Bioquímico">
+                        </div>
+                        <div class="p-3 rounded border mb-2" style="background:#f0f9ff;">
+                            <p class="small text-secondary mb-2 fw-semibold"><i class="fas fa-flask me-1" style="color:#0E96CC;"></i> Agregar examen</p>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-7">
+                                    <label class="form-label small mb-1 text-muted">Examen</label>
+                                    <input type="text" class="form-control form-control-sm" id="inputExamenBateria" placeholder="Ej: Hemograma completo">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-1 text-muted">Indicaciones (opcional)</label>
+                                    <input type="text" class="form-control form-control-sm" id="inputIndicacionesBateria" placeholder="Ej: Ayuno de 8 horas">
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-blue btn-sm w-100" onclick="ModuloConsulta.AgregarExamenBateria()" title="Agregar examen">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="listaExamenesBateria" class="mb-3">
+                            <p class="text-muted small fst-italic mb-0">Sin exámenes agregados.</p>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" onclick="ModuloConsulta.CancelarCrearBateria()">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="btnGuardarBateria" onclick="ModuloConsulta.GuardarNuevaBateria()">Guardar Batería</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btnMostrarFormularioBateria" style="display: none;" onclick="ModuloConsulta.MostrarFormularioCrearBateria()">Crear Nueva Batería</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Recordatorio Manual -->
     <div class="modal fade" id="modalRecordatorioManual" tabindex="-1" aria-labelledby="modalRecordatorioManualLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -606,20 +660,22 @@
                         <label for="inputCuerpoRecordatorio" class="form-label">Cuerpo</label>
                         <textarea class="form-control" id="inputCuerpoRecordatorio" rows="5"></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label for="inputFechaInicioRecordatorio" class="form-label">Fecha de inicio</label>
-                        <input type="date" class="form-control" id="inputFechaInicioRecordatorio">
-                    </div>
-                    <div class="mb-3">
-                        <label for="selectRepetirCadaRecordatorio" class="form-label">Repetir cada</label>
-                        <select class="form-select" id="selectRepetirCadaRecordatorio">
-                            <option value="Semana">Semana</option>
-                            <option value="Mensual" selected>Mensual</option>
-                            <option value="Trimestral">Trimestral</option>
-                            <option value="Anual">Anual</option>
-                            <option value="3Anios">Cada 3 años</option>
-                            <option value="5Anios">Cada 5 años</option>
-                        </select>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="inputFechaInicioRecordatorio" class="form-label">Fecha de inicio</label>
+                            <input type="date" class="form-control" id="inputFechaInicioRecordatorio">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="selectRepetirCadaRecordatorio" class="form-label">Repetir cada</label>
+                            <select class="form-select" id="selectRepetirCadaRecordatorio">
+                                <option value="Semana">Semana</option>
+                                <option value="Mensual" selected>Mensual</option>
+                                <option value="Trimestral">Trimestral</option>
+                                <option value="Anual">Anual</option>
+                                <option value="3Anios">Cada 3 años</option>
+                                <option value="5Anios">Cada 5 años</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

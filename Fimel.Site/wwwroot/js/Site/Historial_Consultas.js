@@ -170,8 +170,8 @@ var ModuloHistorialConsultas = (function () {
                 $('#panelAgregarExamenDetalle').show();
             }
             RenderizarOrdenExamenesDetalle(bool);
-            //$('#inputFechaProximoControl').prop('disabled', bool);
-            //$('#inputFechaConsulta').prop('disabled', bool);
+            $('#inputFechaProximoControl').prop('disabled', bool);
+            $('#inputFechaConsulta').prop('disabled', bool);
             //$('#inputReceta').prop('disabled', bool);
             if (bool) {
                 $('.btn-plantilla-detalle').addClass('d-none');
@@ -232,7 +232,8 @@ var ModuloHistorialConsultas = (function () {
                 Swal.fire('Ingrese el Tipo de Consulta', '', 'warning');
                 return null;
             }
-            objDatosConsulta["TipoConsulta"] = $('#Consulta_TipoConsulta option:selected').val();
+            objDatosConsulta["TipoConsultaId"] = $('#Consulta_TipoConsulta').val() || null;
+            objDatosConsulta["TipoConsulta"] = $('#Consulta_TipoConsulta option:selected').text();
             objDatosConsulta["Peso"] = $("#inputPeso").val() || null;
             objDatosConsulta["Talla"] = $("#inputTalla").val() || null;
             objDatosConsulta["IMC"] = $("#inputIMC").val() || null;
@@ -577,6 +578,30 @@ $(function () {
             try { ordenExamenesDetalle = JSON.parse(rawOrden); } catch (e) { ordenExamenesDetalle = []; }
         }
         RenderizarOrdenExamenesDetalle(true);
+    }
+
+    if ($('#Consulta_TipoConsulta').length) {
+        var urlTiposConsulta = $('#hdnURL_GetTiposConsulta').val();
+        if (urlTiposConsulta) {
+            $.ajax({
+                url: urlTiposConsulta, method: 'GET',
+                success: function (r) {
+                    if (!r.success || !r.data) return;
+                    var $combo = $('#Consulta_TipoConsulta');
+                    var idActual = $('#hdnTipoConsultaId').val();
+                    var textoActual = $('#hdnTipoConsultaTexto').val();
+                    r.data.forEach(function (t) {
+                        $combo.append('<option value="' + t.Id + '">' + t.Nombre + '</option>');
+                    });
+                    if (idActual) {
+                        $combo.val(idActual);
+                    } else if (textoActual) {
+                        // Consulta antigua sin TipoConsultaId: intenta calzar por texto exacto
+                        $combo.find('option').filter(function () { return $(this).text() === textoActual; }).prop('selected', true);
+                    }
+                }
+            });
+        }
     }
 
     var urlSugDet = $('#hdnURL_GetSugerenciasExamen').val();

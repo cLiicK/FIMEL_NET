@@ -91,7 +91,7 @@
                 <p><strong>Nota</strong> <input class="form-control" id="notaCita" disabled /></p>
             </div>
             <div class="modal-footer">
-                @if (ViewBag.IdPerfilUsuario == (int)Fimel.Models.Enums.EnumPerfiles.Especialista)
+                @if (ViewBag.EsEspecialista == true)
                 {
                     <button class="btn btn-success" id="btnIniciarCitaModal" onclick="ModuloHorarioCita.IniciarCitaModal()">Iniciar Cita</button>
                 }

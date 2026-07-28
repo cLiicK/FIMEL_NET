@@ -294,25 +294,6 @@
                                     </div>
                                 </div>
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="accordionFicha-recordatorios-head">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-recordatorios" aria-expanded="false" aria-controls="accordionFicha-recordatorios">
-                                            Recordatorios
-                                        </button>
-                                    </h2>
-                                    <div id="accordionFicha-recordatorios" class="accordion-collapse collapse" aria-labelledby="accordionFicha-recordatorios-head">
-                                        <div class="accordion-body p-2">
-                                            <div class="text-end mb-2">
-                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="ModuloFichaPaciente.AbrirModalRecordatorio()">
-                                                    <i class="fas fa-bell me-1"></i> Crear Recordatorio Manual
-                                                </button>
-                                            </div>
-                                            <div id="tablaRecordatoriosContainer">
-                                                <p class="text-muted" style="font-size:0.85rem">Sin recordatorios registrados.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
                                     <h2 class="accordion-header" id="accordionFicha-historial-head">
                                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-historial" aria-expanded="true" aria-controls="accordionFicha-historial">
                                             Historial
@@ -436,6 +417,28 @@
                                 </div>
                             </div>
 
+                            <div class="accordion mt-2" id="accordionRecordatoriosLateral">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-recordatorios" aria-expanded="false">
+                                            Recordatorios
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-recordatorios" class="accordion-collapse collapse">
+                                        <div class="accordion-body p-2">
+                                            <div class="text-end mb-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="ModuloFichaPaciente.AbrirModalRecordatorio()">
+                                                    <i class="fas fa-bell me-1"></i> Crear Recordatorio Manual
+                                                </button>
+                                            </div>
+                                            <div id="tablaRecordatoriosContainer">
+                                                <p class="text-muted small fst-italic mb-0">Sin recordatorios registrados.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -463,20 +466,22 @@
                         <label for="inputCuerpoRecordatorio" class="form-label">Cuerpo</label>
                         <textarea class="form-control" id="inputCuerpoRecordatorio" rows="5"></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label for="inputFechaInicioRecordatorio" class="form-label">Fecha de inicio</label>
-                        <input type="date" class="form-control" id="inputFechaInicioRecordatorio">
-                    </div>
-                    <div class="mb-3">
-                        <label for="selectRepetirCadaRecordatorio" class="form-label">Repetir cada</label>
-                        <select class="form-select" id="selectRepetirCadaRecordatorio">
-                            <option value="Semana">Semana</option>
-                            <option value="Mensual" selected>Mensual</option>
-                            <option value="Trimestral">Trimestral</option>
-                            <option value="Anual">Anual</option>
-                            <option value="3Anios">Cada 3 años</option>
-                            <option value="5Anios">Cada 5 años</option>
-                        </select>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="inputFechaInicioRecordatorio" class="form-label">Fecha de inicio</label>
+                            <input type="date" class="form-control" id="inputFechaInicioRecordatorio">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="selectRepetirCadaRecordatorio" class="form-label">Repetir cada</label>
+                            <select class="form-select" id="selectRepetirCadaRecordatorio">
+                                <option value="Semana">Semana</option>
+                                <option value="Mensual" selected>Mensual</option>
+                                <option value="Trimestral">Trimestral</option>
+                                <option value="Anual">Anual</option>
+                                <option value="3Anios">Cada 3 años</option>
+                                <option value="5Anios">Cada 5 años</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

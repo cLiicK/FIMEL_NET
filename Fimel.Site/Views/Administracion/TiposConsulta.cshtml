@@ -1,0 +1,76 @@
+@{
+    ViewBag.Title = "Administración - Tipos de Consulta";
+}
+
+<input type="hidden" id="hdnURL_ObtenerTiposConsulta" value='@Url.Action("_ObtenerTiposConsulta", "Administracion")' />
+<input type="hidden" id="hdnURL_GuardarTipoConsulta" value='@Url.Action("_GuardarTipoConsulta", "Administracion")' />
+<input type="hidden" id="hdnURL_EliminarTipoConsulta" value='@Url.Action("_EliminarTipoConsulta", "Administracion")' />
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="colorfimel-blue">Tipos de Consulta</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-3">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-blue btn-sm" onclick="ModuloAdminTiposConsulta.AbrirModalTipoConsulta()">
+                <i class="fas fa-plus me-1"></i>Nuevo Tipo de Consulta
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th class="text-center" style="width:80px">Orden</th>
+                        <th class="text-end" style="width:90px"></th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyTiposConsulta">
+                    <tr><td colspan="3" class="text-center text-muted py-3">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL TIPO DE CONSULTA -->
+<div class="modal fade" id="modalTipoConsulta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lblTituloModalTipoConsulta">Nuevo Tipo de Consulta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="tipoConsultaId" value="0" />
+                <div class="mb-3">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="tipoConsultaNombre" maxlength="100">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Orden</label>
+                    <input type="number" class="form-control" id="tipoConsultaOrden" value="1" min="1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue" onclick="ModuloAdminTiposConsulta.GuardarTipoConsulta(this)">
+                    <i class="fas fa-save me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/Site/Administracion_TiposConsulta.js?v=1.0" type="text/javascript"></script>
+}
