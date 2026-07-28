@@ -330,9 +330,9 @@
 @Html.Partial("~/Views/Partials/_PartialModalDetalleConsulta.cshtml")
 
 @section scripts {
-    <script src="~/js/site/Utils.js?v=1.0" type="text/javascript"></script>
-    <script src="~/js/site/Shared.js?v=1.0" type="text/javascript"></script>
-    <script src="~/js/site/detalle_paciente.js"></script>
+    <script src="~/js/site/Utils.js" asp-append-version="true" type="text/javascript"></script>
+    <script src="~/js/site/Shared.js" asp-append-version="true" type="text/javascript"></script>
+    <script src="~/js/site/detalle_paciente.js" asp-append-version="true"></script>
     <script>
         $(".btn-toggle").click(function () {
             if ($(this).hasClass("active")) {

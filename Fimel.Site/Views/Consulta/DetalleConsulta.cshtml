@@ -20,7 +20,7 @@
 <input type="hidden" id="idConsulta" value='@Model.Consulta.Id' />
 <input type="hidden" id="hdnNombreDoctor" value='@ViewBag.NombreDoctor' />
 <input type="hidden" id="hdnNombreInstitucion" value='@ViewBag.NombreInstitucion' />
-<input type="hidden" id="hdnNombrePaciente" value='@(Model.Paciente.Nombres + " " + Model.Paciente.PrimerApellido)' />
+<input type="hidden" id="hdnNombrePaciente" value='@(string.Join(" ", new[] { Model.Paciente.Nombres, Model.Paciente.PrimerApellido, Model.Paciente.SegundoApellido }.Where(s => !string.IsNullOrWhiteSpace(s))))' />
 <input type="hidden" id="hdnRutPaciente" value='@rutCompleto' />
 <input type="hidden" id="hdnEdadPaciente" value='@(edad.HasValue ? edad.ToString() : "")' />
 <input type="hidden" id="hdnFechaConsulta" value='@fechaConsulta' />
@@ -350,5 +350,5 @@
 </div>
 
 @section scripts {
-    <script src="~/js/site/Historial_Consultas.js?v=3.0" type="text/javascript"></script>
+    <script src="~/js/site/Historial_Consultas.js" asp-append-version="true" type="text/javascript"></script>
 }
