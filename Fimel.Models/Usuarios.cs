@@ -23,5 +23,11 @@ namespace Fimel.Models
 
         [NotMapped]
         public Instituciones? Institucion { get; set; }
+
+        [NotMapped]
+        public List<Perfiles>? PerfilesAsignados { get; set; }
+
+        [NotMapped]
+        public List<Modulos>? ModulosVisibles { get; set; }
     }
 }

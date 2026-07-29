@@ -18,6 +18,7 @@ namespace Fimel.Models
         public string? Receta { get; set; }
         public string? OrdenExamenes { get; set; }
         public string? TipoConsulta { get; set; }
+        public int? TipoConsultaId { get; set; }
         public double? Peso { get; set; }
         public double? Talla { get; set; }
         public double? IMC { get; set; }

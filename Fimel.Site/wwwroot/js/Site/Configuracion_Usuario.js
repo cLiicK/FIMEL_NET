@@ -15,7 +15,9 @@
             let config = {
                 DuracionBloqueHorario: $('#inputBloqueHorarioConfig').val(),
                 DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0,
-                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a'
+                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a',
+                MinAntHoras: $('#inputMinAntHoras').val() !== '' ? parseInt($('#inputMinAntHoras').val()) : null,
+                MaxAntDias: $('#inputMaxAntDias').val() !== '' ? parseInt($('#inputMaxAntDias').val()) : null
             }
 
             var btnGuardar = $('#btnGuardarConfigUser');
@@ -204,7 +206,9 @@
             let config = {
                 DuracionBloqueHorario: $('#inputBloqueHorarioConfig').val(),
                 DiasAvisoPrevioControl: parseInt($('#inputDiasAvisoControl').val()) || 0,
-                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a'
+                TituloProfesional: $('#inputTituloProfesional').val().trim() || 'Matrón/a',
+                MinAntHoras: $('#inputMinAntHoras').val() !== '' ? parseInt($('#inputMinAntHoras').val()) : null,
+                MaxAntDias: $('#inputMaxAntDias').val() !== '' ? parseInt($('#inputMaxAntDias').val()) : null
             }
 
             var btnGuardar = $('#btnActualizarConfigUser');
@@ -224,7 +228,8 @@
                         url: $('#hdnURL_ActualizarConfiguracion').val(),
                         data: {
                             Id: $('#idConfig').val(),
-                            config: config
+                            config: config,
+                            email: $('#inputCorreoConfig').val().trim()
                         },
                         method: 'POST',
                         success: function (response, jqXHR) {
@@ -262,8 +267,51 @@
     }
 })();
 
+function verificarCompatibilidadBloques(valorBloque) {
+    if (!valorBloque) { $('#divAlertaBloqueHorario').hide(); return; }
+    var parts = valorBloque.split(':');
+    var bloqueMin = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+
+    var hdnVal = $('#hdnHorariosAtencion').val();
+    var horarios = [];
+    try { horarios = JSON.parse(hdnVal || '[]'); } catch (e) { return; }
+
+    var conflictos = [];
+    horarios.forEach(function (h) {
+        var iniParts = h.inicio.split(':');
+        var finParts = h.fin.split(':');
+        var iniMin = parseInt(iniParts[0]) * 60 + parseInt(iniParts[1]);
+        var finMin = parseInt(finParts[0]) * 60 + parseInt(finParts[1]);
+        var ventanaMin = finMin - iniMin;
+        var residuo = ventanaMin % bloqueMin;
+        if (residuo > 0) {
+            var horaTerminoIdeal = finMin - residuo;
+            var hIdeal = Math.floor(horaTerminoIdeal / 60).toString().padStart(2, '0');
+            var mIdeal = (horaTerminoIdeal % 60).toString().padStart(2, '0');
+            conflictos.push('<li><strong>' + h.DiaSemana + '</strong> ' + h.inicio + '–' + h.fin +
+                ' (' + ventanaMin + ' min) &rarr; sobran <strong>' + residuo + ' min</strong>. ' +
+                'Hora de t&eacute;rmino sugerida: <strong>' + hIdeal + ':' + mIdeal + '</strong></li>');
+        }
+    });
+
+    if (conflictos.length > 0) {
+        $('#listaHorariosConflicto').html(conflictos.join(''));
+        $('#divAlertaBloqueHorario').show();
+    } else {
+        $('#divAlertaBloqueHorario').hide();
+    }
+}
+
 $(function () {
     ModuloConfiguracionUsuario.IniciarScripts();
+
+    // Verificar al cargar la página con el bloque actual
+    verificarCompatibilidadBloques($('#inputBloqueHorarioConfig').val());
+
+    // Verificar al cambiar el select
+    $('#inputBloqueHorarioConfig').on('change', function () {
+        verificarCompatibilidadBloques($(this).val());
+    });
 
     $('#inputLogoFile').on('change', function () {
         var file = this.files[0];

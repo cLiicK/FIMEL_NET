@@ -1,0 +1,299 @@
+@using Fimel.Models
+@{
+    int usuarioId       = ViewBag.UsuarioId ?? 0;
+    int? institucionId  = ViewBag.InstitucionId;
+    bool esSuperAdmin   = ViewBag.EsSuperAdmin ?? false;
+    bool esAdmin        = ViewBag.EsAdmin ?? false;
+    bool esEspecialista = ViewBag.EsEspecialista ?? false;
+
+    var instituciones = esSuperAdmin
+        ? (ViewBag.Instituciones as List<Instituciones> ?? new List<Instituciones>())
+        : new List<Instituciones>();
+
+    var categorias = !esSuperAdmin
+        ? (ViewBag.Categorias as List<CategoriaFinanciera> ?? new List<CategoriaFinanciera>())
+        : new List<CategoriaFinanciera>();
+}
+
+<input type="hidden" id="hdnURL_GetMovimientos"      value='@Url.Action("_GetMovimientos", "Financiero")' />
+<input type="hidden" id="hdnURL_GuardarMovimiento"   value='@Url.Action("_GuardarMovimiento", "Financiero")' />
+<input type="hidden" id="hdnURL_ActualizarMovimiento" value='@Url.Action("_ActualizarMovimiento", "Financiero")' />
+<input type="hidden" id="hdnURL_EliminarMovimiento"  value='@Url.Action("_EliminarMovimiento", "Financiero")' />
+<input type="hidden" id="hdnURL_GetCategorias"       value='@Url.Action("_GetCategorias", "Financiero")' />
+<input type="hidden" id="hdnURL_GuardarCategoria"    value='@Url.Action("_GuardarCategoria", "Financiero")' />
+<input type="hidden" id="hdnURL_GetConsultas"        value='@Url.Action("_GetConsultasByPaciente", "Financiero")' />
+<input type="hidden" id="hdnURL_BuscarPaciente"      value='@Url.Action("ObtenerHistorial", "Pacientes")' />
+<input type="hidden" id="hdnUsuarioId"               value='@usuarioId' />
+<input type="hidden" id="hdnInstitucionId"           value='@(institucionId?.ToString() ?? "")' />
+<input type="hidden" id="hdnEsSuperAdmin"            value='@esSuperAdmin.ToString().ToLower()' />
+<input type="hidden" id="hdnEsEspecialista"          value='@esEspecialista.ToString().ToLower()' />
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row align-items-center mb-3">
+                    <div class="col">
+                        <h2 class="colorfimel-blue mb-0">Movimientos Financieros</h2>
+                        <p class="text-muted" style="font-size:.88rem">Registro de ingresos y egresos.</p>
+                    </div>
+                    <div class="col-auto d-flex gap-2">
+                        @if (!esEspecialista || esAdmin || esSuperAdmin)
+                        {
+                            <a href="@Url.Action("Categorias", "Financiero")" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-tags me-1"></i> Categorías
+                            </a>
+                        }
+                        <button class="btn btn-blue btn-sm" onclick="ModuloFinanciero.AbrirModalNuevo()">
+                            <i class="fas fa-plus me-1"></i> Nuevo movimiento
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="row mt-1 mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-2">
+                    <div class="row g-2 align-items-end">
+                        @if (esSuperAdmin)
+                        {
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm mb-1">Institución</label>
+                                <select class="form-select form-select-sm" id="filtroInstitucion">
+                                    <option value="">Todas</option>
+                                    @foreach (var inst in instituciones)
+                                    {
+                                        <option value="@inst.Id">@inst.RazonSocial</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                        <div class="col-md-2">
+                            <label class="form-label form-label-sm mb-1">Desde</label>
+                            <input type="date" class="form-control form-control-sm" id="filtroFechaDesde" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label form-label-sm mb-1">Hasta</label>
+                            <input type="date" class="form-control form-control-sm" id="filtroFechaHasta" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label form-label-sm mb-1">Tipo</label>
+                            <select class="form-select form-select-sm" id="filtroTipo">
+                                <option value="">Todos</option>
+                                <option value="Ingreso">Ingreso</option>
+                                <option value="Egreso">Egreso</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-blue btn-sm w-100" onclick="ModuloFinanciero.Buscar()">
+                                <i class="fas fa-search me-1"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="row mb-3" id="divResumen" style="display:none">
+        <div class="col-md-4">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2 text-center">
+                    <div class="text-muted" style="font-size:.8rem">INGRESOS</div>
+                    <div class="fw-bold text-success fs-5" id="lblTotalIngresos">$0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2 text-center">
+                    <div class="text-muted" style="font-size:.8rem">EGRESOS</div>
+                    <div class="fw-bold text-danger fs-5" id="lblTotalEgresos">$0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-2 text-center">
+                    <div class="text-muted" style="font-size:.8rem">BALANCE</div>
+                    <div class="fw-bold fs-5" id="lblBalance">$0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="row">
+        <div class="col-12">
+            <div id="divSinResultados" class="text-muted text-center py-5" style="display:none">
+                <i class="fas fa-coins fa-2x mb-2 d-block"></i>
+                Sin movimientos para los filtros seleccionados.
+            </div>
+            <div id="divTabla" style="display:none">
+                <table class="table table-hover table-sm" id="tablaMovimientos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Categoría</th>
+                            <th>Descripción</th>
+                            <th>Paciente</th>
+                            <th class="text-end">Monto</th>
+                            @if (!esEspecialista)
+                            {
+                                <th>Profesional</th>
+                            }
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyMovimientos"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NUEVO / EDITAR MOVIMIENTO -->
+<div class="modal fade" id="modalMovimiento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lblTituloModal">Nuevo movimiento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalIdMovimiento" value="0" />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo <span class="text-danger">*</span></label>
+                        <select class="form-select" id="modalTipo" onchange="ModuloFinanciero.OnCambioTipo()">
+                            <option value="">Seleccione...</option>
+                            <option value="Ingreso">Ingreso</option>
+                            <option value="Egreso">Egreso</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <select class="form-select" id="modalCategoria">
+                                <option value="">Seleccione tipo primero...</option>
+                            </select>
+                            <button class="btn btn-outline-secondary" type="button" title="Nueva categoría"
+                                    onclick="ModuloFinanciero.AbrirModalNuevaCategoria()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="modalFecha" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Monto <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="modalMonto" min="0" step="1" placeholder="0" />
+                    </div>
+                    @if (esSuperAdmin)
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label">Institución <span class="text-danger">*</span></label>
+                            <select class="form-select" id="modalInstitucion" onchange="ModuloFinanciero.OnCambioInstitucionModal()">
+                                <option value="">Seleccione...</option>
+                                @foreach (var inst in instituciones)
+                                {
+                                    <option value="@inst.Id">@inst.RazonSocial</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <div class="col-12">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" class="form-control" id="modalDescripcion" placeholder="Detalle opcional..." />
+                    </div>
+                    <div class="col-md-6" id="divBuscadorPaciente">
+                        <label class="form-label">Paciente (opcional)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-sm" id="modalBuscarPaciente"
+                                   placeholder="Nombre o RUT..." />
+                            <button class="btn btn-outline-secondary btn-sm" type="button"
+                                    onclick="ModuloFinanciero.BuscarPaciente()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div id="divResultadosPaciente" class="list-group mt-1" style="display:none; max-height:160px; overflow-y:auto; position:absolute; z-index:1000; width:calc(100% - 30px)"></div>
+                        <div id="divPacienteSeleccionado" class="mt-1" style="display:none">
+                            <span class="badge bg-secondary" id="lblPacienteSeleccionado"></span>
+                            <a href="#" class="ms-1 text-danger" style="font-size:.8rem" onclick="ModuloFinanciero.LimpiarPaciente(); return false;">quitar</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="divConsultas" style="display:none">
+                        <label class="form-label">Consulta asociada (opcional)</label>
+                        <select class="form-select" id="modalConsulta">
+                            <option value="">Sin consulta</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="modalPacienteId" value="" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue" onclick="ModuloFinanciero.GuardarMovimiento(this)">
+                    <i class="fas fa-save me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MINI-MODAL NUEVA CATEGORÍA -->
+<div class="modal fade" id="modalNuevaCategoria" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title mb-0">Nueva categoría</h6>
+                <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label form-label-sm">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm" id="ncNombre" placeholder="Ej: Consulta, Arriendo..." />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label form-label-sm">Tipo <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm" id="ncTipo">
+                        <option value="">Seleccione...</option>
+                        <option value="Ingreso">Ingreso</option>
+                        <option value="Egreso">Egreso</option>
+                    </select>
+                </div>
+                @if (esSuperAdmin)
+                {
+                    <div class="mb-2">
+                        <label class="form-label form-label-sm">Institución <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-sm" id="ncInstitucion">
+                            <option value="">Seleccione...</option>
+                            @foreach (var inst in instituciones)
+                            {
+                                <option value="@inst.Id">@inst.RazonSocial</option>
+                            }
+                        </select>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue btn-sm" onclick="ModuloFinanciero.GuardarNuevaCategoria(this)">
+                    <i class="fas fa-save me-1"></i> Crear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/Site/MovimientosFinancieros.js" asp-append-version="true"></script>
+}

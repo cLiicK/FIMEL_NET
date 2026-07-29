@@ -17,6 +17,21 @@ namespace Fimel.Site.Controllers
         public ConsultaController(IConfiguration config) => APIBase = new APIClient(config["API_URL"]);
 
 
+        [HttpGet]
+        public ActionResult GetTiposConsulta()
+        {
+            try
+            {
+                var lista = APIBase.Get<List<TipoConsulta>>("TiposConsulta/GetAll") ?? new List<TipoConsulta>();
+                return Json(new { success = true, data = lista });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error GetTiposConsulta: {ex}");
+                return Json(new { success = false, data = new List<TipoConsulta>() });
+            }
+        }
+
         public ActionResult NuevaConsulta()
         {
             Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
@@ -211,6 +226,7 @@ namespace Fimel.Site.Controllers
                 _consulta = APIBase.Get<Consultas>($"Consultas/{_datosConsulta.Id}");
 
                 _consulta.TipoConsulta = _datosConsulta.TipoConsulta;
+                _consulta.TipoConsultaId = _datosConsulta.TipoConsultaId;
                 _consulta.Peso = _datosConsulta.Peso;
                 _consulta.Talla = _datosConsulta.Talla;
                 _consulta.IMC = _datosConsulta.IMC;
@@ -412,31 +428,16 @@ namespace Fimel.Site.Controllers
                     logoEfectivo = logoTempPath;
                 }
 
-                string cuerpo = $@"<!DOCTYPE html><html><body style='font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;'>
-<div style='border-bottom:3px solid #0E96CC;padding-bottom:15px;margin-bottom:20px;display:flex;align-items:center;gap:16px;'>
-    <img src='cid:logoImage' style='max-height:60px;max-width:180px;' alt='{nombreInstitucion}'>
-    <div><h2 style='color:#0E96CC;margin:0;'>RECETA M&Eacute;DICA</h2><p style='color:#666;margin:4px 0 0;'>{nombreInstitucion}</p></div>
-</div>
-<table style='width:100%;margin-bottom:20px;border-collapse:collapse;'>
-    <tr><td style='padding:4px 0;width:50%;'><strong>M&eacute;dico:</strong> {tituloProfesional} {nombreDoctor}</td><td style='padding:4px 0;'><strong>Fecha:</strong> {fechaConsulta}</td></tr>
-    <tr><td style='padding:4px 0;'><strong>Paciente:</strong> {nombrePaciente}</td><td style='padding:4px 0;'><strong>Documento:</strong> {rutPaciente}</td></tr>
-    <tr><td style='padding:4px 0;'><strong>Edad:</strong> {edadPaciente} a&ntilde;os</td><td></td></tr>
-</table>
-<h4 style='color:#0E96CC;border-bottom:1px solid #eee;padding-bottom:8px;'>Medicamentos</h4>
-<table style='width:100%;border-collapse:collapse;'>
-    <thead><tr style='background:#f0f8ff;'>
-        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;width:30px;'>#</th>
-        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;'>Medicamento</th>
-        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;'>Dosis</th>
-        <th style='padding:8px 10px;text-align:left;border-bottom:2px solid #0E96CC;'>Posolog&iacute;a</th>
-    </tr></thead>
-    <tbody>{medicRows}</tbody>
-</table>
-<div style='margin-top:50px;text-align:right;border-top:1px solid #ccc;padding-top:15px;'>
-    <p style='color:#444;margin:0;font-weight:bold;'>{tituloProfesional} {nombreDoctor}</p>
-    <p style='color:#888;font-size:0.85rem;margin:4px 0 0;'>{nombreInstitucion}</p>
-</div>
-</body></html>";
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-receta-medica.html");
+                string cuerpo = System.IO.File.ReadAllText(templatePath)
+                    .Replace("{{nombre_institucion}}", nombreInstitucion)
+                    .Replace("{{titulo_profesional}}", tituloProfesional)
+                    .Replace("{{nombre_doctor}}", nombreDoctor)
+                    .Replace("{{fecha_consulta}}", fechaConsulta)
+                    .Replace("{{nombre_paciente}}", nombrePaciente)
+                    .Replace("{{rut_paciente}}", rutPaciente)
+                    .Replace("{{edad_paciente}}", edadPaciente)
+                    .Replace("{{filas_medicamentos}}", medicRows.ToString());
 
                 var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
                 {
@@ -461,6 +462,90 @@ namespace Fimel.Site.Controllers
             {
                 Logger.Log($"Error EnviarReceta: {ex}");
                 return Json(new { success = false, message = "Error al enviar la receta." });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult EnviarOrdenExamenes(string emailPaciente, string nombrePaciente, string rutPaciente,
+            string edadPaciente, string fechaConsulta, string examenesJson)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuarioConectado == null)
+                    return Json(new { success = false, message = "Sesión no válida." });
+
+                if (string.IsNullOrEmpty(emailPaciente))
+                    return Json(new { success = false, message = "El paciente no tiene correo registrado." });
+
+                Instituciones? institucion = null;
+                if (usuarioConectado.IdInstitucion.HasValue)
+                    institucion = APIBase.Get<Instituciones>($"Instituciones/{usuarioConectado.IdInstitucion}");
+
+                string nombreDoctor = $"{usuarioConectado.Nombres} {usuarioConectado.ApellidoPaterno}".Trim();
+                string nombreInstitucion = institucion?.RazonSocial ?? "FIMEL";
+
+                ConfiguracionUsuario configUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuarioConectado.Id}");
+                string tituloProfesional = configUsuario?.TituloProfesional ?? "Matrón/a";
+
+                var examenes = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(examenesJson ?? "[]");
+
+                var examenRows = new System.Text.StringBuilder();
+                for (int i = 0; i < examenes.Count; i++)
+                {
+                    var e = examenes[i];
+                    examenRows.AppendLine($@"<tr>
+                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{i + 1}</td>
+                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'><strong>{e.GetValueOrDefault("examen", "")}</strong></td>
+                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{e.GetValueOrDefault("indicaciones", "")}</td>
+                    </tr>");
+                }
+
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+                string logoEfectivo = logoPath;
+                string? logoTempPath = null;
+
+                if (!string.IsNullOrEmpty(institucion?.Logo))
+                {
+                    logoTempPath = Path.Combine(Path.GetTempPath(), $"logo_orden_{usuarioConectado.IdInstitucion}.png");
+                    System.IO.File.WriteAllBytes(logoTempPath, Convert.FromBase64String(institucion.Logo));
+                    logoEfectivo = logoTempPath;
+                }
+
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-orden-examenes.html");
+                string cuerpo = System.IO.File.ReadAllText(templatePath)
+                    .Replace("{{nombre_institucion}}", nombreInstitucion)
+                    .Replace("{{titulo_profesional}}", tituloProfesional)
+                    .Replace("{{nombre_doctor}}", nombreDoctor)
+                    .Replace("{{fecha_consulta}}", fechaConsulta)
+                    .Replace("{{nombre_paciente}}", nombrePaciente)
+                    .Replace("{{rut_paciente}}", rutPaciente)
+                    .Replace("{{edad_paciente}}", edadPaciente)
+                    .Replace("{{filas_examenes}}", examenRows.ToString());
+
+                var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
+                {
+                    (logoEfectivo, "logoImage", "image/png")
+                };
+
+                var correo = new EnvioCorreo
+                {
+                    Destinatarios = new List<string> { emailPaciente },
+                    Asunto = $"Orden de Exámenes - {nombreDoctor} - {fechaConsulta}",
+                    CuerpoCorreo = cuerpo
+                };
+
+                new Utileria().EnviarCorreo(correo, imagenesCorreo, nombreInstitucion);
+
+                if (logoTempPath != null && System.IO.File.Exists(logoTempPath))
+                    System.IO.File.Delete(logoTempPath);
+
+                return Json(new { success = true, message = $"Orden de exámenes enviada a {emailPaciente}" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error EnviarOrdenExamenes: {ex}");
+                return Json(new { success = false, message = "Error al enviar la orden de exámenes." });
             }
         }
 

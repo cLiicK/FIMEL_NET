@@ -57,10 +57,10 @@
     <!-- FONT AWESOME 6-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- CSS-->
-    <link rel="stylesheet" href="~/css/style-fimel.css" type="text/css">
+    <link rel="stylesheet" href="~/css/style-fimel.css" type="text/css" asp-append-version="true">
 
-    <script src="~/js/Site/Utils.js?v=1.0" type="text/javascript"></script>
-    <script src="~/js/Site/Shared.js?v=1.0" type="text/javascript"></script>
+    <script src="~/js/Site/Utils.js" asp-append-version="true" type="text/javascript"></script>
+    <script src="~/js/Site/Shared.js" asp-append-version="true" type="text/javascript"></script>
     <script type="text/javascript" src="~/lib/bootstrap-5/js/popper.min.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap-5/js/bootstrap.min.js"></script>
 </head>
@@ -96,30 +96,24 @@
                     <span>Inicio</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "FichaPaciente" ||
-                                                                                      ViewContext.RouteData.Values["action"].ToString() == "HistorialPacientes" ? "active" : "")"
-                   aria-current="page" href="@Url.Action("FichaPaciente", "Pacientes")">
-                    <span>Ficha Paciente</span>
-                </a>
-            </li>
-            @{
-                if (usuarioConectado != null && (usuarioConectado.IdPerfil == 1 || usuarioConectado.IdPerfil == 2))
+            @if (usuarioConectado?.ModulosVisibles != null)
+            {
+                foreach (var modulo in usuarioConectado.ModulosVisibles.OrderBy(m => m.Orden))
                 {
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Consulta" || ViewContext.RouteData.Values["action"].ToString() == "Consulta" ? "active" : "")"
-                           aria-current="page" href="@Url.Action("NuevaConsulta", "Consulta")">
-                            <span>Nueva Consulta</span>
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == modulo.Controller ? "active" : "")"
+                           aria-current="page" href="@Url.Action(modulo.Accion, modulo.Controller)">
+                            <span>@modulo.Nombre</span>
                         </a>
                     </li>
                 }
             }
-            <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "MiHorario" || ViewContext.RouteData.Values["action"].ToString() == "MiHorario" ? "active" : "")"
-                   aria-current="page" href="@Url.Action("MiHorario", "Horario")">
-                    <span>Horario</span>
+           @*  <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Financiero" ? "active" : "")"
+                   aria-current="page" href="@Url.Action("Index", "Financiero")">
+                    <span>Financiero</span>
                 </a>
-            </li>
+            </li> *@
             <div class="text-center footer-sidebar">
                 <p>© 2020 - @DateTime.Now.Year - Fimel S.A</p>
             </div>

@@ -256,7 +256,8 @@ var ModuloHorarioCita = (function () {
                 initialView: 'timeGrid3Day',
                 locale: 'es',
                 timeZone: 'local',
-                slotDuration: configuracionUsuario ? configuracionUsuario.DuracionBloqueHorario : '00:30:00',
+                slotDuration: '00:30:00',
+                contentHeight: 'auto',
                 scrollTime:  document.getElementById('hdnScrollTime')?.value  || '08:00:00',
                 slotMinTime: document.getElementById('hdnSlotMinTime')?.value || '07:30:00',
                 slotMaxTime: document.getElementById('hdnSlotMaxTime')?.value || '21:00:00',
@@ -953,6 +954,19 @@ var ModuloHorarioCita = (function () {
                     method: 'GET',
                     success: function (response) {
                         if (response && response.Id && response.Id > 0) {
+                            if (!response.SexoBiologico) {
+                                Swal.fire({
+                                    title: 'Ficha incompleta',
+                                    html: 'La ficha de <strong>' + (response.Nombres || '') + ' ' + (response.PrimerApellido || '') + '</strong> tiene datos incompletos.<br>Por favor completa la información antes de iniciar la consulta.',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Ir a la Ficha',
+                                    cancelButtonText: 'Cancelar'
+                                }).then((result) => {
+                                    if (result.isConfirmed) window.location.href = urlFicha;
+                                });
+                                return;
+                            }
                             Swal.fire({
                                 title: 'Paciente encontrado',
                                 text: '¿Desea iniciar una nueva consulta?',
@@ -1165,7 +1179,29 @@ var ModuloHorarioCita = (function () {
                 method: 'GET',
                 success: function (response) {
                     if (response && response.Id && response.Id > 0) {
-                        // El paciente existe, ir a Nueva Consulta
+                        // Paciente incompleto: falta sexo biológico
+                        if (!response.SexoBiologico) {
+                            Swal.fire({
+                                title: 'Ficha incompleta',
+                                html: 'La ficha de <strong>' + (response.Nombres || '') + ' ' + (response.PrimerApellido || '') + '</strong> tiene datos incompletos.<br>Por favor completa la información antes de iniciar la consulta.',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Ir a la Ficha',
+                                cancelButtonText: 'Cancelar'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $('#modalIniciarCita').modal('hide');
+                                    if (tipoDocumento == "RUT") {
+                                        window.location.href = '/Pacientes/FichaPaciente?p=' + encodeURIComponent(documentoOriginal);
+                                    } else {
+                                        window.location.href = '/Pacientes/FichaPaciente?numDoc=' + encodeURIComponent(numeroDocumento) + '&tipo=' + encodeURIComponent(tipoDocumento);
+                                    }
+                                }
+                            });
+                            return;
+                        }
+
+                        // El paciente existe y está completo, ir a Nueva Consulta
                         Swal.fire({
                             title: 'Paciente encontrado',
                             text: '¿Desea iniciar una nueva consulta?',

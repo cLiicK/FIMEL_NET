@@ -1,0 +1,164 @@
+@{
+    Layout = null;
+    string token = ViewBag.Token ?? "";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Dictar — FIMEL</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+        .logo { color: #0E96CC; font-size: 1.3rem; font-weight: bold; margin-bottom: 8px; }
+        .subtitle { color: #888; font-size: .85rem; margin-bottom: 32px; }
+
+        .btn-mic {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: #0E96CC; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 20px rgba(14,150,204,.35);
+            transition: background .2s, transform .1s;
+            margin-bottom: 24px;
+        }
+        .btn-mic:active { transform: scale(.95); }
+        .btn-mic.grabando { background: #e53935; animation: pulso 1.2s infinite; }
+        .btn-mic.grabando { box-shadow: 0 4px 20px rgba(229,57,53,.45); }
+        @@keyframes pulso {
+            0%,100% { box-shadow: 0 4px 20px rgba(229,57,53,.4); }
+            50%      { box-shadow: 0 4px 36px rgba(229,57,53,.7); }
+        }
+        .btn-mic svg { width: 52px; height: 52px; fill: #fff; }
+
+        .estado {
+            font-size: .95rem; font-weight: bold; color: #444;
+            margin-bottom: 12px; min-height: 1.4rem;
+        }
+        .ultimo-texto {
+            background: #fff; border-radius: 12px; padding: 14px 16px;
+            font-size: .88rem; color: #555; width: 100%; max-width: 360px;
+            min-height: 64px; box-shadow: 0 1px 4px rgba(0,0,0,.1);
+            margin-bottom: 16px; word-break: break-word;
+        }
+        .aviso {
+            font-size: .75rem; color: #aaa; text-align: center;
+            max-width: 300px; line-height: 1.5;
+        }
+        .badge-sesion {
+            padding: 4px 12px; border-radius: 20px; font-size: .8rem;
+            font-weight: bold; margin-bottom: 20px;
+        }
+        .badge-sesion.activa  { background: #e8f5e9; color: #2e7d32; }
+        .badge-sesion.inactiva{ background: #fce4ec; color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="logo">FIMEL</div>
+    <div class="subtitle">Sesión de dictado</div>
+
+    <div id="badgeSesion" class="badge-sesion activa">● Sesión activa</div>
+
+    <button class="btn-mic" id="btnMic" onclick="ModuloDictado.ToggleDictado(this)">
+        <svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6.5 9a1 1 0 0 1 1 1 7.5 7.5 0 0 1-15 0 1 1 0 0 1 2 0 5.5 5.5 0 0 0 11 0 1 1 0 0 1 1-1zM11 20h2v3h-2z"/></svg>
+    </button>
+
+    <div class="estado" id="lblEstado">Toca el micrófono para empezar</div>
+
+    <div class="ultimo-texto" id="divUltimoTexto">
+        <span style="color:#bbb">El texto dictado aparecerá aquí…</span>
+    </div>
+
+    <div class="aviso">
+        Habla con claridad. El sistema enviará el texto automáticamente al desktop.
+        <br><br>
+        <em>Audio procesado por el navegador.</em>
+    </div>
+
+    <script>
+        var ModuloDictado = (function () {
+            var token = '@token';
+            var urlRecibir = '/Informe/_RecibirTextoDictado';
+            var recognition = null;
+            var grabando = false;
+
+            function iniciarRecognition() {
+                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+                    return null;
+                }
+                var r = new SpeechRecognition();
+                r.lang = 'es-CL';
+                r.continuous = true;
+                r.interimResults = true;
+
+                r.onresult = function (e) {
+                    var textoFinal = '';
+                    for (var i = e.resultIndex; i < e.results.length; i++) {
+                        if (e.results[i].isFinal) textoFinal += e.results[i][0].transcript + ' ';
+                        else document.getElementById('lblEstado').textContent = '🎤 ' + e.results[i][0].transcript;
+                    }
+                    if (textoFinal.trim()) enviarTexto(textoFinal.trim());
+                };
+
+                r.onerror = function (e) {
+                    document.getElementById('lblEstado').textContent = 'Error: ' + e.error;
+                };
+
+                r.onend = function () {
+                    if (grabando) r.start(); // reinicia si sigue activo
+                };
+
+                return r;
+            }
+
+            function enviarTexto(texto) {
+                document.getElementById('divUltimoTexto').textContent = texto;
+                document.getElementById('lblEstado').textContent = 'Enviando…';
+
+                fetch(urlRecibir, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'token=' + encodeURIComponent(token) + '&texto=' + encodeURIComponent(texto)
+                }).then(function (r) { return r.json(); })
+                  .then(function (data) {
+                      document.getElementById('lblEstado').textContent = data.success ? '✓ Enviado' : '✗ Error al enviar';
+                      setTimeout(function () {
+                          document.getElementById('lblEstado').textContent = grabando ? '🎤 Escuchando…' : 'Toca para continuar';
+                      }, 1500);
+                  })
+                  .catch(function () {
+                      document.getElementById('lblEstado').textContent = '✗ Sin conexión';
+                  });
+            }
+
+            return {
+                ToggleDictado: function (btn) {
+                    if (!grabando) {
+                        recognition = iniciarRecognition();
+                        if (!recognition) return;
+                        recognition.start();
+                        grabando = true;
+                        btn.classList.add('grabando');
+                        document.getElementById('lblEstado').textContent = '🎤 Escuchando…';
+                    } else {
+                        grabando = false;
+                        if (recognition) recognition.stop();
+                        btn.classList.remove('grabando');
+                        document.getElementById('lblEstado').textContent = 'Toca para continuar';
+                    }
+                }
+            };
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<input type="hidden" id="hdnURL_GetCategorias"    value='@Url.Action("GetCategorias",    "Examenes")' />
+<input type="hidden" id="hdnURL_GetExamenes"      value='@Url.Action("GetExamenes",      "Examenes")' />
+<input type="hidden" id="hdnURL_GuardarCategoria" value='@Url.Action("GuardarCategoria", "Examenes")' />
+<input type="hidden" id="hdnURL_EliminarCategoria"value='@Url.Action("EliminarCategoria","Examenes")' />
+<input type="hidden" id="hdnURL_GuardarExamen"    value='@Url.Action("GuardarExamen",    "Examenes")' />
+<input type="hidden" id="hdnURL_EliminarExamen"   value='@Url.Action("EliminarExamen",   "Examenes")' />
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row align-items-center mb-3">
+                    <div class="col">
+                        <h2 class="colorfimel-blue">Catálogo de Exámenes</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- TABS -->
+        <ul class="nav nav-tabs mb-3" id="tabsExamenes">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabExamenes">
+                    <i class="fas fa-flask me-1"></i>Exámenes
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabCategorias">
+                    <i class="fas fa-tags me-1"></i>Categorías
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- TAB: EXÁMENES -->
+            <div class="tab-pane fade show active" id="tabExamenes">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex gap-2">
+                        <input type="text" class="form-control form-control-sm" id="filtroExamen"
+                               placeholder="Filtrar por nombre..." style="width:220px"
+                               oninput="ModuloExamenes.FiltrarExamenes()" />
+                        <select class="form-select form-select-sm" id="filtroCategoria" style="width:200px"
+                                onchange="ModuloExamenes.FiltrarExamenes()">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-blue btn-sm" onclick="ModuloExamenes.AbrirModalExamen()">
+                        <i class="fas fa-plus me-1"></i>Nuevo Examen
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Categoría</th>
+                                <th>Nombre del Examen</th>
+                                <th>Código Fonasa</th>
+                                <th class="text-center" style="width:80px">Orden</th>
+                                <th class="text-end" style="width:90px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyExamenes">
+                            <tr><td colspan="5" class="text-center text-muted py-3">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: CATEGORÍAS -->
+            <div class="tab-pane fade" id="tabCategorias">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-blue btn-sm" onclick="ModuloExamenes.AbrirModalCategoria()">
+                        <i class="fas fa-plus me-1"></i>Nueva Categoría
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th class="text-center" style="width:80px">Orden</th>
+                                <th class="text-end" style="width:90px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyCategorias">
+                            <tr><td colspan="3" class="text-center text-muted py-3">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EXAMEN -->
+<div class="modal fade" id="modalExamen" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lblTituloModalExamen">Nuevo Examen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="examenId" value="0" />
+                <div class="mb-3">
+                    <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                    <select class="form-select" id="examenCategoriaId">
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nombre del Examen <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="examenNombre" maxlength="200" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Código Fonasa</label>
+                    <input type="text" class="form-control" id="examenCodigoFonasa" maxlength="50" placeholder="Opcional" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Orden</label>
+                    <input type="number" class="form-control" id="examenOrden" value="1" min="1" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue" onclick="ModuloExamenes.GuardarExamen(this)">
+                    <i class="fas fa-save me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CATEGORÍA -->
+<div class="modal fade" id="modalCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lblTituloModalCat">Nueva Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="categoriaId" value="0" />
+                <div class="mb-3">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="categoriaNombre" maxlength="100" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Orden</label>
+                    <input type="number" class="form-control" id="categoriaOrden" value="1" min="1" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue" onclick="ModuloExamenes.GuardarCategoria(this)">
+                    <i class="fas fa-save me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/site/Examenes.js" asp-append-version="true" type="text/javascript"></script>
+}

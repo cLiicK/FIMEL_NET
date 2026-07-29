@@ -357,6 +357,65 @@ namespace Fimel.Site.Controllers
             }
         }
 
+        [HttpGet]
+        public ActionResult ObtenerRecordatorios(int idPaciente)
+        {
+            try
+            {
+                var recordatorios = APIBase.Get<List<Recordatorio>>($"Recordatorios/GetByPaciente/{idPaciente}");
+                return Json(new { success = true, data = recordatorios ?? new List<Recordatorio>() });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ObtenerRecordatorios: {ex}");
+                return Json(new { success = false, data = new List<object>() });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult GuardarRecordatorioManual(int idPaciente, string titulo, string cuerpo, string repetirCada, string fechaInicio)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuarioConectado == null)
+                    return Json(new { success = false, message = "Usuario no autenticado." });
+
+                var nuevo = new Recordatorio
+                {
+                    IdPaciente = idPaciente,
+                    Titulo = titulo,
+                    Cuerpo = cuerpo,
+                    RepetirCada = repetirCada,
+                    FechaProximoEnvio = DateTime.Parse(fechaInicio),
+                    UsuarioCreacion = usuarioConectado.Id
+                };
+
+                APIBase.Post<Recordatorio>("Recordatorios", nuevo);
+                return Json(new { success = true, message = "Recordatorio creado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error GuardarRecordatorioManual: {ex}");
+                return Json(new { success = false, message = "Error al guardar el recordatorio." });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult EliminarRecordatorio(int id)
+        {
+            try
+            {
+                bool eliminado = APIBase.Delete<bool>($"Recordatorios/{id}");
+                return Json(new { success = eliminado });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error EliminarRecordatorio: {ex}");
+                return Json(new { success = false });
+            }
+        }
+
         public ActionResult Documentos()
         {
             return View();

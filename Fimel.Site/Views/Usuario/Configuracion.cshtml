@@ -1,4 +1,4 @@
-@model ConfiguracionUsuarioVM
+﻿@model ConfiguracionUsuarioVM
 
 <input type="hidden" id="hdnURL_GuardarConfiguracion" value='@Url.Action("_GuardarConfiguracion", "Usuario")' />
 <input type="hidden" id="hdnURL_ActualizarConfiguracion" value='@Url.Action("_ActualizarConfiguracion", "Usuario")' />
@@ -7,6 +7,7 @@
 <input type="hidden" id="hdnURL_ActualizarInstitucion" value='@Url.Action("_ActualizarInstitucion", "Usuario")' />
 <input type="hidden" id="idConfig" value='@Model.Configuracion.Id' />
 <input type="hidden" id="idInstitucion" value='@Model.Usuario.IdInstitucion' />
+<input type="hidden" id="hdnHorariosAtencion" value='@Html.Raw(ViewBag.HorariosJson ?? "[]")' />
 
 
 
@@ -71,12 +72,20 @@
 														}
 													</select>
 												</div>
+												<div class="col-12" id="divAlertaBloqueHorario" style="display:none">
+													<div class="alert alert-warning py-2 px-3 mb-0" style="font-size:0.83rem">
+														<i class="fas fa-triangle-exclamation me-1"></i>
+														<strong>Atenci&#243;n:</strong> Con este bloque, los siguientes horarios de atenci&#243;n dejan tiempo sin cubrir al final:
+														<ul class="mb-1 mt-1" id="listaHorariosConflicto"></ul>
+														Para aprovechar el tiempo completo, ajusta la hora de t&#233;rmino de esos bloques en <strong>Mi Horario &rsaquo; Bloques de atenci&#243;n</strong>.
+													</div>
+												</div>
 												<div class="col-md-4">
 													<label for="inputTituloProfesional" class="form-label">
 														T&#237;tulo profesional en receta
 														<i class="fas fa-circle-info ms-1 text-muted"
 														   data-bs-toggle="tooltip" data-bs-placement="top"
-														   title="Texto que aparece antes del nombre del profesional en la receta m&#233;dica. Ej: Dr/a., Matr&#243;n/a"
+														   title="Texto que aparece antes del nombre del profesional en receta m&#233;dica. Ej: Dr/a., Matr&#243;n/a"
 														   style="cursor:help;"></i>
 													</label>
 													<input type="text" class="form-control" id="inputTituloProfesional" maxlength="30"
@@ -94,6 +103,44 @@
 													<input type="number" class="form-control" id="inputDiasAvisoControl" min="0" max="30"
 														value="@(Model.Configuracion != null ? Model.Configuracion.DiasAvisoPrevioControl : 5)"
 														placeholder="5">
+												</div>
+											</form>
+											<hr class="my-3">
+											<p class="fw-semibold mb-1" style="font-size:0.9rem;">
+												<i class="fas fa-calendar-check me-1 text-muted"></i>
+												L&#237;mites de agendamiento p&#250;blico
+											</p>
+											<p class="text-muted mb-3" style="font-size:0.83rem;">
+												Aplican solo cuando el paciente agenda desde el enlace p&#250;blico. Dejar en blanco para sin l&#237;mite.
+											</p>
+											<form class="row g-3">
+												<div class="col-md-4">
+													<label class="form-label">
+														Anticipaci&#243;n m&#237;nima
+														<i class="fas fa-circle-info ms-1 text-muted"
+														   data-bs-toggle="tooltip" data-bs-placement="top"
+														   title="El paciente debe agendar con al menos N horas de anticipaci&#243;n."
+														   style="cursor:help;"></i>
+													</label>
+													<div class="input-group">
+														<input type="number" class="form-control" id="inputMinAntHoras" min="0"
+															value="@(Model.Configuracion?.MinAntHoras?.ToString() ?? "")" placeholder="Sin l&#237;mite">
+														<span class="input-group-text">horas</span>
+													</div>
+												</div>
+												<div class="col-md-4">
+													<label class="form-label">
+														Anticipaci&#243;n m&#225;xima
+														<i class="fas fa-circle-info ms-1 text-muted"
+														   data-bs-toggle="tooltip" data-bs-placement="top"
+														   title="El paciente puede agendar hasta N d&#237;as en el futuro."
+														   style="cursor:help;"></i>
+													</label>
+													<div class="input-group">
+														<input type="number" class="form-control" id="inputMaxAntDias" min="1"
+															value="@(Model.Configuracion?.MaxAntDias?.ToString() ?? "")" placeholder="Sin l&#237;mite">
+														<span class="input-group-text">d&#237;as</span>
+													</div>
 												</div>
 											</form>
 										</div>
@@ -154,8 +201,7 @@
 								</div> *@
 							</div>
 
-							@if (Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Especialista ||
-								 Model.Usuario.IdPerfil == (int)Fimel.Models.Enums.EnumPerfiles.Administrador)
+							@if (Model.Usuario.TieneAlgunPerfil(EnumPerfiles.Especialista, EnumPerfiles.Administrador))
 							{
 								string? urlPublica = ViewBag.UrlPublica as string;
 								string? urlAgendaPublica = ViewBag.UrlAgendaPublica as string;
@@ -301,7 +347,7 @@
 												</div>
 												<div class="col-md-12 position-relative">
 													<label for="" class="form-label">Correo Electrónico</label>
-													<input type="text" class="form-control" id="inputCorreoConfig" value="@Model.Usuario.Email" disabled>
+													<input type="email" class="form-control" id="inputCorreoConfig" value="@Model.Usuario.Email">
 													<i class="fas fa-envelope icon-input-ficha"></i>
 												</div>
 											</form>
@@ -330,5 +376,5 @@
 	<!--Contenido-->
 </div>
 @section scripts {
-	<script src="~/js/Site/Configuracion_Usuario.js?v=1.1" type="text/javascript"></script>
+	<script src="~/js/Site/Configuracion_Usuario.js" asp-append-version="true" type="text/javascript"></script>
 }

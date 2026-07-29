@@ -37,6 +37,24 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpPost]
+        public IActionResult Post(Instituciones institucion)
+        {
+            try
+            {
+                institucion.Vigente = "S";
+                institucion.FechaCreacion = DateTime.Now;
+                db.Instituciones.Add(institucion);
+                db.SaveChanges();
+                return Ok(institucion);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error POST Institucion: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpPut("{id}")]
         public IActionResult Put(int id, Instituciones institucion)
         {
@@ -59,6 +77,26 @@ namespace Fimel.Api.Controllers
             catch (Exception ex)
             {
                 Logger.Log($"Error al actualizar institución: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetAll")]
+        public IActionResult GetAll()
+        {
+            try
+            {
+                var instituciones = db.Instituciones
+                    .Where(x => x.Vigente == "S")
+                    .OrderBy(x => x.RazonSocial)
+                    .ToList();
+
+                return Ok(instituciones);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error GetAll Instituciones: {ex}");
                 return StatusCode(500, ex);
             }
         }

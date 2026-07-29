@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Orden de Exámenes</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            color: #2d3748;
+            font-size: 13px;
+        }
+
+        .page {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 44px 50px;
+        }
+
+        /* ── HEADER ─────────────────────────────── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0;
+        }
+        .header-logo {
+            height: 56px;
+            display: flex;
+            align-items: center;
+        }
+        .header-logo img {
+            max-height: 56px;
+            max-width: 180px;
+            object-fit: contain;
+        }
+        .header-right {
+            text-align: right;
+        }
+        .header-right h1 {
+            font-size: 20px;
+            font-weight: 900;
+            color: #1a2a3a;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .header-right .institucion {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .divider-blue {
+            height: 3px;
+            background: linear-gradient(to right, #0E96CC, #b8dff0);
+            margin: 14px 0 20px;
+            border-radius: 2px;
+        }
+
+        /* ── BARRA PROFESIONAL ───────────────────── */
+        .prof-bar {
+            background: #f0f9ff;
+            border-left: 4px solid #0E96CC;
+            border-radius: 0 6px 6px 0;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .prof-bar .doctor-name {
+            font-size: 15px;
+            font-weight: bold;
+            color: #1a2a3a;
+        }
+        .prof-bar .doc-sub {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+        .prof-bar .fecha-hora {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.8;
+        }
+        .prof-bar .fecha-hora span {
+            display: inline-block;
+            background: #0E96CC;
+            color: #fff;
+            border-radius: 4px;
+            padding: 1px 7px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 4px;
+        }
+
+        /* ── SECCIONES ───────────────────────────── */
+        .section {
+            margin-bottom: 22px;
+        }
+        .section-label {
+            font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #0E96CC;
+            margin-bottom: 8px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table td {
+            padding: 6px 0;
+            border-bottom: 1px solid #f5f5f5;
+            vertical-align: top;
+        }
+        .data-table td.lbl {
+            width: 120px;
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+        }
+        .data-table td.val {
+            color: #1a2a3a;
+            font-size: 13px;
+        }
+
+        /* ── EXÁMENES ────────────────────────────── */
+        .exam-list { list-style: none; padding: 0; margin: 0; }
+        .exam-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .exam-bullet {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            background: #0E96CC;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 1px;
+        }
+        .exam-body {}
+        .exam-nombre {
+            font-weight: bold;
+            color: #1a2a3a;
+            font-size: 14px;
+        }
+        .exam-detalle {
+            color: #777;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* ── FIRMA ───────────────────────────────── */
+        .footer {
+            margin-top: 64px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .firma {
+            text-align: center;
+            width: 220px;
+        }
+        .firma-linea {
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            font-size: 12px;
+            color: #555;
+            font-weight: bold;
+        }
+        .firma-sub {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
+        .powered {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 10px;
+            color: #ddd;
+            letter-spacing: 1px;
+        }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 30px 40px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-logo">
+            <img src="{{logo_url}}" alt="Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="header-right">
+            <h1>Orden de Exámenes</h1>
+            <div class="institucion">{{institucion}}</div>
+        </div>
+    </div>
+
+    <div class="divider-blue"></div>
+
+    <!-- BARRA PROFESIONAL -->
+    <div class="prof-bar">
+        <div>
+            <div class="doctor-name">{{titulo}} {{doctor}}</div>
+            <div class="doc-sub">{{institucion}}</div>
+        </div>
+        <div class="fecha-hora">
+            <div>Fecha <span>{{fecha}}</span></div>
+            <div>Hora <span>{{hora}} hrs</span></div>
+        </div>
+    </div>
+
+    <!-- DATOS DEL PACIENTE -->
+    <div class="section">
+        <div class="section-label">Datos del paciente</div>
+        <table class="data-table">
+            <tr>
+                <td class="lbl">Paciente</td>
+                <td class="val">{{paciente}}</td>
+            </tr>
+            <tr>
+                <td class="lbl">Rut / N° Doc</td>
+                <td class="val">{{rut_doc}}</td>
+            </tr>
+            <tr>
+                <td class="lbl">Edad</td>
+                <td class="val">{{edad}} años</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- EXÁMENES SOLICITADOS -->
+    <div class="section">
+        <div class="section-label">Exámenes solicitados</div>
+        <ul class="exam-list">
+            {{examenes}}
+        </ul>
+    </div>
+
+    <!-- FIRMA -->
+    <div class="footer">
+        <div class="firma">
+            <div class="firma-linea">{{titulo}} {{doctor}}</div>
+            <div class="firma-sub">{{institucion}}</div>
+        </div>
+    </div>
+
+    <div class="powered">FIMEL · Sistema de Gestión Médica</div>
+
+</div>
+
+<script>
+    window.onafterprint = function () { window.close(); };
+    window.onload = function () { window.print(); };
+</script>
+</body>
+</html>

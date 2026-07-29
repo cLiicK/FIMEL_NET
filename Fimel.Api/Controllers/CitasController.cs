@@ -159,6 +159,43 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetParaRecordatorio")]
+        public IActionResult GetParaRecordatorio()
+        {
+            try
+            {
+                var manana = DateTime.Today.AddDays(1);
+                var pasadoManana = DateTime.Today.AddDays(2);
+
+                var citas = db.Citas
+                    .Where(c => c.Vigente == "S"
+                             && !string.IsNullOrEmpty(c.CorreoPaciente)
+                             && (c.FechaHoraInicio.Date == manana || c.FechaHoraInicio.Date == pasadoManana))
+                    .Include(c => c.Usuario)
+                    .ToList();
+
+                var instIds = citas
+                    .Where(c => c.Usuario?.IdInstitucion.HasValue == true)
+                    .Select(c => c.Usuario!.IdInstitucion!.Value)
+                    .Distinct()
+                    .ToList();
+
+                var instituciones = db.Instituciones.Where(i => instIds.Contains(i.Id)).ToList();
+
+                foreach (var cita in citas)
+                    if (cita.Usuario?.IdInstitucion.HasValue == true)
+                        cita.Usuario.Institucion = instituciones.FirstOrDefault(i => i.Id == cita.Usuario.IdInstitucion.Value);
+
+                return Ok(citas);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error GetParaRecordatorio Citas: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpPost]
         public IActionResult Post(Cita cita)
         {

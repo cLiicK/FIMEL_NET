@@ -1,0 +1,332 @@
+@using Fimel.Models
+@{
+    bool esSuperAdmin   = ViewBag.EsSuperAdmin ?? false;
+    int? institucionId  = ViewBag.InstitucionId;
+
+    var instituciones = esSuperAdmin
+        ? (ViewBag.Instituciones as List<Instituciones> ?? new List<Instituciones>())
+        : new List<Instituciones>();
+
+    var categorias = !esSuperAdmin
+        ? (ViewBag.Categorias as List<CategoriaFinanciera> ?? new List<CategoriaFinanciera>())
+        : new List<CategoriaFinanciera>();
+}
+
+<input type="hidden" id="hdnURL_GetCategorias"      value='@Url.Action("_GetCategorias", "Financiero")' />
+<input type="hidden" id="hdnURL_GuardarCategoria"   value='@Url.Action("_GuardarCategoria", "Financiero")' />
+<input type="hidden" id="hdnURL_ActualizarCategoria" value='@Url.Action("_ActualizarCategoria", "Financiero")' />
+<input type="hidden" id="hdnURL_EliminarCategoria"  value='@Url.Action("_EliminarCategoria", "Financiero")' />
+<input type="hidden" id="hdnEsSuperAdmin"           value='@esSuperAdmin.ToString().ToLower()' />
+<input type="hidden" id="hdnInstitucionId"          value='@(institucionId?.ToString() ?? "")' />
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row align-items-center mb-3">
+                    <div class="col">
+                        <h2 class="colorfimel-blue mb-0">Categorías Financieras</h2>
+                        <p class="text-muted" style="font-size:.88rem">Clasificación de ingresos y egresos.</p>
+                    </div>
+                    <div class="col-auto d-flex gap-2">
+                        <a href="@Url.Action("Index", "Financiero")" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Volver
+                        </a>
+                        <button class="btn btn-blue btn-sm" onclick="ModuloCategorias.AbrirModalNuevo()">
+                            <i class="fas fa-plus me-1"></i> Nueva categoría
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (esSuperAdmin)
+    {
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body py-2">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm mb-1">Institución</label>
+                                <select class="form-select form-select-sm" id="filtroInstitucion"
+                                        onchange="ModuloCategorias.CargarPorInstitucion()">
+                                    <option value="">Seleccione una institución...</option>
+                                    @foreach (var inst in instituciones)
+                                    {
+                                        <option value="@inst.Id">@inst.RazonSocial</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-12">
+            <div id="divSinCategorias" class="text-muted text-center py-5" @(categorias.Any() ? "style=\"display:none\"" : "")>
+                <i class="fas fa-tags fa-2x mb-2 d-block"></i>
+                @(esSuperAdmin ? "Seleccione una institución para ver sus categorías." : "No hay categorías configuradas.")
+            </div>
+            <div id="divTabla" @(!categorias.Any() ? "style=\"display:none\"" : "")>
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyCategorias">
+                        @foreach (var cat in categorias)
+                        {
+                            <tr id="fila-@cat.Id">
+                                <td>@cat.Nombre</td>
+                                <td>
+                                    @if (cat.Tipo == "Ingreso")
+                                    {
+                                        <span class="badge bg-success">Ingreso</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Egreso</span>
+                                    }
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <button class="btn btn-ico btn-sm" title="Editar"
+                                            onclick="ModuloCategorias.Editar(@cat.Id, '@cat.Nombre.Replace("'", "&apos;")', '@cat.Tipo')">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                    <button class="btn btn-ico btn-sm text-danger ms-1" title="Eliminar"
+                                            onclick="ModuloCategorias.Eliminar(@cat.Id)">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NUEVA / EDITAR CATEGORÍA -->
+<div class="modal fade" id="modalCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lblTituloModal">Nueva categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalIdCategoria" value="0" />
+                <div class="row g-3">
+                    @if (esSuperAdmin)
+                    {
+                        <div class="col-12">
+                            <label class="form-label">Institución <span class="text-danger">*</span></label>
+                            <select class="form-select" id="modalInstitucion">
+                                <option value="">Seleccione...</option>
+                                @foreach (var inst in instituciones)
+                                {
+                                    <option value="@inst.Id">@inst.RazonSocial</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <div class="col-12">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="modalNombre" placeholder="Ej: Consulta médica, Arriendo..." />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Tipo <span class="text-danger">*</span></label>
+                        <select class="form-select" id="modalTipo">
+                            <option value="">Seleccione...</option>
+                            <option value="Ingreso">Ingreso</option>
+                            <option value="Egreso">Egreso</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue" onclick="ModuloCategorias.Guardar(this)">
+                    <i class="fas fa-save me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+var ModuloCategorias = (function () {
+
+    var _categorias = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(categorias));
+    var _esSuperAdmin = @esSuperAdmin.ToString().ToLower();
+    var _institucionId = @(institucionId.HasValue ? institucionId.Value.ToString() : "null");
+
+    function badgeTipo(tipo) {
+        if (tipo === 'Ingreso') return '<span class="badge bg-success">Ingreso</span>';
+        if (tipo === 'Egreso') return '<span class="badge bg-danger">Egreso</span>';
+        return tipo;
+    }
+
+    function renderTabla() {
+        if (!_categorias.length) {
+            $('#divTabla').hide();
+            $('#divSinCategorias').show();
+            return;
+        }
+        var html = '';
+        _categorias.forEach(function (c) {
+            html += '<tr id="fila-' + c.Id + '">';
+            html += '<td>' + c.Nombre + '</td>';
+            html += '<td>' + badgeTipo(c.Tipo) + '</td>';
+            html += '<td class="text-end text-nowrap">';
+            var safe = c.Nombre.replace(/'/g, '&apos;');
+            html += '<button class="btn btn-ico btn-sm" title="Editar" onclick="ModuloCategorias.Editar(' + c.Id + ', \'' + safe + '\', \'' + c.Tipo + '\')"><i class="fas fa-pencil-alt"></i></button>';
+            html += '<button class="btn btn-ico btn-sm text-danger ms-1" title="Eliminar" onclick="ModuloCategorias.Eliminar(' + c.Id + ')"><i class="fas fa-trash-alt"></i></button>';
+            html += '</td></tr>';
+        });
+        $('#tbodyCategorias').html(html);
+        $('#divSinCategorias').hide();
+        $('#divTabla').show();
+    }
+
+    return {
+
+        IniciarScripts: function () {
+            if (!_esSuperAdmin && _categorias.length) renderTabla();
+        },
+
+        CargarPorInstitucion: function () {
+            var idInst = $('#filtroInstitucion').val();
+            if (!idInst) return;
+            $.ajax({
+                url: $('#hdnURL_GetCategorias').val(),
+                method: 'GET',
+                data: { idInstitucion: idInst },
+                success: function (resp) {
+                    if (resp.success) {
+                        _categorias = resp.data || [];
+                        renderTabla();
+                        if (!_categorias.length) {
+                            $('#divSinCategorias').text('Sin categorías para esta institución.').show();
+                        }
+                    }
+                },
+                error: function () { Swal.fire('Error', 'No se pudieron cargar las categorías.', 'error'); }
+            });
+        },
+
+        AbrirModalNuevo: function () {
+            $('#modalIdCategoria').val('0');
+            $('#modalNombre').val('');
+            $('#modalTipo').val('');
+            if (_esSuperAdmin) $('#modalInstitucion').val('');
+            $('#lblTituloModal').text('Nueva categoría');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCategoria')).show();
+        },
+
+        Editar: function (id, nombre, tipo) {
+            $('#modalIdCategoria').val(id);
+            $('#modalNombre').val(nombre);
+            $('#modalTipo').val(tipo);
+            if (_esSuperAdmin) {
+                var cat = _categorias.find(function (c) { return c.Id === id; });
+                if (cat) $('#modalInstitucion').val(cat.InstitucionId);
+            }
+            $('#lblTituloModal').text('Editar categoría');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCategoria')).show();
+        },
+
+        Guardar: function (btn) {
+            var nombre = $('#modalNombre').val().trim();
+            var tipo = $('#modalTipo').val();
+            if (!nombre || !tipo) {
+                Swal.fire('Validación', 'Complete nombre y tipo.', 'warning');
+                return;
+            }
+
+            var id = parseInt($('#modalIdCategoria').val()) || 0;
+            var payload = { Nombre: nombre, Tipo: tipo };
+
+            if (_esSuperAdmin) {
+                payload.InstitucionId = parseInt($('#modalInstitucion').val()) || 0;
+                if (!payload.InstitucionId) { Swal.fire('Validación', 'Seleccione una institución.', 'warning'); return; }
+            }
+
+            showLoading(btn);
+
+            $.ajax({
+                url: id > 0 ? $('#hdnURL_ActualizarCategoria').val() : $('#hdnURL_GuardarCategoria').val(),
+                method: 'POST',
+                data: id > 0 ? $.extend({ id: id }, payload) : payload,
+                success: function (resp) {
+                    closeLoading(btn);
+                    if (resp.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('modalCategoria')).hide();
+                        if (_esSuperAdmin) {
+                            ModuloCategorias.CargarPorInstitucion();
+                        } else {
+                            $.ajax({
+                                url: $('#hdnURL_GetCategorias').val(),
+                                method: 'GET',
+                                data: { idInstitucion: _institucionId },
+                                success: function (r) {
+                                    if (r.success) { _categorias = r.data || []; renderTabla(); }
+                                }
+                            });
+                        }
+                    } else {
+                        Swal.fire('Error', resp.message || 'No se pudo guardar la categoría.', 'error');
+                    }
+                },
+                error: function () {
+                    closeLoading(btn);
+                    Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+                }
+            });
+        },
+
+        Eliminar: function (id) {
+            Swal.fire({
+                title: 'Eliminar categoría',
+                text: '¿Está seguro? Los movimientos que la usan mantendrán su registro.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: $('#hdnURL_EliminarCategoria').val(),
+                    method: 'POST',
+                    data: { id: id },
+                    success: function (resp) {
+                        if (resp.success) {
+                            _categorias = _categorias.filter(function (c) { return c.Id !== id; });
+                            renderTabla();
+                        } else {
+                            Swal.fire('Error', resp.message || 'No se pudo eliminar.', 'error');
+                        }
+                    },
+                    error: function () { Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error'); }
+                });
+            });
+        }
+    };
+})();
+
+$(function () {
+    ModuloCategorias.IniciarScripts();
+});
+</script>
+}

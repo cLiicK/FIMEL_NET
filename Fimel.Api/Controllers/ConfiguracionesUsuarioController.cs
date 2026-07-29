@@ -60,6 +60,8 @@ namespace Fimel.Api.Controllers
                 dbConfig.DuracionBloqueHorario = config.DuracionBloqueHorario;
                 dbConfig.DiasAvisoPrevioControl = config.DiasAvisoPrevioControl;
                 dbConfig.TituloProfesional = config.TituloProfesional;
+                dbConfig.MinAntHoras = config.MinAntHoras;
+                dbConfig.MaxAntDias = config.MaxAntDias;
 
                 db.SaveChanges();
 

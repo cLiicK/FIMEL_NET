@@ -38,6 +38,11 @@ namespace Fimel.Site.Controllers
                 ? $"{urlBase}/AgendaPublica/{vm.Configuracion.TokenPublico}"
                 : null;
 
+            var horarios = APIBase.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{usuario.Id}") ?? new();
+            ViewBag.HorariosJson = System.Text.Json.JsonSerializer.Serialize(
+                horarios.Select(h => new { h.DiaSemana, inicio = h.HoraInicio.ToString(@"hh\:mm"), fin = h.HoraFin.ToString(@"hh\:mm") })
+            );
+
             return View(vm);
         }
 
@@ -62,7 +67,7 @@ namespace Fimel.Site.Controllers
             }
         }
 
-        public ActionResult _ActualizarConfiguracion(int id, ConfiguracionUsuario config)
+        public ActionResult _ActualizarConfiguracion(int id, ConfiguracionUsuario config, string? email)
         {
             try
             {
@@ -71,15 +76,19 @@ namespace Fimel.Site.Controllers
 
                 ConfiguracionUsuario? configPut = APIBase.Put<ConfiguracionUsuario>($"ConfiguracionesUsuario/{id}", config);
 
-                if (configPut == null)
-                    return Json(new { success = true, message = "Error interno al actualizar configuración..." });
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    APIBase.Put<object>($"Usuarios/{usuario.Id}/Email", email.Trim());
+                    usuario.Email = email.Trim();
+                    HttpContext.Session.SetString("UsuarioConectado", System.Text.Json.JsonSerializer.Serialize(usuario));
+                }
 
                 return Json(new { success = true, message = "Configuración Actualizada!" });
             }
             catch (Exception ex)
             {
                 Logger.Log($"Error Usuario _ActualizarConfiguracion: {ex}");
-                return null;
+                return Json(new { success = false, message = "Error al actualizar configuración." });
             }
         }
 
@@ -178,6 +187,99 @@ namespace Fimel.Site.Controllers
             {
                 Logger.Log($"Error Usuario _ActualizarInstitucion: {ex}");
                 return Json(new { success = false, message = "Error al actualizar la institución." });
+            }
+        }
+
+        public ActionResult ProbarRecordatorios()
+        {
+            try
+            {
+                List<Recordatorio> recordatorios = APIBase.Get<List<Recordatorio>>("Recordatorios/GetPendientesParaEnvioHoy");
+
+                if (recordatorios == null || recordatorios.Count == 0)
+                    return Json(new { success = false, message = "No hay recordatorios pendientes de envío para hoy." });
+
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-recordatorio-manual.html");
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+
+                if (!System.IO.File.Exists(templatePath))
+                    return Json(new { success = false, message = $"No se encontró la plantilla de correo en: {templatePath}" });
+
+                string templateHtml = System.IO.File.ReadAllText(templatePath);
+                var utileria = new Utileria();
+                var enviados = new List<string>();
+                var errores = new List<string>();
+
+                foreach (var recordatorio in recordatorios)
+                {
+                    try
+                    {
+                        var paciente = recordatorio.Paciente;
+                        if (paciente == null || string.IsNullOrEmpty(paciente.Email))
+                        {
+                            errores.Add($"Recordatorio #{recordatorio.Id}: paciente sin email.");
+                            continue;
+                        }
+
+                        string nombreCompleto = $"{paciente.Nombres} {paciente.PrimerApellido}".Trim();
+                        string nombreProfesional = $"{paciente.UsuarioConectado?.Nombres} {paciente.UsuarioConectado?.ApellidoPaterno}".Trim();
+                        string remitente = paciente.UsuarioConectado?.Institucion?.RazonSocial ?? "FIMEL";
+
+                        string cuerpo = templateHtml
+                            .Replace("{{titulo_recordatorio}}", recordatorio.Titulo)
+                            .Replace("{{cuerpo_recordatorio}}", recordatorio.Cuerpo)
+                            .Replace("{{nombre_paciente}}", nombreCompleto)
+                            .Replace("{{nombre_profesional}}", nombreProfesional)
+                            .Replace("{{nombre_institucion}}", remitente);
+
+                        string logoEfectivo = logoPath;
+                        string? logoBase64 = paciente.UsuarioConectado?.Institucion?.Logo;
+                        string? logoTempPath = null;
+
+                        if (!string.IsNullOrEmpty(logoBase64))
+                        {
+                            logoTempPath = Path.Combine(Path.GetTempPath(), $"logo_inst_{paciente.UsuarioConectado!.IdInstitucion}.png");
+                            System.IO.File.WriteAllBytes(logoTempPath, Convert.FromBase64String(logoBase64));
+                            logoEfectivo = logoTempPath;
+                        }
+
+                        var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
+                        {
+                            (logoEfectivo, "logoImage", "image/png")
+                        };
+
+                        var correo = new EnvioCorreo
+                        {
+                            Destinatarios = new List<string> { paciente.Email },
+                            Asunto = $"Recordatorio: {recordatorio.Titulo}",
+                            CuerpoCorreo = cuerpo
+                        };
+
+                        utileria.EnviarCorreo(correo, imagenesCorreo, remitente);
+                        enviados.Add($"{nombreCompleto} ({paciente.Email})");
+
+                        if (logoTempPath != null && System.IO.File.Exists(logoTempPath))
+                            System.IO.File.Delete(logoTempPath);
+
+                        APIBase.Put<object>($"Recordatorios/MarcarEnviado/{recordatorio.Id}", recordatorio);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log($"Error ProbarRecordatorios id={recordatorio.Id}: {ex}");
+                        errores.Add($"Recordatorio #{recordatorio.Id}: {ex.Message}");
+                    }
+                }
+
+                string mensaje = $"Recordatorios enviados ({enviados.Count}/{recordatorios.Count}): {string.Join(", ", enviados)}";
+                if (errores.Count > 0)
+                    mensaje += $". Errores: {string.Join("; ", errores)}";
+
+                return Json(new { success = true, message = mensaje });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ProbarRecordatorios: {ex}");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 

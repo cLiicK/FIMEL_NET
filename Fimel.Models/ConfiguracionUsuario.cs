@@ -14,5 +14,7 @@ namespace Fimel.Models
         public string? TokenPublico { get; set; }
         public int DiasAvisoPrevioControl { get; set; } = 5;
         public string? TituloProfesional { get; set; } = "Matrón/a";
+        public int? MinAntHoras { get; set; }
+        public int? MaxAntDias { get; set; }
     }
 }

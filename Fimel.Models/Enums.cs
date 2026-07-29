@@ -20,7 +20,8 @@ namespace Fimel.Models
         {
             Administrador = 1,
             Especialista = 2,
-            Administrativo = 3
+            Administrativo = 3,
+            SuperAdmin = 4
         }
 
         public enum EnumTiposPlantillas

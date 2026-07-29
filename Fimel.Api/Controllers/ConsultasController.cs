@@ -95,10 +95,14 @@ namespace Fimel.Api.Controllers
                 dbConsulta.OrdenExamenes = consulta.OrdenExamenes;
                 dbConsulta.Vigente = consulta.Vigente;
                 dbConsulta.TipoConsulta = consulta.TipoConsulta;
+                dbConsulta.TipoConsultaId = consulta.TipoConsultaId;
                 dbConsulta.Peso = consulta.Peso;
                 dbConsulta.Talla = consulta.Talla;
                 dbConsulta.IMC = consulta.IMC;
                 dbConsulta.EstadoNutricional = consulta.EstadoNutricional;
+                dbConsulta.PresionArterial = consulta.PresionArterial;
+                dbConsulta.FechaProximoControl = consulta.FechaProximoControl;
+                dbConsulta.FechaConsulta = consulta.FechaConsulta;
 
                 db.SaveChanges();
 

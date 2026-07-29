@@ -1,0 +1,94 @@
+@{
+    ViewBag.Title = "Administración - Instituciones";
+}
+
+<input type="hidden" id="hdnURL_ObtenerInstituciones" value='@Url.Action("_ObtenerInstituciones", "Administracion")' />
+<input type="hidden" id="hdnURL_GuardarInstitucion" value='@Url.Action("_GuardarInstitucion", "Administracion")' />
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="colorfimel-blue">Instituciones</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-3">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-blue btn-sm" onclick="ModuloAdminInstituciones.AbrirModalInstitucion()">
+                <i class="fas fa-plus me-1"></i>Nueva Institución
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Razón Social</th>
+                        <th>Rut</th>
+                        <th>Dirección</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyInstituciones">
+                    <tr><td colspan="5" class="text-center text-muted py-3">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NUEVA INSTITUCIÓN -->
+<div class="modal fade" id="modalInstitucion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Institución</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Razón Social <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="instRazonSocial" maxlength="200">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Rut</label>
+                        <input type="text" class="form-control" id="instRut" placeholder="Sin puntos ni guion">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Dv</label>
+                        <input type="text" class="form-control" id="instDv" maxlength="1">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="instDireccion" maxlength="200">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="instTelefono">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="instEmail" maxlength="100">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-blue" onclick="ModuloAdminInstituciones.GuardarInstitucion(this)">
+                    <i class="fas fa-save me-1"></i>Crear Institución
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/Site/Administracion_Instituciones.js?v=1.0" type="text/javascript"></script>
+}

@@ -30,6 +30,20 @@ namespace Fimel.Models
         public DbSet<ConfiguracionUsuario> ConfiguracionesUsuario { get; set; }
         public DbSet<PlantillaConsulta> PlantillasConsulta { get; set; }
         public DbSet<ExamenPaciente> ExamenesPaciente { get; set; }
+        public DbSet<PlantillaInforme> PlantillasInforme { get; set; }
+        public DbSet<PlantillaCampo> PlantillasCampo { get; set; }
+        public DbSet<InformeGenerado> InformesGenerados { get; set; }
+        public DbSet<InformeCampoValor> InformesCampoValor { get; set; }
+        public DbSet<DictadoSesion> DictadoSesiones { get; set; }
+        public DbSet<CategoriaFinanciera> CategoriasFinancieras { get; set; }
+        public DbSet<MovimientoFinanciero> MovimientosFinancieros { get; set; }
+        public DbSet<CategoriaExamen> CategoriasExamen { get; set; }
+        public DbSet<TipoExamen> TiposExamen { get; set; }
+        public DbSet<Recordatorio> Recordatorios { get; set; }
+        public DbSet<Modulos> Modulos { get; set; }
+        public DbSet<ModuloPerfil> ModuloPerfil { get; set; }
+        public DbSet<UsuarioPerfil> UsuarioPerfil { get; set; }
+        public DbSet<TipoConsulta> TiposConsulta { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -58,7 +72,47 @@ namespace Fimel.Models
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario");
             modelBuilder.Entity<PlantillaConsulta>().ToTable("PlantillasConsulta");
             modelBuilder.Entity<ExamenPaciente>().ToTable("ExamenesPaciente");
+            modelBuilder.Entity<PlantillaInforme>().ToTable("PlantillasInforme");
+            modelBuilder.Entity<PlantillaCampo>().ToTable("PlantillasCampo");
+            modelBuilder.Entity<InformeGenerado>().ToTable("InformesGenerados");
+            modelBuilder.Entity<InformeCampoValor>().ToTable("InformesCampoValor");
+            modelBuilder.Entity<DictadoSesion>().ToTable("DictadoSesiones");
+            modelBuilder.Entity<CategoriaFinanciera>().ToTable("CategoriasFinancieras");
+            modelBuilder.Entity<MovimientoFinanciero>().ToTable("MovimientosFinancieros");
+            modelBuilder.Entity<CategoriaExamen>().ToTable("CategoriasExamen");
+            modelBuilder.Entity<TipoExamen>().ToTable("TiposExamen");
+            modelBuilder.Entity<TipoExamen>()
+                .HasOne(t => t.Categoria)
+                .WithMany(c => c.TiposExamen)
+                .HasForeignKey(t => t.CategoriaExamenId);
+            modelBuilder.Entity<Recordatorio>().ToTable("Recordatorios");
 
+            modelBuilder.Entity<Modulos>().ToTable("Modulos");
+
+            modelBuilder.Entity<ModuloPerfil>().ToTable("ModuloPerfil");
+            modelBuilder.Entity<ModuloPerfil>()
+                .HasOne(mp => mp.Modulo)
+                .WithMany()
+                .HasForeignKey(mp => mp.ModuloId);
+            modelBuilder.Entity<ModuloPerfil>()
+                .HasOne(mp => mp.Perfil)
+                .WithMany()
+                .HasForeignKey(mp => mp.PerfilId)
+                .HasPrincipalKey(p => p.Id);
+
+            modelBuilder.Entity<UsuarioPerfil>().ToTable("UsuarioPerfil");
+            modelBuilder.Entity<UsuarioPerfil>()
+                .HasOne(up => up.Usuario)
+                .WithMany()
+                .HasForeignKey(up => up.UsuarioId)
+                .HasPrincipalKey(u => u.Id);
+            modelBuilder.Entity<UsuarioPerfil>()
+                .HasOne(up => up.Perfil)
+                .WithMany()
+                .HasForeignKey(up => up.PerfilId)
+                .HasPrincipalKey(p => p.Id);
+
+            modelBuilder.Entity<TipoConsulta>().ToTable("TipoConsulta");
         }
     }
 }
