@@ -71,7 +71,7 @@ namespace Fimel.Api.Controllers
         {
             try
             {
-                Usuarios? usuario = db.Usuarios.Where(x => x.Usuario == username).FirstOrDefault();
+                Usuarios? usuario = db.Usuarios.Where(x => x.Usuario == username && x.Vigente == "S").FirstOrDefault();
                 if (usuario == null)
                     return NotFound();
 
