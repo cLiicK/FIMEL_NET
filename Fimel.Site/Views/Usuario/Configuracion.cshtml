@@ -3,6 +3,7 @@
 <input type="hidden" id="hdnURL_GuardarConfiguracion" value='@Url.Action("_GuardarConfiguracion", "Usuario")' />
 <input type="hidden" id="hdnURL_ActualizarConfiguracion" value='@Url.Action("_ActualizarConfiguracion", "Usuario")' />
 <input type="hidden" id="hdnURL_SubirLogo" value='@Url.Action("_SubirLogo", "Usuario")' />
+<input type="hidden" id="hdnURL_SubirFirma" value='@Url.Action("_SubirFirma", "Usuario")' />
 <input type="hidden" id="hdnURL_GenerarToken" value='@Url.Action("_GenerarTokenPublico", "Usuario")' />
 <input type="hidden" id="hdnURL_ActualizarInstitucion" value='@Url.Action("_ActualizarInstitucion", "Usuario")' />
 <input type="hidden" id="idConfig" value='@Model.Configuracion.Id' />
@@ -260,6 +261,43 @@
 									</div>
 								</div>
 							}
+							@{
+								string? firmaBase64 = Model.Configuracion?.Firma;
+							}
+							<div class="accordion-item mt-2">
+								<h2 class="accordion-header">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionConfig-Firma" aria-expanded="false">
+										Mi Firma
+									</button>
+								</h2>
+								<div id="accordionConfig-Firma" class="accordion-collapse collapse">
+									<div class="accordion-body">
+										<p class="text-muted" style="font-size:0.88rem;">
+											Esta firma aparecerá en las recetas y órdenes de exámenes que imprimas.
+										</p>
+										@if (!string.IsNullOrEmpty(firmaBase64))
+										{
+											<div class="mb-3">
+												<label class="form-label">Firma actual</label><br>
+												<img id="imgFirmaActual" src="data:image/png;base64,@firmaBase64" alt="Firma actual"
+													style="max-height:80px;max-width:220px;border:1px solid #e0e8f0;border-radius:8px;padding:6px;background:#fff">
+											</div>
+										}
+										<div class="mb-3" id="divPreviewNuevaFirma" style="display:none">
+											<label class="form-label">Vista previa</label><br>
+											<img id="imgPreviewFirma" alt="Vista previa"
+												style="max-height:80px;max-width:220px;border:1px solid #e0e8f0;border-radius:8px;padding:6px;background:#fff">
+										</div>
+										<div class="mb-3">
+											<label for="inputFirmaFile" class="form-label">@(!string.IsNullOrEmpty(firmaBase64) ? "Cambiar firma" : "Subir firma") (PNG o JPG, máx. 2 MB)</label>
+											<input type="file" class="form-control" id="inputFirmaFile" accept=".png,.jpg,.jpeg">
+										</div>
+										<button type="button" class="btn btn-blue btn-sm" onclick="ModuloConfiguracionUsuario.SubirFirma(this)">
+											<i class="fas fa-upload me-1"></i> Subir firma
+										</button>
+									</div>
+								</div>
+							</div>
 							@if (Model.Institucion != null)
 							{
 								string? logoBase64 = ViewBag.LogoBase64 as string;

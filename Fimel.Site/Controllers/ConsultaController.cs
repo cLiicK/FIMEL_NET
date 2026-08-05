@@ -42,6 +42,7 @@ namespace Fimel.Site.Controllers
 
                 ConfiguracionUsuario configUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuario.Id}");
                 ViewBag.TituloProfesional = configUsuario?.TituloProfesional ?? "Matrón/a";
+                ViewBag.FirmaProfesional = configUsuario?.Firma ?? "";
 
                 if (usuario.IdInstitucion.HasValue)
                 {
@@ -380,6 +381,33 @@ namespace Fimel.Site.Controllers
             }
         }
 
+        private string ObtenerLogoDataUri(Instituciones? institucion)
+        {
+            if (!string.IsNullOrEmpty(institucion?.Logo))
+                return $"data:image/png;base64,{institucion.Logo}";
+
+            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+            if (System.IO.File.Exists(logoPath))
+                return $"data:image/png;base64,{Convert.ToBase64String(System.IO.File.ReadAllBytes(logoPath))}";
+
+            return "";
+        }
+
+        private string ObtenerFirmaImgHtml(string? firmaBase64)
+        {
+            return string.IsNullOrEmpty(firmaBase64)
+                ? ""
+                : $"<img class='firma-img' src='data:image/png;base64,{firmaBase64}' alt='Firma'>";
+        }
+
+        private static string SanitizarNombreArchivo(string nombre)
+        {
+            string resultado = nombre ?? "";
+            foreach (char c in Path.GetInvalidFileNameChars())
+                resultado = resultado.Replace(c, '_');
+            return resultado.Replace(" ", "_");
+        }
+
         [HttpPost]
         public ActionResult EnviarReceta(string emailPaciente, string nombrePaciente, string rutPaciente,
             string edadPaciente, string fechaConsulta, string medicamentosJson)
@@ -405,17 +433,38 @@ namespace Fimel.Site.Controllers
 
                 var medicamentos = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(medicamentosJson ?? "[]");
 
-                var medicRows = new System.Text.StringBuilder();
+                var medicamentosHtml = new System.Text.StringBuilder();
                 for (int i = 0; i < medicamentos.Count; i++)
                 {
                     var m = medicamentos[i];
-                    medicRows.AppendLine($@"<tr>
-                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{i + 1}</td>
-                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'><strong>{m.GetValueOrDefault("medicamento", "")}</strong></td>
-                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{m.GetValueOrDefault("dosis", "")}</td>
-                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{m.GetValueOrDefault("posologia", "")}</td>
-                    </tr>");
+                    var detalle = new List<string>();
+                    if (!string.IsNullOrEmpty(m.GetValueOrDefault("dosis", ""))) detalle.Add(m["dosis"]);
+                    if (!string.IsNullOrEmpty(m.GetValueOrDefault("posologia", ""))) detalle.Add(m["posologia"]);
+                    medicamentosHtml.Append($@"<li class='med-item'>
+                        <div class='med-bullet'>{i + 1}</div>
+                        <div class='med-body'>
+                            <div class='med-nombre'>{m.GetValueOrDefault("medicamento", "")}</div>
+                            {(detalle.Count > 0 ? $"<div class='med-detalle'>{string.Join(" &nbsp;&middot;&nbsp; ", detalle)}</div>" : "")}
+                        </div>
+                    </li>");
                 }
+
+                // Genera el PDF de la receta a partir de la misma plantilla usada para impresión
+                string plantillaRecetaPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "receta-medica.html");
+                string htmlReceta = System.IO.File.ReadAllText(plantillaRecetaPath)
+                    .Replace("{{logo_url}}", ObtenerLogoDataUri(institucion))
+                    .Replace("{{institucion}}", nombreInstitucion)
+                    .Replace("{{titulo}}", tituloProfesional)
+                    .Replace("{{doctor}}", nombreDoctor)
+                    .Replace("{{fecha}}", fechaConsulta)
+                    .Replace("{{hora}}", DateTime.Now.ToString("HH:mm"))
+                    .Replace("{{paciente}}", nombrePaciente)
+                    .Replace("{{rut_doc}}", rutPaciente)
+                    .Replace("{{edad}}", edadPaciente)
+                    .Replace("{{medicamentos}}", medicamentosHtml.ToString())
+                    .Replace("{{firma_img}}", ObtenerFirmaImgHtml(configUsuario?.Firma));
+
+                byte[] pdfBytes = new Utileria().HtmlToPdfDesdeContenido(htmlReceta);
 
                 string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
                 string logoEfectivo = logoPath;
@@ -434,14 +483,16 @@ namespace Fimel.Site.Controllers
                     .Replace("{{titulo_profesional}}", tituloProfesional)
                     .Replace("{{nombre_doctor}}", nombreDoctor)
                     .Replace("{{fecha_consulta}}", fechaConsulta)
-                    .Replace("{{nombre_paciente}}", nombrePaciente)
-                    .Replace("{{rut_paciente}}", rutPaciente)
-                    .Replace("{{edad_paciente}}", edadPaciente)
-                    .Replace("{{filas_medicamentos}}", medicRows.ToString());
+                    .Replace("{{nombre_paciente}}", nombrePaciente);
 
                 var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
                 {
                     (logoEfectivo, "logoImage", "image/png")
+                };
+
+                var adjuntos = new List<(byte[] Bytes, string FileName, string Mime)>
+                {
+                    (pdfBytes, $"Receta_{SanitizarNombreArchivo(nombrePaciente)}_{fechaConsulta}.pdf", "application/pdf")
                 };
 
                 var correo = new EnvioCorreo
@@ -451,7 +502,7 @@ namespace Fimel.Site.Controllers
                     CuerpoCorreo = cuerpo
                 };
 
-                new Utileria().EnviarCorreo(correo, imagenesCorreo, nombreInstitucion);
+                new Utileria().EnviarCorreo(correo, imagenesCorreo, nombreInstitucion, adjuntos);
 
                 if (logoTempPath != null && System.IO.File.Exists(logoTempPath))
                     System.IO.File.Delete(logoTempPath);
@@ -490,16 +541,36 @@ namespace Fimel.Site.Controllers
 
                 var examenes = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(examenesJson ?? "[]");
 
-                var examenRows = new System.Text.StringBuilder();
+                var examenesHtml = new System.Text.StringBuilder();
                 for (int i = 0; i < examenes.Count; i++)
                 {
                     var e = examenes[i];
-                    examenRows.AppendLine($@"<tr>
-                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{i + 1}</td>
-                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'><strong>{e.GetValueOrDefault("examen", "")}</strong></td>
-                        <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{e.GetValueOrDefault("indicaciones", "")}</td>
-                    </tr>");
+                    string indicaciones = e.GetValueOrDefault("indicaciones", "");
+                    examenesHtml.Append($@"<li class='exam-item'>
+                        <div class='exam-bullet'>{i + 1}</div>
+                        <div class='exam-body'>
+                            <div class='exam-nombre'>{e.GetValueOrDefault("examen", "")}</div>
+                            {(!string.IsNullOrEmpty(indicaciones) ? $"<div class='exam-detalle'>{indicaciones}</div>" : "")}
+                        </div>
+                    </li>");
                 }
+
+                // Genera el PDF de la orden a partir de la misma plantilla usada para impresión
+                string plantillaOrdenPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "orden-examenes.html");
+                string htmlOrden = System.IO.File.ReadAllText(plantillaOrdenPath)
+                    .Replace("{{logo_url}}", ObtenerLogoDataUri(institucion))
+                    .Replace("{{institucion}}", nombreInstitucion)
+                    .Replace("{{titulo}}", tituloProfesional)
+                    .Replace("{{doctor}}", nombreDoctor)
+                    .Replace("{{fecha}}", fechaConsulta)
+                    .Replace("{{hora}}", DateTime.Now.ToString("HH:mm"))
+                    .Replace("{{paciente}}", nombrePaciente)
+                    .Replace("{{rut_doc}}", rutPaciente)
+                    .Replace("{{edad}}", edadPaciente)
+                    .Replace("{{examenes}}", examenesHtml.ToString())
+                    .Replace("{{firma_img}}", ObtenerFirmaImgHtml(configUsuario?.Firma));
+
+                byte[] pdfBytes = new Utileria().HtmlToPdfDesdeContenido(htmlOrden);
 
                 string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
                 string logoEfectivo = logoPath;
@@ -518,14 +589,16 @@ namespace Fimel.Site.Controllers
                     .Replace("{{titulo_profesional}}", tituloProfesional)
                     .Replace("{{nombre_doctor}}", nombreDoctor)
                     .Replace("{{fecha_consulta}}", fechaConsulta)
-                    .Replace("{{nombre_paciente}}", nombrePaciente)
-                    .Replace("{{rut_paciente}}", rutPaciente)
-                    .Replace("{{edad_paciente}}", edadPaciente)
-                    .Replace("{{filas_examenes}}", examenRows.ToString());
+                    .Replace("{{nombre_paciente}}", nombrePaciente);
 
                 var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
                 {
                     (logoEfectivo, "logoImage", "image/png")
+                };
+
+                var adjuntos = new List<(byte[] Bytes, string FileName, string Mime)>
+                {
+                    (pdfBytes, $"Orden_Examenes_{SanitizarNombreArchivo(nombrePaciente)}_{fechaConsulta}.pdf", "application/pdf")
                 };
 
                 var correo = new EnvioCorreo
@@ -535,7 +608,7 @@ namespace Fimel.Site.Controllers
                     CuerpoCorreo = cuerpo
                 };
 
-                new Utileria().EnviarCorreo(correo, imagenesCorreo, nombreInstitucion);
+                new Utileria().EnviarCorreo(correo, imagenesCorreo, nombreInstitucion, adjuntos);
 
                 if (logoTempPath != null && System.IO.File.Exists(logoTempPath))
                     System.IO.File.Delete(logoTempPath);

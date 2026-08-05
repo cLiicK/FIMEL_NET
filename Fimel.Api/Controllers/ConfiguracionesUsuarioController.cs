@@ -93,6 +93,25 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        [HttpPatch("{id}/Firma")]
+        public IActionResult ActualizarFirma(int id, [FromBody] string firmaBase64)
+        {
+            try
+            {
+                ConfiguracionUsuario? dbConfig = db.ConfiguracionesUsuario.Find(id);
+                if (dbConfig == null) return NotFound();
+
+                dbConfig.Firma = firmaBase64;
+                db.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error ConfiguracionUsuario ActualizarFirma: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet]
         [Route("GetByToken/{token}")]
         public IActionResult GetByToken(string token)

@@ -167,6 +167,57 @@ namespace Fimel.Site.Controllers
         }
 
         [HttpPost]
+        public ActionResult _SubirFirma(IFormFile firma)
+        {
+            try
+            {
+                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+
+                if (firma == null || firma.Length == 0)
+                    return Json(new { success = false, message = "Debe seleccionar una imagen." });
+
+                var extensionesPermitidas = new[] { ".png", ".jpg", ".jpeg" };
+                string ext = Path.GetExtension(firma.FileName).ToLower();
+                if (!extensionesPermitidas.Contains(ext))
+                    return Json(new { success = false, message = "Solo se permiten imágenes PNG o JPG." });
+
+                if (firma.Length > 2 * 1024 * 1024)
+                    return Json(new { success = false, message = "El archivo no puede superar 2 MB." });
+
+                ConfiguracionUsuario dbConfig = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuario.Id}");
+
+                if (dbConfig == null || dbConfig.Id == 0)
+                {
+                    var nuevaConfig = new ConfiguracionUsuario
+                    {
+                        Usuario = usuario,
+                        DuracionBloqueHorario = TimeSpan.FromMinutes(30)
+                    };
+                    dbConfig = APIBase.Post<ConfiguracionUsuario>("ConfiguracionesUsuario", nuevaConfig);
+
+                    if (dbConfig == null || dbConfig.Id == 0)
+                        return Json(new { success = false, message = "Error al inicializar la configuración." });
+                }
+
+                string firmaBase64;
+                using (var ms = new MemoryStream())
+                {
+                    firma.CopyTo(ms);
+                    firmaBase64 = Convert.ToBase64String(ms.ToArray());
+                }
+
+                APIBase.Patch($"ConfiguracionesUsuario/{dbConfig.Id}/Firma", firmaBase64);
+
+                return Json(new { success = true, message = "Firma guardada correctamente.", firmaBase64 });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Usuario _SubirFirma: {ex}");
+                return Json(new { success = false, message = "Error al guardar la firma." });
+            }
+        }
+
+        [HttpPost]
         public ActionResult _ActualizarInstitucion(int id, Instituciones inst)
         {
             try
