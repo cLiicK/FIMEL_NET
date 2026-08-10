@@ -26,6 +26,7 @@ namespace Fimel.Models
         public DbSet<Config> Config { get; set; }
         public DbSet<HorarioAtencion> HorariosAtencion { get; set; }
         public DbSet<HorarioEspecifico> HorariosEspecificos { get; set; }
+        public DbSet<HorarioBloqueado> HorariosBloqueados { get; set; }
         public DbSet<Cita> Citas { get; set; }
         public DbSet<ConfiguracionUsuario> ConfiguracionesUsuario { get; set; }
         public DbSet<PlantillaConsulta> PlantillasConsulta { get; set; }
@@ -68,6 +69,7 @@ namespace Fimel.Models
             modelBuilder.Entity<Config>().ToTable("Config", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<HorarioAtencion>().ToTable("HorariosAtencion", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<HorarioEspecifico>().ToTable("HorariosEspecificos");
+            modelBuilder.Entity<HorarioBloqueado>().ToTable("HorariosBloqueados");
             modelBuilder.Entity<Cita>().ToTable("Citas");
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario");
             modelBuilder.Entity<PlantillaConsulta>().ToTable("PlantillasConsulta");
