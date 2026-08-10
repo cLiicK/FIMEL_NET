@@ -56,6 +56,10 @@ var ModuloAdminUsuarios = (function () {
     return {
 
         IniciarScripts: function () {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new bootstrap.Tooltip(el);
+            });
+
             $.ajax({
                 url: $('#hdnURL_ObtenerUsuarios').val(), method: 'GET',
                 success: function (r) {
@@ -78,6 +82,7 @@ var ModuloAdminUsuarios = (function () {
             $('#usrUsuario').val('');
             $('#usrEmail').val('');
             $('#usrInstitucion').val('');
+            $('#usrRut').val('');
             $('#usrPerfiles input[type=checkbox]').prop('checked', false);
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalUsuario')).show();
         },
@@ -86,12 +91,24 @@ var ModuloAdminUsuarios = (function () {
             var nombres = $('#usrNombres').val().trim();
             var usuarioLogin = $('#usrUsuario').val().trim();
             var email = $('#usrEmail').val().trim();
+            var rut = $('#usrRut').val().trim();
             var perfilIds = $('#usrPerfiles input[type=checkbox]:checked').map(function () { return parseInt($(this).val()); }).get();
 
             if (!nombres) { Swal.fire('Campo requerido', 'Ingrese los nombres.', 'warning'); return; }
             if (!usuarioLogin) { Swal.fire('Campo requerido', 'Ingrese el nombre de usuario.', 'warning'); return; }
             if (!email) { Swal.fire('Campo requerido', 'Ingrese el email.', 'warning'); return; }
             if (!perfilIds.length) { Swal.fire('Campo requerido', 'Seleccione al menos un perfil.', 'warning'); return; }
+
+            var rutNum = '', rutDv = '';
+            if (rut) {
+                var rutValidado = validarRut(rut);
+                if (rutValidado === '00' || rutValidado === '01') {
+                    Swal.fire('RUT inválido', 'Revisa el RUT ingresado.', 'warning');
+                    return;
+                }
+                rutNum = parseInt(rutValidado);
+                rutDv = getDV(rutNum).toString().toUpperCase();
+            }
 
             showLoading(btn);
             $.ajax({
@@ -105,6 +122,8 @@ var ModuloAdminUsuarios = (function () {
                     Usuario: usuarioLogin,
                     Email: email,
                     IdInstitucion: $('#usrInstitucion').val() || '',
+                    Rut: rutNum,
+                    Dv: rutDv,
                     perfilIds: perfilIds
                 },
                 success: function (r) {
@@ -151,4 +170,21 @@ var ModuloAdminUsuarios = (function () {
     };
 })();
 
-$(function () { ModuloAdminUsuarios.IniciarScripts(); });
+$(function () {
+    ModuloAdminUsuarios.IniciarScripts();
+
+    $('#usrRut').keypress(function (e) { onlyNumbersWithK(e); });
+    $('#usrRut').keyup(function () {
+        let cadena = $(this).val().replace(/[.]/gi, '').replace('-', '');
+        if (cadena.length > 9) cadena = cadena.substr(0, 9);
+        let concat = '', i = cadena.length - 1;
+        for (; i >= 0;) {
+            concat = cadena[i] + concat;
+            if (i + 1 == cadena.length && i > 0) concat = '-' + concat;
+            if (concat.length == 9 && cadena.length > 7) concat = '.' + concat;
+            if (concat.length == 5 && cadena.length > 4) concat = '.' + concat;
+            i--;
+        }
+        $(this).val(concat);
+    });
+});

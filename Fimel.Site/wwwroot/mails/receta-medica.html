@@ -190,6 +190,11 @@
             color: #555;
             font-weight: bold;
         }
+        .firma-rut {
+            font-size: 11px;
+            color: #777;
+            margin-top: 2px;
+        }
         .firma-sub {
             font-size: 11px;
             color: #aaa;
@@ -270,8 +275,9 @@
     <div class="footer">
         <div class="firma">
             {{firma_img}}
-            <div class="firma-linea">{{titulo}} {{doctor}}</div>
-            <div class="firma-sub">{{institucion}}</div>
+            <div class="firma-linea">{{doctor}}</div>
+            <div class="firma-rut">{{rut_profesional}}</div>
+            <div class="firma-sub">{{titulo}}</div>
         </div>
     </div>
 

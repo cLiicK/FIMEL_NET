@@ -119,6 +119,8 @@ namespace Fimel.Site.Controllers
                 if (!nuevoUsuario.PerfilesAsignados.Any())
                     return Json(new { success = false, message = "Seleccione al menos un perfil." });
 
+                nuevoUsuario.Dv = string.IsNullOrWhiteSpace(nuevoUsuario.Dv) ? null : nuevoUsuario.Dv.Trim().ToUpper();
+
                 Usuarios? creado = APIBase.Post<Usuarios>("Usuarios", nuevoUsuario);
                 if (creado == null)
                     return Json(new { success = false, message = "Error al crear el usuario. Verifique que el nombre de usuario no esté en uso." });

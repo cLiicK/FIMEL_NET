@@ -82,6 +82,16 @@
                             <option value="">Sin institución (SuperAdmin)</option>
                         </select>
                     </div>
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            RUT
+                            <i class="fas fa-circle-info ms-1 text-muted"
+                               data-bs-toggle="tooltip" data-bs-placement="top"
+                               title="Aparece en la firma de la receta y la orden de exámenes. Solo se define aquí, el profesional no puede editarlo."
+                               style="cursor:help;"></i>
+                        </label>
+                        <input type="text" class="form-control" id="usrRut" maxlength="12" placeholder="12.345.678-9">
+                    </div>
                     <div class="col-md-12">
                         <label class="form-label">Perfiles <span class="text-danger">*</span></label>
                         <div id="usrPerfiles" class="d-flex flex-wrap gap-3"></div>

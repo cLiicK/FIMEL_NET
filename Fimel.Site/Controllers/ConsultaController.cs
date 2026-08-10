@@ -43,6 +43,9 @@ namespace Fimel.Site.Controllers
                 ConfiguracionUsuario configUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuario.Id}");
                 ViewBag.TituloProfesional = configUsuario?.TituloProfesional ?? "Matrón/a";
                 ViewBag.FirmaProfesional = configUsuario?.Firma ?? "";
+                ViewBag.RutProfesional = usuario.Rut.HasValue
+                    ? new Utileria().FormatearRut(usuario.Rut.Value, usuario.Dv ?? "")
+                    : "";
 
                 if (usuario.IdInstitucion.HasValue)
                 {
@@ -462,7 +465,10 @@ namespace Fimel.Site.Controllers
                     .Replace("{{rut_doc}}", rutPaciente)
                     .Replace("{{edad}}", edadPaciente)
                     .Replace("{{medicamentos}}", medicamentosHtml.ToString())
-                    .Replace("{{firma_img}}", ObtenerFirmaImgHtml(configUsuario?.Firma));
+                    .Replace("{{firma_img}}", ObtenerFirmaImgHtml(configUsuario?.Firma))
+                    .Replace("{{rut_profesional}}", usuarioConectado.Rut.HasValue
+                        ? new Utileria().FormatearRut(usuarioConectado.Rut.Value, usuarioConectado.Dv ?? "")
+                        : "");
 
                 byte[] pdfBytes = new Utileria().HtmlToPdfDesdeContenido(htmlReceta);
 
@@ -568,7 +574,10 @@ namespace Fimel.Site.Controllers
                     .Replace("{{rut_doc}}", rutPaciente)
                     .Replace("{{edad}}", edadPaciente)
                     .Replace("{{examenes}}", examenesHtml.ToString())
-                    .Replace("{{firma_img}}", ObtenerFirmaImgHtml(configUsuario?.Firma));
+                    .Replace("{{firma_img}}", ObtenerFirmaImgHtml(configUsuario?.Firma))
+                    .Replace("{{rut_profesional}}", usuarioConectado.Rut.HasValue
+                        ? new Utileria().FormatearRut(usuarioConectado.Rut.Value, usuarioConectado.Dv ?? "")
+                        : "");
 
                 byte[] pdfBytes = new Utileria().HtmlToPdfDesdeContenido(htmlOrden);
 

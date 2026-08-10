@@ -770,6 +770,7 @@ var ModuloConsulta = (function () {
             var firmaImgHtml = firmaBase64
                 ? '<img class="firma-img" src="data:image/png;base64,' + firmaBase64 + '" alt="Firma">'
                 : '';
+            var rutProfesional = $('#hdnRutProfesional').val() || '';
 
             var medicamentosHtml = recetaMedicamentos.map(function (m, i) {
                 var detalle = [];
@@ -798,7 +799,8 @@ var ModuloConsulta = (function () {
                         .replace(/\{\{rut_doc\}\}/g, rutPaciente)
                         .replace(/\{\{edad\}\}/g, edadPaciente)
                         .replace(/\{\{medicamentos\}\}/g, medicamentosHtml)
-                        .replace(/\{\{firma_img\}\}/g, firmaImgHtml);
+                        .replace(/\{\{firma_img\}\}/g, firmaImgHtml)
+                        .replace(/\{\{rut_profesional\}\}/g, rutProfesional);
 
                     var w = window.open('', '_blank', 'width=800,height=600');
                     w.document.write(html);
@@ -1350,6 +1352,7 @@ var ModuloConsulta = (function () {
             var firmaImgHtml = firmaBase64
                 ? '<img class="firma-img" src="data:image/png;base64,' + firmaBase64 + '" alt="Firma">'
                 : '';
+            var rutProfesional = $('#hdnRutProfesional').val() || '';
 
             var examenesHtml = ordenExamenes.map(function (e, i) {
                 return '<li class="exam-item">' +
@@ -1375,7 +1378,8 @@ var ModuloConsulta = (function () {
                         .replace(/\{\{rut_doc\}\}/g, rutPaciente)
                         .replace(/\{\{edad\}\}/g, edadPaciente)
                         .replace(/\{\{examenes\}\}/g, examenesHtml)
-                        .replace(/\{\{firma_img\}\}/g, firmaImgHtml);
+                        .replace(/\{\{firma_img\}\}/g, firmaImgHtml)
+                        .replace(/\{\{rut_profesional\}\}/g, rutProfesional);
 
                     var w = window.open('', '_blank', 'width=800,height=600');
                     w.document.write(html);
