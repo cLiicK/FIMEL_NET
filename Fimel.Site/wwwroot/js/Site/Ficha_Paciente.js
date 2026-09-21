@@ -9,6 +9,9 @@ var ModuloFichaPaciente = (function () {
             $("#inputRut").keypress(function (e) { onlyNumbersWithK(e); });
             $("#inputRutData").keypress(function (e) { onlyNumbersWithK(e); });
             $("#inputCelular").keypress(function (e) { onlyNumbers(e); });
+            $("#inputCelular").on('input', function () {
+                this.value = this.value.replace(/\D/g, '').substring(0, 9);
+            });
             $("#inputNombres").keypress(function (e) { onlyLetters(e); });
             $("#inputPrimerApellido").keypress(function (e) { onlyLetters(e); });
             $("#inputSegundoApellido").keypress(function (e) { onlyLetters(e); });
