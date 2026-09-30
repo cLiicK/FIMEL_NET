@@ -21,17 +21,27 @@ var ModuloAdminUsuarios = (function () {
     function renderUsuarios() {
         var html = '';
         _usuarios.forEach(function (u) {
-            html += '<tr>' +
+            var activo = u.Vigente === 'S';
+            var estadoBadge = activo
+                ? '<span class="badge bg-success">Activo</span>'
+                : '<span class="badge bg-secondary">Inactivo</span>';
+            var btnEstado = activo
+                ? '<button class="btn btn-ico btn-sm text-danger" title="Dar de baja" onclick="ModuloAdminUsuarios.DarBaja(' + u.Id + ')"><i class="fas fa-user-slash"></i></button>'
+                : '<button class="btn btn-ico btn-sm text-success" title="Reactivar" onclick="ModuloAdminUsuarios.Reactivar(' + u.Id + ')"><i class="fas fa-user-check"></i></button>';
+
+            html += '<tr' + (activo ? '' : ' class="text-muted"') + '>' +
                 '<td>' + (u.Nombres || '') + ' ' + (u.ApellidoPaterno || '') + '</td>' +
                 '<td>' + (u.Usuario || '') + '</td>' +
                 '<td>' + (u.Email || '') + '</td>' +
                 '<td>' + nombreInstitucion(u.IdInstitucion) + '</td>' +
                 '<td>' + badgesPerfiles(u) + '</td>' +
+                '<td>' + estadoBadge + '</td>' +
                 '<td class="text-end">' +
                 '<button class="btn btn-ico btn-sm" title="Editar perfiles" onclick="ModuloAdminUsuarios.AbrirModalPerfiles(' + u.Id + ')"><i class="fas fa-user-shield"></i></button>' +
+                btnEstado +
                 '</td></tr>';
         });
-        $('#tbodyUsuarios').html(html || '<tr><td colspan="6" class="text-center text-muted">Sin usuarios</td></tr>');
+        $('#tbodyUsuarios').html(html || '<tr><td colspan="7" class="text-center text-muted">Sin usuarios</td></tr>');
     }
 
     function poblarInstitucionesSelect() {
@@ -165,6 +175,30 @@ var ModuloAdminUsuarios = (function () {
             var url = marcado ? $('#hdnURL_AsignarPerfil').val() : $('#hdnURL_QuitarPerfil').val();
             $.post(url, { idUsuario: idUsuario, idPerfil: idPerfil }, function (r) {
                 if (r.success) ModuloAdminUsuarios.IniciarScripts();
+            });
+        },
+
+        DarBaja: function (idUsuario) {
+            Swal.fire({
+                title: '¿Dar de baja este usuario?',
+                text: 'No podrá iniciar sesión hasta que sea reactivado.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Dar de baja',
+                cancelButtonText: 'Cancelar'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+                $.post($('#hdnURL_DarBajaUsuario').val(), { id: idUsuario }, function (r) {
+                    if (r.success) ModuloAdminUsuarios.IniciarScripts();
+                    else Swal.fire('Error', r.message || 'No se pudo dar de baja el usuario.', 'error');
+                });
+            });
+        },
+
+        Reactivar: function (idUsuario) {
+            $.post($('#hdnURL_ReactivarUsuario').val(), { id: idUsuario }, function (r) {
+                if (r.success) ModuloAdminUsuarios.IniciarScripts();
+                else Swal.fire('Error', r.message || 'No se pudo reactivar el usuario.', 'error');
             });
         }
     };

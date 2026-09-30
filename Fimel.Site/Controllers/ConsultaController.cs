@@ -413,7 +413,7 @@ namespace Fimel.Site.Controllers
 
         [HttpPost]
         public ActionResult EnviarReceta(string emailPaciente, string nombrePaciente, string rutPaciente,
-            string edadPaciente, string fechaConsulta, string medicamentosJson)
+            string edadPaciente, string fechaConsulta, string medicamentosJson, string diagnostico = null)
         {
             try
             {
@@ -452,6 +452,13 @@ namespace Fimel.Site.Controllers
                     </li>");
                 }
 
+                string diagnosticoSectionHtml = string.IsNullOrWhiteSpace(diagnostico)
+                    ? ""
+                    : $@"<div class='section'>
+                        <div class='section-label'>Diagnóstico</div>
+                        <div class='diagnostico-text'>{System.Net.WebUtility.HtmlEncode(diagnostico.Trim())}</div>
+                    </div>";
+
                 // Genera el PDF de la receta a partir de la misma plantilla usada para impresión
                 string plantillaRecetaPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "receta-medica.html");
                 string htmlReceta = System.IO.File.ReadAllText(plantillaRecetaPath)
@@ -464,6 +471,7 @@ namespace Fimel.Site.Controllers
                     .Replace("{{paciente}}", nombrePaciente)
                     .Replace("{{rut_doc}}", rutPaciente)
                     .Replace("{{edad}}", edadPaciente)
+                    .Replace("{{diagnostico_section}}", diagnosticoSectionHtml)
                     .Replace("{{medicamentos}}", medicamentosHtml.ToString())
                     .Replace("{{firma_img}}", ObtenerFirmaImgHtml(configUsuario?.Firma))
                     .Replace("{{rut_profesional}}", usuarioConectado.Rut.HasValue
@@ -628,6 +636,73 @@ namespace Fimel.Site.Controllers
             {
                 Logger.Log($"Error EnviarOrdenExamenes: {ex}");
                 return Json(new { success = false, message = "Error al enviar la orden de exámenes." });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult EnviarIndicacionesCorreo(string emailPaciente, string nombrePaciente, string indicaciones)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuarioConectado == null)
+                    return Json(new { success = false, message = "Sesión no válida." });
+
+                if (string.IsNullOrEmpty(emailPaciente))
+                    return Json(new { success = false, message = "El paciente no tiene correo registrado." });
+
+                if (string.IsNullOrWhiteSpace(indicaciones))
+                    return Json(new { success = false, message = "No hay indicaciones para enviar." });
+
+                Instituciones? institucion = null;
+                if (usuarioConectado.IdInstitucion.HasValue)
+                    institucion = APIBase.Get<Instituciones>($"Instituciones/{usuarioConectado.IdInstitucion}");
+
+                string nombreDoctor = $"{usuarioConectado.Nombres} {usuarioConectado.ApellidoPaterno}".Trim();
+                string nombreInstitucion = institucion?.RazonSocial ?? "FIMEL";
+
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-recordatorio-manual.html");
+                string cuerpo = System.IO.File.ReadAllText(templatePath)
+                    .Replace("{{titulo_recordatorio}}", "Indicaciones médicas")
+                    .Replace("{{cuerpo_recordatorio}}", System.Net.WebUtility.HtmlEncode(indicaciones.Trim()))
+                    .Replace("{{nombre_paciente}}", nombrePaciente)
+                    .Replace("{{nombre_profesional}}", nombreDoctor)
+                    .Replace("{{nombre_institucion}}", nombreInstitucion);
+
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+                string logoEfectivo = logoPath;
+                string? logoTempPath = null;
+
+                if (!string.IsNullOrEmpty(institucion?.Logo))
+                {
+                    logoTempPath = Path.Combine(Path.GetTempPath(), $"logo_indicaciones_{usuarioConectado.IdInstitucion}.png");
+                    System.IO.File.WriteAllBytes(logoTempPath, Convert.FromBase64String(institucion.Logo));
+                    logoEfectivo = logoTempPath;
+                }
+
+                var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
+                {
+                    (logoEfectivo, "logoImage", "image/png")
+                };
+
+                var correo = new EnvioCorreo
+                {
+                    Destinatarios = new List<string> { emailPaciente },
+                    Asunto = $"Indicaciones médicas - {nombreDoctor}",
+                    CuerpoCorreo = cuerpo
+                };
+
+                new Utileria().EnviarCorreo(correo, imagenesCorreo, nombreInstitucion);
+
+                if (logoTempPath != null && System.IO.File.Exists(logoTempPath))
+                    System.IO.File.Delete(logoTempPath);
+
+                return Json(new { success = true, message = $"Indicaciones enviadas a {emailPaciente}" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error EnviarIndicacionesCorreo: {ex}");
+                return Json(new { success = false, message = "Error al enviar las indicaciones." });
             }
         }
 

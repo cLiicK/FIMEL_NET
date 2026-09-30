@@ -6,6 +6,8 @@
 <input type="hidden" id="hdnURL_GuardarUsuario" value='@Url.Action("_GuardarUsuario", "Administracion")' />
 <input type="hidden" id="hdnURL_AsignarPerfil" value='@Url.Action("_AsignarPerfil", "Administracion")' />
 <input type="hidden" id="hdnURL_QuitarPerfil" value='@Url.Action("_QuitarPerfil", "Administracion")' />
+<input type="hidden" id="hdnURL_DarBajaUsuario" value='@Url.Action("_DarBajaUsuario", "Administracion")' />
+<input type="hidden" id="hdnURL_ReactivarUsuario" value='@Url.Action("_ReactivarUsuario", "Administracion")' />
 
 <div id="content-wrapper" class="container-9">
     <div class="row">
@@ -35,11 +37,12 @@
                         <th>Email</th>
                         <th>Institución</th>
                         <th>Perfiles</th>
-                        <th class="text-end" style="width:70px"></th>
+                        <th>Estado</th>
+                        <th class="text-end" style="width:90px"></th>
                     </tr>
                 </thead>
                 <tbody id="tbodyUsuarios">
-                    <tr><td colspan="6" class="text-center text-muted py-3">Cargando...</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-3">Cargando...</td></tr>
                 </tbody>
             </table>
         </div>

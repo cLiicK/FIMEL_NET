@@ -772,6 +772,14 @@ var ModuloConsulta = (function () {
                 : '';
             var rutProfesional = $('#hdnRutProfesional').val() || '';
 
+            var diagnostico = ($('#inputDiagnostico').val() || '').trim();
+            var diagnosticoSectionHtml = diagnostico
+                ? '<div class="section">' +
+                    '<div class="section-label">Diagnóstico</div>' +
+                    '<div class="diagnostico-text">' + escapeHtml(diagnostico) + '</div>' +
+                  '</div>'
+                : '';
+
             var medicamentosHtml = recetaMedicamentos.map(function (m, i) {
                 var detalle = [];
                 if (m.dosis) detalle.push(m.dosis);
@@ -798,6 +806,7 @@ var ModuloConsulta = (function () {
                         .replace(/\{\{paciente\}\}/g, nombrePaciente)
                         .replace(/\{\{rut_doc\}\}/g, rutPaciente)
                         .replace(/\{\{edad\}\}/g, edadPaciente)
+                        .replace(/\{\{diagnostico_section\}\}/g, diagnosticoSectionHtml)
                         .replace(/\{\{medicamentos\}\}/g, medicamentosHtml)
                         .replace(/\{\{firma_img\}\}/g, firmaImgHtml)
                         .replace(/\{\{rut_profesional\}\}/g, rutProfesional);
@@ -839,7 +848,44 @@ var ModuloConsulta = (function () {
                     rutPaciente: rutPacienteEnvio,
                     edadPaciente: $('#inputEdad').val() || '',
                     fechaConsulta: $('#inputFechaConsulta').val(),
+                    diagnostico: $('#inputDiagnostico').val() || '',
                     medicamentosJson: JSON.stringify(recetaMedicamentos)
+                },
+                success: function (response) {
+                    closeLoading(btn);
+                    if (response.success) {
+                        Swal.fire('Correo enviado', response.message, 'success');
+                    } else {
+                        Swal.fire('Error', response.message || 'Error al enviar el correo.', 'error');
+                    }
+                },
+                error: function () {
+                    closeLoading(btn);
+                    Swal.fire('Error', 'Error al enviar el correo.', 'error');
+                }
+            });
+        },
+
+        EnviarIndicacionesCorreo: function (btn) {
+            var indicaciones = $('#inputIndicaciones').val().trim();
+            if (!indicaciones) {
+                Swal.fire('Sin indicaciones', 'Escriba las indicaciones antes de enviarlas.', 'warning');
+                return;
+            }
+            var email = $('#inputEmail').val();
+            if (!email) {
+                Swal.fire('Sin correo', 'El paciente no tiene un correo electrónico registrado.', 'warning');
+                return;
+            }
+
+            showLoading(btn);
+            $.ajax({
+                url: $('#hdnURL_EnviarIndicacionesCorreo').val(),
+                method: 'POST',
+                data: {
+                    emailPaciente: email,
+                    nombrePaciente: ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim(),
+                    indicaciones: indicaciones
                 },
                 success: function (response) {
                     closeLoading(btn);

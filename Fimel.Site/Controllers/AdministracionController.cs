@@ -166,6 +166,40 @@ namespace Fimel.Site.Controllers
             }
         }
 
+        [HttpPost]
+        public ActionResult _DarBajaUsuario(int id)
+        {
+            try
+            {
+                Usuarios usuarioConectado = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+                if (usuarioConectado != null && usuarioConectado.Id == id)
+                    return Json(new { success = false, message = "No puedes dar de baja tu propio usuario." });
+
+                APIBase.Delete<bool>($"Usuarios/{id}");
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error _DarBajaUsuario: {ex}");
+                return Json(new { success = false, message = "Error al dar de baja el usuario." });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult _ReactivarUsuario(int id)
+        {
+            try
+            {
+                APIBase.Post<object, object>($"Usuarios/{id}/Reactivar", new { });
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error _ReactivarUsuario: {ex}");
+                return Json(new { success = false, message = "Error al reactivar el usuario." });
+            }
+        }
+
         private void EnviarCorreoBienvenida(Usuarios usuario)
         {
             try
