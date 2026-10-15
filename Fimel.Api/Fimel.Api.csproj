@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>fimel-api-5f1c2a7e-flow</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
