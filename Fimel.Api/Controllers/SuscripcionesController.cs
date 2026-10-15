@@ -25,6 +25,21 @@ namespace Fimel.Api.Controllers
             this.flow = flow;
         }
 
+        // Planes que se ofrecen a nuevos usuarios, del más corto al más largo
+        [HttpGet("Planes")]
+        public IActionResult Planes()
+        {
+            try
+            {
+                return Ok(db.PlanesSuscripcion.Where(p => p.Vigente == "S").OrderBy(p => p.Meses).ToList());
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al obtener planes de suscripción: {ex}");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpGet("GetByUsuario/{idUsuario}")]
         public IActionResult GetByUsuario(int idUsuario)
         {
@@ -59,9 +74,9 @@ namespace Fimel.Api.Controllers
                 if (string.IsNullOrWhiteSpace(solicitud.UrlRetorno))
                     return Ok(Fallo(solicitud, "Falta la URL de retorno."));
 
-                PlanSuscripcion? plan = db.PlanesSuscripcion.Where(p => p.Vigente == "S").OrderByDescending(p => p.Id).FirstOrDefault();
+                PlanSuscripcion? plan = db.PlanesSuscripcion.FirstOrDefault(p => p.Id == solicitud.IdPlan && p.Vigente == "S");
                 if (plan == null)
-                    return Ok(Fallo(solicitud, "No hay un plan de suscripción configurado."));
+                    return Ok(Fallo(solicitud, "Selecciona un plan disponible."));
 
                 SuscripcionUsuario? anterior = UltimaSuscripcion(usuario.Id);
                 if (anterior != null && (anterior.Estado == EstadosSuscripcion.Prueba || anterior.Estado == EstadosSuscripcion.Activa || anterior.Estado == EstadosSuscripcion.Exenta))

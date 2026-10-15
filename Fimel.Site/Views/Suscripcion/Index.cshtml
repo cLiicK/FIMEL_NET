@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = "Mi suscripción";
     string? estado = Model?.Estado;
+    List<PlanSuscripcion> planes = ViewBag.Planes ?? new List<PlanSuscripcion>();
+    PlanSuscripcion? mensual = planes.FirstOrDefault(p => p.Meses == 1);
+    Func<int, string> pesos = monto => "$" + monto.ToString("N0");
+    Func<int, string> periodo = meses => meses == 1 ? "al mes" : meses == 12 ? "al año" : $"cada {meses} meses";
     bool vigente = estado == EstadosSuscripcion.Prueba || estado == EstadosSuscripcion.Activa || estado == EstadosSuscripcion.Exenta;
     string badge = estado switch
     {
@@ -23,7 +27,7 @@
     </div>
 
     <div class="row mt-3">
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-xl-10">
             <div class="container">
 
                 @if (TempData["MensajeExito"] != null)
@@ -41,16 +45,64 @@
                         {
                             <h5 class="card-title">Suscríbete a Fimel</h5>
                             <p class="card-text">
-                                Inscribe tu tarjeta de crédito o débito en Flow. Los primeros 30 días son gratis y el cobro mensual comienza al terminar la prueba.
-                                Puedes cancelar cuando quieras.
+                                Elige tu plan e inscribe tu tarjeta de crédito o débito en Flow. <strong>Los primeros 30 días son gratis</strong>
+                                y el primer cobro se hace al terminar la prueba. Puedes cancelar cuando quieras.
                             </p>
                             @if (estado == EstadosSuscripcion.Pendiente)
                             {
-                                <p class="text-muted small">Tienes una inscripción de tarjeta sin terminar. Puedes retomarla con el botón.</p>
+                                <p class="text-muted small">Tienes una inscripción de tarjeta sin terminar. Puedes retomarla eligiendo un plan.</p>
                             }
-                            <form method="post" asp-action="Suscribirse" asp-controller="Suscripcion">
-                                <button type="submit" class="btn btn-primary">Inscribir tarjeta en Flow</button>
-                            </form>
+                            @if (Model?.PruebaUsada == true)
+                            {
+                                <p class="text-muted small">Ya usaste tu prueba gratis, así que el primer cobro se hace al inscribir la tarjeta.</p>
+                            }
+
+                            @if (planes.Count == 0)
+                            {
+                                <div class="alert alert-warning mb-0">Todavía no hay planes disponibles.</div>
+                            }
+                            else
+                            {
+                                <div class="row g-3">
+                                    @foreach (PlanSuscripcion plan in planes)
+                                    {
+                                        int? descuento = mensual != null && plan.Meses > 1
+                                            ? (int)Math.Round(100 - plan.Monto * 100.0 / (mensual.Monto * plan.Meses))
+                                            : null;
+                                        bool destacado = plan.Meses == planes.Max(p => p.Meses);
+
+                                        <div class="col-12 col-sm-6 col-xl-3">
+                                            <div class="card h-100 @(destacado ? "border-primary" : "")">
+                                                <div class="card-body d-flex flex-column">
+                                                    <h6 class="card-title">
+                                                        @plan.Nombre
+                                                        @if (destacado)
+                                                        {
+                                                            <span class="badge bg-primary ms-1">Mejor precio</span>
+                                                        }
+                                                    </h6>
+                                                    <p class="fs-4 fw-bold mb-0">@pesos(plan.Monto)</p>
+                                                    <p class="text-muted small mb-2">@periodo(plan.Meses)</p>
+                                                    @if (plan.Meses > 1)
+                                                    {
+                                                        <p class="small mb-2">
+                                                            Equivale a @pesos((int)Math.Round(plan.Monto / (double)plan.Meses)) al mes
+                                                            @if (descuento > 0)
+                                                            {
+                                                                <span class="badge bg-success ms-1">Ahorras @descuento%</span>
+                                                            }
+                                                        </p>
+                                                    }
+                                                    <form method="post" asp-action="Suscribirse" asp-controller="Suscripcion" class="mt-auto">
+                                                        <input type="hidden" name="idPlan" value="@plan.Id" />
+                                                        <button type="submit" class="btn @(destacado ? "btn-primary" : "btn-outline-primary") w-100">Elegir</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
                         }
                         else
                         {
@@ -61,8 +113,8 @@
                             <dl class="row mb-0">
                                 @if (Model.Plan != null)
                                 {
-                                    <dt class="col-sm-5">Valor mensual</dt>
-                                    <dd class="col-sm-7">$@Model.Plan.Monto.ToString("N0")</dd>
+                                    <dt class="col-sm-5">Valor</dt>
+                                    <dd class="col-sm-7">@pesos(Model.Plan.Monto) @periodo(Model.Plan.Meses)</dd>
                                 }
                                 @if (estado == EstadosSuscripcion.Prueba && Model.FinPrueba.HasValue)
                                 {

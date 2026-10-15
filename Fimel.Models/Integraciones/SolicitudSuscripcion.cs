@@ -4,6 +4,7 @@
     public class SolicitudSuscripcion
     {
         public int IdUsuario { get; set; }
+        public int IdPlan { get; set; }
         public string? UrlRetorno { get; set; }
         public string? Token { get; set; }
 

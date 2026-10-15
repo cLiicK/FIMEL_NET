@@ -18,12 +18,13 @@ namespace Fimel.Site.Controllers
                 return RedirectToAction("Login", "Login");
 
             SuscripcionUsuario? suscripcion = APIBase.Get<SuscripcionUsuario>($"Suscripciones/GetByUsuario/{usuario.Id}");
+            ViewBag.Planes = APIBase.Get<List<PlanSuscripcion>>("Suscripciones/Planes") ?? new List<PlanSuscripcion>();
             return View(suscripcion);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Suscribirse()
+        public ActionResult Suscribirse(int idPlan)
         {
             Usuarios? usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
             if (usuario == null)
@@ -32,6 +33,7 @@ namespace Fimel.Site.Controllers
             SolicitudSuscripcion solicitud = new SolicitudSuscripcion
             {
                 IdUsuario = usuario.Id,
+                IdPlan = idPlan,
                 UrlRetorno = $"{config["URL_SITIO"]?.TrimEnd('/')}/Suscripcion/RetornoFlow"
             };
 

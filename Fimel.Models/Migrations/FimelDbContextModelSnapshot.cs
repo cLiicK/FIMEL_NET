@@ -959,6 +959,9 @@ namespace Fimel.Models.Migrations
                     b.Property<DateTime?>("FechaCreacion")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Meses")
+                        .HasColumnType("int");
+
                     b.Property<int>("Monto")
                         .HasColumnType("int");
 

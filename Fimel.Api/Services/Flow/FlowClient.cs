@@ -37,7 +37,8 @@ namespace Fimel.Api.Services.Flow
         }
 
         /// <param name="intervalo">1 diario, 2 semanal, 3 mensual, 4 anual</param>
-        public Task<JsonElement> CrearPlan(string planId, string nombre, int monto, int intervalo = 3, int diasPrueba = 0, string? urlCallback = null)
+        /// <param name="cantidadIntervalos">Cada cuántos intervalos se cobra (ej. intervalo 3 y cantidad 6 = cada 6 meses)</param>
+        public Task<JsonElement> CrearPlan(string planId, string nombre, int monto, int intervalo = 3, int cantidadIntervalos = 1, int diasPrueba = 0, string? urlCallback = null)
         {
             Dictionary<string, string> parametros = new Dictionary<string, string>
             {
@@ -46,6 +47,7 @@ namespace Fimel.Api.Services.Flow
                 ["currency"] = "CLP",
                 ["amount"] = monto.ToString(CultureInfo.InvariantCulture),
                 ["interval"] = intervalo.ToString(CultureInfo.InvariantCulture),
+                ["interval_count"] = cantidadIntervalos.ToString(CultureInfo.InvariantCulture),
                 ["trial_period_days"] = diasPrueba.ToString(CultureInfo.InvariantCulture)
             };
 
