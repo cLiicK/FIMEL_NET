@@ -1,0 +1,90 @@
+﻿@model SuscripcionUsuario?
+@{
+    ViewData["Title"] = "Mi suscripción";
+    string? estado = Model?.Estado;
+    bool vigente = estado == EstadosSuscripcion.Prueba || estado == EstadosSuscripcion.Activa || estado == EstadosSuscripcion.Exenta;
+    string badge = estado switch
+    {
+        EstadosSuscripcion.Prueba => "bg-info",
+        EstadosSuscripcion.Activa => "bg-success",
+        EstadosSuscripcion.Exenta => "bg-secondary",
+        EstadosSuscripcion.Morosa => "bg-danger",
+        _ => "bg-warning text-dark"
+    };
+}
+
+<div id="content-wrapper" class="container-9">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <h2 class="colorfimel-blue">Mi suscripción</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12 col-md-8">
+            <div class="container">
+
+                @if (TempData["MensajeExito"] != null)
+                {
+                    <div class="alert alert-success">@TempData["MensajeExito"]</div>
+                }
+                @if (TempData["MensajeError"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["MensajeError"]</div>
+                }
+
+                <div class="card">
+                    <div class="card-body">
+                        @if (Model == null || !vigente)
+                        {
+                            <h5 class="card-title">Suscríbete a Fimel</h5>
+                            <p class="card-text">
+                                Inscribe tu tarjeta de crédito o débito en Flow. Los primeros 30 días son gratis y el cobro mensual comienza al terminar la prueba.
+                                Puedes cancelar cuando quieras.
+                            </p>
+                            @if (estado == EstadosSuscripcion.Pendiente)
+                            {
+                                <p class="text-muted small">Tienes una inscripción de tarjeta sin terminar. Puedes retomarla con el botón.</p>
+                            }
+                            <form method="post" asp-action="Suscribirse" asp-controller="Suscripcion">
+                                <button type="submit" class="btn btn-primary">Inscribir tarjeta en Flow</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <h5 class="card-title">
+                                @(Model.Plan?.Nombre ?? "Plan Fimel")
+                                <span class="badge @badge ms-2">@estado</span>
+                            </h5>
+                            <dl class="row mb-0">
+                                @if (Model.Plan != null)
+                                {
+                                    <dt class="col-sm-5">Valor mensual</dt>
+                                    <dd class="col-sm-7">$@Model.Plan.Monto.ToString("N0")</dd>
+                                }
+                                @if (estado == EstadosSuscripcion.Prueba && Model.FinPrueba.HasValue)
+                                {
+                                    <dt class="col-sm-5">Prueba gratis hasta</dt>
+                                    <dd class="col-sm-7">@Model.FinPrueba.Value.ToString("dd/MM/yyyy") (ese día se realiza el primer cobro)</dd>
+                                }
+                                @if (estado == EstadosSuscripcion.Activa && Model.PagadoHasta.HasValue)
+                                {
+                                    <dt class="col-sm-5">Pagado hasta</dt>
+                                    <dd class="col-sm-7">@Model.PagadoHasta.Value.ToString("dd/MM/yyyy")</dd>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.Ultimos4))
+                                {
+                                    <dt class="col-sm-5">Tarjeta</dt>
+                                    <dd class="col-sm-7">@Model.TipoTarjeta terminada en @Model.Ultimos4</dd>
+                                }
+                            </dl>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

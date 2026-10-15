@@ -44,6 +44,9 @@ namespace Fimel.Models
         public DbSet<ModuloPerfil> ModuloPerfil { get; set; }
         public DbSet<UsuarioPerfil> UsuarioPerfil { get; set; }
         public DbSet<TipoConsulta> TiposConsulta { get; set; }
+        public DbSet<PlanSuscripcion> PlanesSuscripcion { get; set; }
+        public DbSet<SuscripcionUsuario> SuscripcionesUsuario { get; set; }
+        public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -113,6 +116,20 @@ namespace Fimel.Models
                 .HasPrincipalKey(p => p.Id);
 
             modelBuilder.Entity<TipoConsulta>().ToTable("TipoConsulta");
+
+            modelBuilder.Entity<PlanSuscripcion>().ToTable("PlanesSuscripcion");
+            modelBuilder.Entity<PlanSuscripcion>().Property(p => p.CodigoFlow).HasMaxLength(100);
+            modelBuilder.Entity<PlanSuscripcion>().HasIndex(p => p.CodigoFlow).IsUnique();
+
+            modelBuilder.Entity<SuscripcionUsuario>().ToTable("SuscripcionesUsuario");
+            modelBuilder.Entity<SuscripcionUsuario>().Property(s => s.Estado).HasMaxLength(20);
+            modelBuilder.Entity<SuscripcionUsuario>().Property(s => s.FlowCustomerId).HasMaxLength(100);
+            modelBuilder.Entity<SuscripcionUsuario>().Property(s => s.FlowSubscriptionId).HasMaxLength(100);
+            modelBuilder.Entity<SuscripcionUsuario>().HasIndex(s => s.IdUsuario);
+            modelBuilder.Entity<SuscripcionUsuario>().HasIndex(s => s.FlowCustomerId);
+
+            modelBuilder.Entity<PagoSuscripcion>().ToTable("PagosSuscripcion");
+            modelBuilder.Entity<PagoSuscripcion>().HasIndex(p => p.FlowOrder).IsUnique();
         }
     }
 }

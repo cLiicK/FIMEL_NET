@@ -1,4 +1,5 @@
 using Fimel.Api.Services.Flow;
+using Fimel.Models;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +15,13 @@ namespace Fimel.Api.Controllers
     {
         private readonly FlowClient flow;
         private readonly IWebHostEnvironment env;
+        private readonly FimelDbContext db;
 
-        public FlowController(FlowClient flow, IWebHostEnvironment env)
+        public FlowController(FlowClient flow, IWebHostEnvironment env, FimelDbContext db)
         {
             this.flow = flow;
             this.env = env;
+            this.db = db;
         }
 
         // GET api/Flow/Ping → lista los planes de la cuenta; si responde, la firma y las llaves están bien.
@@ -29,10 +32,32 @@ namespace Fimel.Api.Controllers
         }
 
         // POST api/Flow/Planes { "planId": "FimelMensual", "nombre": "Fimel mensual", "monto": 10000, "diasPrueba": 30 }
+        // Crea el plan en Flow y lo deja como el plan vigente de Fimel (las nuevas suscripciones lo usan).
         [HttpPost("Planes")]
         public Task<IActionResult> CrearPlan([FromBody] CrearPlanRequest request)
         {
-            return Ejecutar(async () => await flow.CrearPlan(request.PlanId, request.Nombre, request.Monto, 3, request.DiasPrueba, request.UrlCallback));
+            return Ejecutar(async () =>
+            {
+                var respuesta = await flow.CrearPlan(request.PlanId, request.Nombre, request.Monto, 3, request.DiasPrueba, request.UrlCallback);
+
+                foreach (PlanSuscripcion otro in db.PlanesSuscripcion.Where(p => p.Vigente == "S" && p.CodigoFlow != request.PlanId))
+                    otro.Vigente = "N";
+
+                PlanSuscripcion? plan = db.PlanesSuscripcion.FirstOrDefault(p => p.CodigoFlow == request.PlanId);
+                if (plan == null)
+                {
+                    plan = new PlanSuscripcion { CodigoFlow = request.PlanId, FechaCreacion = DateTime.Now };
+                    db.PlanesSuscripcion.Add(plan);
+                }
+
+                plan.Nombre = request.Nombre;
+                plan.Monto = request.Monto;
+                plan.DiasPrueba = request.DiasPrueba;
+                plan.Vigente = "S";
+                db.SaveChanges();
+
+                return respuesta;
+            });
         }
 
         [HttpGet("Planes/{planId}")]

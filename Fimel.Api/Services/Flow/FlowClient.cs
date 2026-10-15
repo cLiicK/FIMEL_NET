@@ -89,13 +89,19 @@ namespace Fimel.Api.Services.Flow
             return Get("customer/getRegisterStatus", new Dictionary<string, string> { ["token"] = token });
         }
 
-        public Task<JsonElement> CrearSuscripcion(string planId, string customerId)
+        /// <param name="diasPrueba">Si se indica, reemplaza los días de prueba del plan (0 = sin prueba).</param>
+        public Task<JsonElement> CrearSuscripcion(string planId, string customerId, int? diasPrueba = null)
         {
-            return Post("subscription/create", new Dictionary<string, string>
+            Dictionary<string, string> parametros = new Dictionary<string, string>
             {
                 ["planId"] = planId,
                 ["customerId"] = customerId
-            });
+            };
+
+            if (diasPrueba.HasValue)
+                parametros["trial_period_days"] = diasPrueba.Value.ToString(CultureInfo.InvariantCulture);
+
+            return Post("subscription/create", parametros);
         }
 
         public Task<JsonElement> EstadoPago(string token)
@@ -119,6 +125,20 @@ namespace Fimel.Api.Services.Flow
             using FormUrlEncodedContent contenido = new FormUrlEncodedContent(Firmar(parametros));
             using HttpResponseMessage respuesta = await http.PostAsync(Url(servicio), contenido);
             return await Leer(respuesta);
+        }
+
+        /// <summary>Lee una propiedad de la respuesta de Flow como texto, venga como string o número.</summary>
+        public static string? Texto(JsonElement json, string propiedad)
+        {
+            if (json.ValueKind != JsonValueKind.Object || !json.TryGetProperty(propiedad, out JsonElement valor))
+                return null;
+
+            return valor.ValueKind switch
+            {
+                JsonValueKind.String => valor.GetString(),
+                JsonValueKind.Null or JsonValueKind.Undefined => null,
+                _ => valor.ToString()
+            };
         }
 
         private string Url(string servicio) => $"{opciones.BaseUrl.TrimEnd('/')}/{servicio.TrimStart('/')}";
