@@ -106,6 +106,11 @@ namespace Fimel.Api.Services.Flow
             return Post("subscription/create", parametros);
         }
 
+        public Task<JsonElement> ObtenerSuscripcion(string subscriptionId)
+        {
+            return Get("subscription/get", new Dictionary<string, string> { ["subscriptionId"] = subscriptionId });
+        }
+
         public Task<JsonElement> EstadoPago(string token)
         {
             return Get("payment/getStatus", new Dictionary<string, string> { ["token"] = token });

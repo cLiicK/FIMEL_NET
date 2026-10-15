@@ -59,6 +59,13 @@ namespace Fimel.Api.Controllers
             return Ejecutar(async () => await flow.ObtenerPlan(planId));
         }
 
+        // GET api/Flow/Suscripciones/{subscriptionId} → respuesta cruda de Flow, para ver estados, períodos y cobros
+        [HttpGet("Suscripciones/{subscriptionId}")]
+        public Task<IActionResult> ObtenerSuscripcion(string subscriptionId)
+        {
+            return Ejecutar(async () => await flow.ObtenerSuscripcion(subscriptionId));
+        }
+
         // DELETE api/Flow/Planes/{planId} → deja de ofrecer el plan a nuevos usuarios (las suscripciones existentes siguen en Flow).
         [HttpDelete("Planes/{planId}")]
         public Task<IActionResult> RetirarPlan(string planId)
