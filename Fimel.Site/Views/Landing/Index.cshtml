@@ -465,6 +465,163 @@
             margin: 0;
         }
 
+        /* PLANES */
+        .pricing-section {
+            background: var(--fimel-bg);
+            padding: 90px 0;
+        }
+
+        .trial-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #e8fdf0;
+            color: #1e7e34;
+            border-radius: 20px;
+            padding: 8px 18px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 44px;
+        }
+
+        .plan-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 34px 26px 28px;
+            height: 100%;
+            border: 1px solid #e3ebf3;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: box-shadow 0.25s, transform 0.2s;
+        }
+
+        .plan-card:hover {
+            box-shadow: 0 8px 32px rgba(14,150,204,0.12);
+            transform: translateY(-4px);
+        }
+
+        .plan-card.destacado {
+            border: 2px solid var(--fimel-blue);
+            box-shadow: 0 12px 44px rgba(14,150,204,0.2);
+        }
+
+        .plan-ribbon {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--fimel-blue);
+            color: #fff;
+            border-radius: 20px;
+            padding: 5px 16px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .plan-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 6px;
+        }
+
+        .plan-discount {
+            display: inline-block;
+            background: var(--fimel-light);
+            color: var(--fimel-blue);
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            min-height: 22px;
+            align-self: flex-start;
+        }
+
+        .plan-discount.vacio { background: transparent; }
+
+        .plan-price {
+            font-family: 'Signika Negative', sans-serif;
+            font-size: 2.3rem;
+            font-weight: 700;
+            color: #1a2a3a;
+            line-height: 1;
+            margin: 22px 0 4px;
+        }
+
+        .plan-price small {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: #8a9aaa;
+        }
+
+        .plan-total {
+            font-size: 0.85rem;
+            color: #6a7a8a;
+            min-height: 20px;
+            margin-bottom: 22px;
+        }
+
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 26px;
+            flex-grow: 1;
+        }
+
+        .plan-features li {
+            font-size: 0.88rem;
+            color: #5a6a7a;
+            margin-bottom: 9px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .plan-features li i {
+            color: var(--fimel-blue);
+            margin-top: 3px;
+            font-size: 0.8rem;
+        }
+
+        .btn-plan {
+            display: block;
+            text-align: center;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            border: 2px solid var(--fimel-blue);
+            color: var(--fimel-blue);
+            background: #fff;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn-plan:hover {
+            background: var(--fimel-blue);
+            color: #fff;
+        }
+
+        .plan-card.destacado .btn-plan {
+            background: var(--fimel-blue);
+            color: #fff;
+            box-shadow: 0 4px 18px rgba(14,150,204,0.25);
+        }
+
+        .plan-card.destacado .btn-plan:hover {
+            background: var(--fimel-dark);
+            border-color: var(--fimel-dark);
+        }
+
+        .pricing-note {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8a9aaa;
+            margin-top: 34px;
+        }
+
         /* CTA FINAL */
         .cta-section {
             background: linear-gradient(135deg, var(--fimel-blue) 0%, #0a6e96 100%);
@@ -592,6 +749,8 @@
             .section-title { font-size: 1.6rem; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
             .cta-section h2 { font-size: 1.7rem; }
+            .plan-card.destacado { margin-top: 10px; }
+            .nav-planes { display: none; }
             .footer-landing .footer-links { margin-top: 12px; }
             .footer-landing .footer-links a { margin-left: 0; margin-right: 16px; }
         }
@@ -606,6 +765,7 @@
                 <img src="~/img/logo1.svg" alt="Fimel">
             </a>
             <div class="d-flex gap-2 align-items-center">
+                <a href="#planes" class="nav-planes me-2" style="color:#5a6a7a;font-weight:600;font-size:0.9rem;text-decoration:none">Planes</a>
                 <button type="button" class="btn-contacto" data-bs-toggle="modal" data-bs-target="#modalContacto">
                     <i class="fas fa-envelope me-1"></i> Contáctanos
                 </button>
@@ -627,8 +787,8 @@
                         Fimel centraliza la ficha del paciente, la agenda y las consultas en una plataforma simple,
                         rápida y diseñada para profesionales de la salud.
                     </p>
-                    <a href="/Login/Login" class="btn-cta">
-                        Comenzar ahora <i class="fas fa-arrow-right ms-2"></i>
+                    <a href="#planes" class="btn-cta">
+                        Prueba 30 días gratis <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                     <a href="#funcionalidades" class="btn-outline">Ver funcionalidades</a>
                 </div>
@@ -883,13 +1043,91 @@
         </div>
     </section>
 
+    <!-- PLANES -->
+    @{
+        // URL provisoria: se reemplazará por el flujo de suscripción con Flow.
+        const string urlSuscripcion = "/Suscripcion?plan=";
+        var cl = System.Globalization.CultureInfo.GetCultureInfo("es-CL");
+        var planes = new[]
+        {
+            new { Codigo = "mensual",    Nombre = "Mensual", Meses = 1,  Total = 11990,  Descuento = 0,  Destacado = false },
+            new { Codigo = "trimestral", Nombre = "3 meses", Meses = 3,  Total = 34190,  Descuento = 5,  Destacado = false },
+            new { Codigo = "semestral",  Nombre = "6 meses", Meses = 6,  Total = 64690,  Descuento = 10, Destacado = false },
+            new { Codigo = "anual",      Nombre = "Anual",   Meses = 12, Total = 114990, Descuento = 20, Destacado = true }
+        };
+        var incluye = new[]
+        {
+            "Ficha clínica completa",
+            "Agenda y agenda pública",
+            "Consultas, recetas e informes",
+            "Recordatorios automáticos por correo",
+            "Soporte por correo"
+        };
+    }
+    <section class="pricing-section" id="planes">
+        <div class="container">
+            <div class="text-center">
+                <span class="section-label">Planes</span>
+                <h2 class="section-title">Elige el plan que más te acomode</h2>
+                <p class="section-subtitle mb-3">
+                    Todos los planes incluyen todas las funcionalidades de Fimel. Mientras más largo el plan, más ahorras.
+                </p>
+                <span class="trial-pill"><i class="fas fa-gift"></i> Los primeros 30 días son gratis en cualquier plan</span>
+            </div>
+            <div class="row g-4 align-items-stretch">
+                @foreach (var p in planes)
+                {
+                    var mensual = (int)Math.Round((decimal)p.Total / p.Meses, MidpointRounding.AwayFromZero);
+                    <div class="col-md-6 col-lg-3 @(p.Destacado ? "order-first order-lg-0" : "")">
+                        <div class="plan-card @(p.Destacado ? "destacado" : "")">
+                            @if (p.Destacado)
+                            {
+                                <span class="plan-ribbon"><i class="fas fa-star me-1"></i> Más conveniente</span>
+                            }
+                            <div class="plan-name">@p.Nombre</div>
+                            @if (p.Descuento > 0)
+                            {
+                                <span class="plan-discount">Ahorra @p.Descuento%</span>
+                            }
+                            else
+                            {
+                                <span class="plan-discount vacio">&nbsp;</span>
+                            }
+                            <div class="plan-price">$@mensual.ToString("N0", cl) <small>/ mes</small></div>
+                            <div class="plan-total">
+                                @if (p.Meses > 1)
+                                {
+                                    <text>$@p.Total.ToString("N0", cl) cada @p.Meses meses</text>
+                                }
+                                else
+                                {
+                                    <text>Se cobra mes a mes</text>
+                                }
+                            </div>
+                            <ul class="plan-features">
+                                @foreach (var item in incluye)
+                                {
+                                    <li><i class="fas fa-check"></i> @item</li>
+                                }
+                            </ul>
+                            <a href="@(urlSuscripcion + p.Codigo)" class="btn-plan">Probar gratis</a>
+                        </div>
+                    </div>
+                }
+            </div>
+            <p class="pricing-note">
+                <i class="fas fa-lock me-1"></i> Pago seguro con tarjeta. No se realiza ningún cobro durante los primeros 30 días y puedes cancelar cuando quieras. Precios en pesos chilenos, IVA incluido.
+            </p>
+        </div>
+    </section>
+
     <!-- CTA FINAL -->
     <section class="cta-section">
         <div class="container" style="position:relative;z-index:1">
             <h2>Transforma la gestión de tu consulta hoy</h2>
             <p>Únete a los profesionales de la salud que ya confían en Fimel para brindar una mejor atención a sus pacientes.</p>
-            <a href="/Login/Login" class="btn-white">
-                <i class="fas fa-rocket me-2"></i> Comenzar ahora
+            <a href="#planes" class="btn-white">
+                <i class="fas fa-rocket me-2"></i> Prueba 30 días gratis
             </a>
         </div>
     </section>
@@ -906,6 +1144,7 @@
                 </div>
                 <div class="col-md-6 text-md-end footer-links mt-3 mt-md-0">
                     <a href="#funcionalidades">Funcionalidades</a>
+                    <a href="#planes">Planes</a>
                     <a href="/Login/Login">Ingresar</a>
                 </div>
             </div>
