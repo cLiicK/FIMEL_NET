@@ -13,7 +13,10 @@
         && Model?.CancelaAlFinPeriodo != true && !string.IsNullOrWhiteSpace(Model?.FlowSubscriptionId);
     bool puedeReactivar = Model?.CancelaAlFinPeriodo == true && Model?.PagadoHasta >= DateTime.Today
         && !string.IsNullOrWhiteSpace(Model?.FlowCustomerId);
-    string badge = estado switch
+    // Con la cancelación programada se muestra "Cancelada" aunque Flow la siga informando activa o en prueba hasta fin de período
+    bool mostrarCancelada = Model?.CancelaAlFinPeriodo == true || canceladaConAcceso;
+    string etiqueta = mostrarCancelada ? EstadosSuscripcion.Cancelada : estado ?? "";
+    string badge = mostrarCancelada ? "bg-secondary" : estado switch
     {
         EstadosSuscripcion.Prueba => "bg-info",
         EstadosSuscripcion.Activa => "bg-success",
@@ -114,7 +117,7 @@
                         {
                             <h5 class="card-title">
                                 @(Model.Plan?.Nombre ?? "Plan Fimel")
-                                <span class="badge @badge ms-2">@estado</span>
+                                <span class="badge @badge ms-2">@etiqueta</span>
                             </h5>
                             @if (estado == EstadosSuscripcion.Morosa)
                             {
