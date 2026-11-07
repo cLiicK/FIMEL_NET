@@ -26,6 +26,11 @@
 <input type="hidden" id="hdnLogoInstitucion" value='@ViewBag.LogoInstitucion' />
 <input type="hidden" id="hdnFirmaProfesional" value='@ViewBag.FirmaProfesional' />
 <input type="hidden" id="hdnRutProfesional" value='@ViewBag.RutProfesional' />
+<input type="hidden" id="hdnURL_ConsentimientoImprimible" value='@Url.Action("ConsentimientoImprimible", "Consulta")' />
+<input type="hidden" id="hdnURL_CrearConsentimientoQR" value='@Url.Action("CrearConsentimientoQR", "Consulta")' />
+<input type="hidden" id="hdnURL_EstadoConsentimiento" value='@Url.Action("EstadoConsentimiento", "Consulta")' />
+<input type="hidden" id="hdnURL_ObtenerConsentimientosFirmados" value='@Url.Action("ObtenerConsentimientosFirmados", "Consulta")' />
+<input type="hidden" id="hdnURL_VerConsentimiento" value='@Url.Action("VerConsentimiento", "Consulta")' />
 
 <style>
     #accordionFicha-nuevaConsulta-head .accordion-button {
@@ -438,28 +443,35 @@
                                                 <div class="col-md-12">
                                                     <label class="form-label fw-semibold">Consentimiento Informado</label>
                                                     <div class="p-3 rounded border mb-2" style="background:#fff8f8;">
-                                                        <p class="small text-secondary mb-2 fw-semibold"><i class="fas fa-file-signature me-1" style="color:#F89B9B;"></i> Imprimir para firma de la paciente</p>
+                                                        <p class="small text-secondary mb-2 fw-semibold"><i class="fas fa-file-signature me-1" style="color:#F89B9B;"></i> Para firma de la paciente, en papel o desde su celular</p>
                                                         <div class="row g-2 align-items-end">
-                                                            <div class="col-md-5">
+                                                            <div class="col-md-6">
                                                                 <label class="form-label small mb-1 text-muted">Tipo de consentimiento</label>
                                                                 <select class="form-select form-select-sm" id="comboTipoConsentimiento" onchange="ModuloConsulta.CambiarTipoConsentimiento()">
-                                                                    <option value="">Seleccione...</option>
+                                                                    <option value="" data-placeholder="Ej: T de Cobre, Mirena">Seleccione...</option>
+                                                                    @foreach (var tipoConsentimiento in Fimel.Site.Services.ConsentimientosInformados.Tipos)
+                                                                    {
+                                                                        <option value="@tipoConsentimiento.Codigo" data-placeholder="@tipoConsentimiento.PlaceholderDispositivo">@tipoConsentimiento.Nombre</option>
+                                                                    }
                                                                 </select>
                                                             </div>
-                                                            <div class="col-md-4">
+                                                            <div class="col-md-6">
                                                                 <label class="form-label small mb-1 text-muted">Dispositivo / marca</label>
                                                                 <input type="text" class="form-control form-control-sm" id="inputDispositivoConsentimiento" placeholder="Ej: T de Cobre, Mirena" maxlength="60">
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="ModuloConsulta.ImprimirConsentimiento()">
-                                                                    <i class="fas fa-print me-1"></i>Imprimir
-                                                                </button>
                                                             </div>
                                                             <div class="col-md-12">
                                                                 <label class="form-label small mb-1 text-muted">Observaciones (opcional)</label>
                                                                 <input type="text" class="form-control form-control-sm" id="inputObservacionesConsentimiento" maxlength="300" placeholder="Si se deja vacío, se imprimen líneas para escribir a mano">
                                                             </div>
                                                         </div>
+                                                    </div>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ModuloConsulta.ImprimirConsentimiento()">
+                                                            <i class="fas fa-print me-1"></i>Imprimir
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm" style="background:#e8f4fa;color:#0E96CC;border:1px solid #b8dff0;" onclick="ModuloConsulta.FirmarConsentimientoQR(this)">
+                                                            <i class="fas fa-qrcode me-1"></i>Firmar con QR
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
@@ -566,6 +578,21 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="accordion mt-2" id="accordionConsentimientosLateralConsulta">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-consentimientosConsulta" aria-expanded="false">
+                                            Consentimientos firmados
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-consentimientosConsulta" class="accordion-collapse collapse">
+                                        <div class="accordion-body p-2" id="listaConsentimientosFirmados">
+                                            <p class="text-muted small fst-italic mb-0">Sin consentimientos firmados.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -574,6 +601,41 @@
 
     </div>
     <!--Contenido-->
+
+    <!-- Modal Firma Consentimiento con QR -->
+    <div class="modal fade" id="modalConsentimientoQR" tabindex="-1" aria-labelledby="modalConsentimientoQRLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalConsentimientoQRLabel">Firma del consentimiento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrConsentimientoPendiente">
+                        <p class="mb-2">Pide a la paciente que escanee este código con la cámara de su celular para leer y firmar el consentimiento.</p>
+                        <img id="imgQRConsentimiento" alt="QR" style="width:240px;height:240px;image-rendering:pixelated;">
+                        <p class="small text-muted mb-1" id="txtTipoConsentimientoQR"></p>
+                        <p class="small text-muted">El link vence a las <b id="txtExpiraConsentimientoQR"></b>.</p>
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="text" class="form-control" id="inputLinkConsentimientoQR" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="ModuloConsulta.CopiarLinkConsentimiento()" title="Copiar link"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <p class="small text-secondary mb-0"><span class="spinner-border spinner-border-sm me-1"></span>Esperando la firma...</p>
+                    </div>
+                    <div id="qrConsentimientoFirmado" style="display:none;">
+                        <div style="font-size:48px;color:#27ae60;">✓</div>
+                        <p class="fw-semibold mb-1">Consentimiento firmado</p>
+                        <p class="small text-muted" id="txtFirmanteConsentimientoQR"></p>
+                        <button type="button" class="btn btn-blue btn-sm" onclick="ModuloConsulta.VerConsentimientoFirmado()"><i class="fas fa-eye me-1"></i>Ver / imprimir</button>
+                    </div>
+                    <div id="qrConsentimientoExpirado" style="display:none;">
+                        <p class="text-danger mb-2">El link venció sin que se firmara.</p>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ModuloConsulta.FirmarConsentimientoQR()">Generar un QR nuevo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Plantillas -->
     <div class="modal fade" id="modalPlantillas" tabindex="-1" aria-labelledby="modalPlantillasLabel" aria-hidden="true">
@@ -724,7 +786,6 @@
 
 @section scripts {
     <script src="~/js/site/Utils.js" asp-append-version="true" type="text/javascript"></script>
-    <script src="~/js/Site/Consentimientos.js" asp-append-version="true" type="text/javascript"></script>
     <script src="~/js/site/Nueva_Consulta.js" asp-append-version="true" type="text/javascript"></script>
     <script>
         // Manejar parámetros de la URL
