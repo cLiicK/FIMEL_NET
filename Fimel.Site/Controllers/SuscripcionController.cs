@@ -69,6 +69,26 @@ namespace Fimel.Site.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Reactivar(int idPlan)
+        {
+            Usuarios? usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+            if (usuario == null)
+                return RedirectToAction("Login", "Login");
+
+            SolicitudSuscripcion? respuesta = APIBase.Post<SolicitudSuscripcion>("Suscripciones/Reactivar", new SolicitudSuscripcion { IdUsuario = usuario.Id, IdPlan = idPlan });
+
+            if (respuesta?.Exito == true)
+                TempData["MensajeExito"] = respuesta.Suscripcion?.PagadoHasta != null
+                    ? $"Tu suscripción sigue activa; el próximo cobro será el {respuesta.Suscripcion.PagadoHasta:dd/MM/yyyy}."
+                    : "Tu suscripción sigue activa.";
+            else
+                TempData["MensajeError"] = respuesta?.Mensaje ?? "No se pudo reactivar la suscripción.";
+
+            return RedirectToAction("Index");
+        }
+
         // URL de notificación de los planes en Flow (urlCallback): Flow hace POST con "token" en cada cobro.
         // Es pública y sin sesión; la API verifica todo consultando a Flow, así que el aviso en sí no cambia nada por su cuenta.
         [HttpPost]

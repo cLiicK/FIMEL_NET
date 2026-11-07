@@ -11,6 +11,8 @@
         || estado == EstadosSuscripcion.Morosa || canceladaConAcceso;
     bool puedeCancelar = (estado == EstadosSuscripcion.Prueba || estado == EstadosSuscripcion.Activa || estado == EstadosSuscripcion.Morosa)
         && Model?.CancelaAlFinPeriodo != true && !string.IsNullOrWhiteSpace(Model?.FlowSubscriptionId);
+    bool puedeReactivar = Model?.CancelaAlFinPeriodo == true && Model?.PagadoHasta >= DateTime.Today
+        && !string.IsNullOrWhiteSpace(Model?.FlowCustomerId);
     string badge = estado switch
     {
         EstadosSuscripcion.Prueba => "bg-info",
@@ -126,6 +128,28 @@
                                 <div class="alert alert-secondary">
                                     Cancelaste tu suscripción. Mantienes el acceso hasta el @(Model.PagadoHasta?.ToString("dd/MM/yyyy") ?? "fin del período") y no se te volverá a cobrar.
                                 </div>
+                                @if (puedeReactivar && planes.Count > 0)
+                                {
+                                    <p class="small mb-2">
+                                        ¿Cambiaste de opinión? Reactiva tu suscripción con la misma tarjeta. No se te cobrará nada ahora:
+                                        el primer cobro será el @Model.PagadoHasta!.Value.ToString("dd/MM/yyyy"), al terminar el período que ya pagaste.
+                                    </p>
+                                    <div class="row g-2 mb-3">
+                                        @foreach (PlanSuscripcion plan in planes)
+                                        {
+                                            <div class="col-12 col-sm-6 col-xl-3">
+                                                <div class="border rounded p-2 h-100 d-flex flex-column">
+                                                    <span class="fw-semibold">@plan.Nombre</span>
+                                                    <span class="small text-muted mb-2">@pesos(plan.Monto) @periodo(plan.Meses)</span>
+                                                    <form method="post" asp-action="Reactivar" asp-controller="Suscripcion" class="mt-auto">
+                                                        <input type="hidden" name="idPlan" value="@plan.Id" />
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm w-100">Reactivar</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
                             }
                             <dl class="row mb-0">
                                 @if (Model.Plan != null)

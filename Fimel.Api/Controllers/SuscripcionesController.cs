@@ -330,6 +330,74 @@ namespace Fimel.Api.Controllers
             }
         }
 
+        // Deja sin efecto una cancelación: quien canceló y aún tiene período pagado vuelve a suscribirse con la tarjeta
+        // ya inscrita. Se crea en Flow una suscripción nueva que parte al terminar el período pagado (sin prueba),
+        // así el primer cobro llega cuando se acaba lo ya pagado y no se cobra dos veces.
+        [HttpPost("Reactivar")]
+        public async Task<IActionResult> Reactivar([FromBody] SolicitudSuscripcion solicitud)
+        {
+            try
+            {
+                SuscripcionUsuario? anterior = UltimaSuscripcion(solicitud.IdUsuario);
+                if (anterior == null || !anterior.CancelaAlFinPeriodo || anterior.PagadoHasta == null || anterior.PagadoHasta.Value.Date < DateTime.Today)
+                    return Ok(Fallo(solicitud, "No tienes una suscripción cancelada con período vigente para reactivar."));
+
+                if (string.IsNullOrWhiteSpace(anterior.FlowCustomerId))
+                    return Ok(Fallo(solicitud, "Tu suscripción anterior no tiene una tarjeta inscrita en Flow."));
+
+                PlanSuscripcion? plan = db.PlanesSuscripcion.FirstOrDefault(p => p.Id == solicitud.IdPlan && p.Vigente == "S");
+                if (plan == null)
+                    return Ok(Fallo(solicitud, "Selecciona un plan disponible."));
+
+                DateTime inicio = anterior.PagadoHasta.Value.Date;
+                JsonElement creada = await flow.CrearSuscripcion(plan.CodigoFlow, anterior.FlowCustomerId, diasPrueba: 0, inicio: inicio);
+
+                SuscripcionUsuario suscripcion = new SuscripcionUsuario
+                {
+                    IdUsuario = anterior.IdUsuario,
+                    IdPlan = plan.Id,
+                    FlowCustomerId = anterior.FlowCustomerId,
+                    FlowSubscriptionId = FlowClient.Texto(creada, "subscriptionId"),
+                    TipoTarjeta = anterior.TipoTarjeta,
+                    Ultimos4 = anterior.Ultimos4,
+                    FechaInicio = DateTime.Now,
+                    PagadoHasta = anterior.PagadoHasta,
+                    PruebaUsada = true,
+                    Estado = EstadosSuscripcion.Activa,
+                    UltimaSincronizacion = DateTime.Now,
+                    Vigente = "S",
+                    FechaCreacion = DateTime.Now
+                };
+
+                // Se guarda primero para que los cobros que informe Flow queden asociados a su Id
+                db.SuscripcionesUsuario.Add(suscripcion);
+                db.SaveChanges();
+
+                // Una suscripción que aún no comienza puede venir con un status que no es "activa":
+                // solo se acepta lo que Flow informe si es Activa o Morosa, para no quitar el acceso ya pagado.
+                AplicarEstadoFlow(suscripcion, creada);
+                if (suscripcion.Estado != EstadosSuscripcion.Activa && suscripcion.Estado != EstadosSuscripcion.Morosa)
+                    suscripcion.Estado = EstadosSuscripcion.Activa;
+                suscripcion.FinPrueba = null;
+                db.SaveChanges();
+
+                suscripcion.Plan = plan;
+                solicitud.Exito = true;
+                solicitud.Suscripcion = suscripcion;
+                return Ok(solicitud);
+            }
+            catch (FlowException ex)
+            {
+                Logger.Log($"Error Flow al reactivar suscripción del usuario {solicitud.IdUsuario} ({ex.StatusHttp} {ex.Codigo}): {ex.Message}");
+                return Ok(Fallo(solicitud, "No pudimos reactivar la suscripción en Flow. Intenta nuevamente en unos minutos."));
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al reactivar suscripción del usuario {solicitud.IdUsuario}: {ex}");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         private async Task SincronizarConFlow(SuscripcionUsuario suscripcion)
         {
             JsonElement flowSuscripcion = await flow.ObtenerSuscripcion(suscripcion.FlowSubscriptionId!);

@@ -101,7 +101,8 @@ namespace Fimel.Api.Services.Flow
         }
 
         /// <param name="diasPrueba">Si se indica, reemplaza los días de prueba del plan (0 = sin prueba).</param>
-        public Task<JsonElement> CrearSuscripcion(string planId, string customerId, int? diasPrueba = null)
+        /// <param name="inicio">Si se indica, la suscripción comienza (y se hace el primer cobro) en esa fecha en vez de hoy.</param>
+        public Task<JsonElement> CrearSuscripcion(string planId, string customerId, int? diasPrueba = null, DateTime? inicio = null)
         {
             Dictionary<string, string> parametros = new Dictionary<string, string>
             {
@@ -111,6 +112,9 @@ namespace Fimel.Api.Services.Flow
 
             if (diasPrueba.HasValue)
                 parametros["trial_period_days"] = diasPrueba.Value.ToString(CultureInfo.InvariantCulture);
+
+            if (inicio.HasValue)
+                parametros["subscription_start"] = inicio.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
             return Post("subscription/create", parametros);
         }
