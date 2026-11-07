@@ -39,16 +39,21 @@ namespace Fimel.Api.Controllers
             return Ejecutar(async () => await Crear(request));
         }
 
-        // POST api/Flow/Planes/Predeterminados → crea los planes de lista de una vez.
-        // El body es opcional: si se envía una lista de planes, se usan esos en vez de los predeterminados.
+        // POST api/Flow/Planes/Predeterminados (sin body) → crea los planes de lista de una vez.
+        // Los que ya existen en Fimel se saltan, así que se puede volver a ejecutar si alguno falló.
         [HttpPost("Planes/Predeterminados")]
-        public Task<IActionResult> CrearPlanesPredeterminados([FromBody] List<CrearPlanRequest>? planes = null)
+        public Task<IActionResult> CrearPlanesPredeterminados()
         {
             return Ejecutar(async () =>
             {
                 List<object> resultado = new List<object>();
-                foreach (CrearPlanRequest plan in planes is { Count: > 0 } ? planes : PlanesPredeterminados())
-                    resultado.Add(await Crear(plan));
+                foreach (CrearPlanRequest plan in PlanesPredeterminados())
+                {
+                    if (db.PlanesSuscripcion.Any(p => p.CodigoFlow == plan.PlanId))
+                        resultado.Add(new { plan.PlanId, mensaje = "Ya existía, no se volvió a crear." });
+                    else
+                        resultado.Add(await Crear(plan));
+                }
                 return resultado;
             });
         }
