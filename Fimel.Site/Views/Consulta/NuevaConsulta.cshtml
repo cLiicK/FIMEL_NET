@@ -435,6 +435,33 @@
                                                         </button>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-12">
+                                                    <label class="form-label fw-semibold">Consentimiento Informado</label>
+                                                    <div class="p-3 rounded border mb-2" style="background:#fff8f8;">
+                                                        <p class="small text-secondary mb-2 fw-semibold"><i class="fas fa-file-signature me-1" style="color:#F89B9B;"></i> Imprimir para firma de la paciente</p>
+                                                        <div class="row g-2 align-items-end">
+                                                            <div class="col-md-5">
+                                                                <label class="form-label small mb-1 text-muted">Tipo de consentimiento</label>
+                                                                <select class="form-select form-select-sm" id="comboTipoConsentimiento" onchange="ModuloConsulta.CambiarTipoConsentimiento()">
+                                                                    <option value="">Seleccione...</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label small mb-1 text-muted">Dispositivo / marca</label>
+                                                                <input type="text" class="form-control form-control-sm" id="inputDispositivoConsentimiento" placeholder="Ej: T de Cobre, Mirena" maxlength="60">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="ModuloConsulta.ImprimirConsentimiento()">
+                                                                    <i class="fas fa-print me-1"></i>Imprimir
+                                                                </button>
+                                                            </div>
+                                                            <div class="col-md-12">
+                                                                <label class="form-label small mb-1 text-muted">Observaciones (opcional)</label>
+                                                                <input type="text" class="form-control form-control-sm" id="inputObservacionesConsentimiento" maxlength="300" placeholder="Si se deja vacío, se imprimen líneas para escribir a mano">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div class="col-md-3">
                                                     <label for="" class="form-label">Fecha Consulta</label>
                                                     <input type="date" class="form-control" id="inputFechaConsulta" maxlength="10">
@@ -697,6 +724,7 @@
 
 @section scripts {
     <script src="~/js/site/Utils.js" asp-append-version="true" type="text/javascript"></script>
+    <script src="~/js/Site/Consentimientos.js" asp-append-version="true" type="text/javascript"></script>
     <script src="~/js/site/Nueva_Consulta.js" asp-append-version="true" type="text/javascript"></script>
     <script>
         // Manejar parámetros de la URL
