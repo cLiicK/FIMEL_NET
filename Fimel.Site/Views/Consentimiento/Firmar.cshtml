@@ -1,0 +1,206 @@
+@model Fimel.Models.ConsentimientoFirma
+@{
+    Layout = null;
+    string token = ViewBag.Token;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>@Model.TituloDocumento</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32x32.png">
+    <link rel="stylesheet" href="~/css/consentimiento.css" asp-append-version="true">
+    <style>
+        body { background: #f6f8fa; }
+        .page { background: #fff; margin: 12px auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+        .firma-panel { max-width: 720px; margin: 0 auto 40px; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); font-size: 15px; }
+        .firma-panel h2 { font-size: 17px; margin-bottom: 14px; }
+        .firma-panel label { display: block; font-weight: bold; font-size: 13px; color: #555; margin: 12px 0 4px; }
+        .firma-panel input[type=text] { width: 100%; font-size: 16px; padding: 10px; border: 1px solid #ccd; border-radius: 6px; }
+        .opciones { display: flex; gap: 8px; }
+        .opciones label { flex: 1; margin: 0; font-weight: normal; font-size: 14px; color: #1a2a3a; border: 1px solid #ccd; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; }
+        .opciones input { display: none; }
+        .opciones input:checked + span { color: #0E96CC; font-weight: bold; }
+        .opciones label:has(input:checked) { border-color: #0E96CC; background: #f0f9ff; }
+        .lienzo-wrap { position: relative; border: 2px dashed #b8dff0; border-radius: 8px; background: #fcfeff; touch-action: none; }
+        .lienzo-wrap canvas { display: block; width: 100%; height: 200px; touch-action: none; }
+        .lienzo-wrap .guia { position: absolute; left: 16px; right: 16px; bottom: 44px; border-bottom: 1px solid #ccc; pointer-events: none; }
+        .lienzo-wrap .hint { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; color: #aaa; font-size: 12px; pointer-events: none; }
+        .acciones-lienzo { text-align: right; margin-top: 6px; }
+        .btn-link { background: none; border: 0; color: #0E96CC; font-size: 14px; cursor: pointer; padding: 4px; }
+        .check { display: flex !important; gap: 10px; align-items: flex-start; font-weight: normal !important; color: #1a2a3a !important; font-size: 14px !important; margin-top: 16px !important; }
+        .check input { width: 22px; height: 22px; flex-shrink: 0; }
+        .btn-firmar { width: 100%; margin-top: 18px; background: #0E96CC; color: #fff; border: 0; border-radius: 8px; padding: 14px; font-size: 17px; font-weight: bold; cursor: pointer; }
+        .btn-firmar:disabled { opacity: .6; }
+        .error { color: #c0392b; font-size: 14px; margin-top: 10px; min-height: 18px; }
+        .exito { text-align: center; padding: 20px 0; }
+        .exito .ok { font-size: 48px; color: #27ae60; }
+        .exito p { margin-top: 8px; line-height: 1.5; }
+        .exito .codigo { font-family: monospace; font-size: 15px; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        @Html.Raw(ViewBag.Encabezado)
+        @Html.Raw(Model.HtmlCuerpo)
+        @Html.Raw(ViewBag.Firmas)
+    </div>
+
+    <div class="firma-panel" id="panelFirma">
+        <h2>Firma del consentimiento</h2>
+
+        <label>¿Quién firma?</label>
+        <div class="opciones">
+            <label><input type="radio" name="tipoFirmante" value="Paciente" checked><span>La paciente</span></label>
+            <label><input type="radio" name="tipoFirmante" value="Representante"><span>Representante legal</span></label>
+        </div>
+
+        <label for="inputNombre">Nombre completo</label>
+        <input type="text" id="inputNombre" maxlength="200" autocomplete="name" value="@Model.NombrePaciente">
+
+        <label for="inputRut">RUT / N° documento</label>
+        <input type="text" id="inputRut" maxlength="20" value="@Model.RutPaciente">
+
+        <label>Firma con el dedo dentro del recuadro</label>
+        <div class="lienzo-wrap">
+            <canvas id="lienzoFirma"></canvas>
+            <div class="guia"></div>
+            <div class="hint" id="hintFirma">Firme aquí</div>
+        </div>
+        <div class="acciones-lienzo"><button type="button" class="btn-link" id="btnLimpiar">Borrar firma</button></div>
+
+        <label class="check"><input type="checkbox" id="chkAcepta"> <span>He leído el consentimiento, se me aclararon mis dudas y acepto firmarlo de forma electrónica.</span></label>
+
+        <button type="button" class="btn-firmar" id="btnFirmar">Firmar consentimiento</button>
+        <div class="error" id="msgError"></div>
+    </div>
+
+    <div class="firma-panel" id="panelExito" style="display:none;">
+        <div class="exito">
+            <div class="ok">✓</div>
+            <p><b>¡Listo! El consentimiento quedó firmado.</b></p>
+            <p id="txtFechaFirma"></p>
+            <p class="codigo" id="txtCodigo"></p>
+            <p>Ya puedes cerrar esta página.</p>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var token = '@token';
+            var nombrePaciente = '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(Model.NombrePaciente ?? ""))';
+            var rutPaciente = '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(Model.RutPaciente ?? ""))';
+
+            var canvas = document.getElementById('lienzoFirma');
+            var ctx = canvas.getContext('2d');
+            var dibujando = false, hayTrazo = false, ultimo = null;
+
+            function ajustarLienzo() {
+                var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                var rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * ratio;
+                canvas.height = rect.height * ratio;
+                ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+                ctx.lineWidth = 2.4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#1a2a3a';
+                hayTrazo = false;
+                document.getElementById('hintFirma').style.display = '';
+            }
+
+            function punto(e) {
+                var rect = canvas.getBoundingClientRect();
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            }
+
+            canvas.addEventListener('pointerdown', function (e) {
+                e.preventDefault();
+                canvas.setPointerCapture(e.pointerId);
+                dibujando = true;
+                ultimo = punto(e);
+                ctx.beginPath();
+                ctx.arc(ultimo.x, ultimo.y, 1.1, 0, Math.PI * 2);
+                ctx.fillStyle = '#1a2a3a';
+                ctx.fill();
+                hayTrazo = true;
+                document.getElementById('hintFirma').style.display = 'none';
+                document.getElementById('msgError').textContent = '';
+            });
+            canvas.addEventListener('pointermove', function (e) {
+                if (!dibujando) return;
+                e.preventDefault();
+                var p = punto(e);
+                ctx.beginPath();
+                ctx.moveTo(ultimo.x, ultimo.y);
+                ctx.lineTo(p.x, p.y);
+                ctx.stroke();
+                ultimo = p;
+            });
+            ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
+                canvas.addEventListener(ev, function () { dibujando = false; });
+            });
+
+            document.getElementById('btnLimpiar').addEventListener('click', function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ajustarLienzo();
+            });
+
+            // Al cambiar quién firma, se proponen los datos de la paciente o se dejan en blanco
+            document.querySelectorAll('input[name=tipoFirmante]').forEach(function (r) {
+                r.addEventListener('change', function () {
+                    var esPaciente = this.value === 'Paciente';
+                    document.getElementById('inputNombre').value = esPaciente ? nombrePaciente : '';
+                    document.getElementById('inputRut').value = esPaciente ? rutPaciente : '';
+                });
+            });
+
+            window.addEventListener('resize', function () { if (!hayTrazo) ajustarLienzo(); });
+            ajustarLienzo();
+
+            document.getElementById('btnFirmar').addEventListener('click', function () {
+                var btn = this;
+                var error = document.getElementById('msgError');
+                error.textContent = '';
+
+                var nombre = document.getElementById('inputNombre').value.trim();
+                if (!nombre) { error.textContent = 'Ingresa el nombre de quien firma.'; return; }
+                if (!hayTrazo) { error.textContent = 'Dibuja tu firma en el recuadro.'; return; }
+                if (!document.getElementById('chkAcepta').checked) { error.textContent = 'Debes confirmar que leíste y aceptas el consentimiento.'; return; }
+
+                var datos = new FormData();
+                datos.append('token', token);
+                datos.append('tipoFirmante', document.querySelector('input[name=tipoFirmante]:checked').value);
+                datos.append('nombre', nombre);
+                datos.append('rut', document.getElementById('inputRut').value.trim());
+                datos.append('firma', canvas.toDataURL('image/png'));
+                datos.append('acepta', 'true');
+
+                btn.disabled = true;
+                btn.textContent = 'Firmando...';
+                fetch('@Url.Content("~/Consentimiento/Firmar")', { method: 'POST', body: datos })
+                    .then(function (r) { return r.json(); })
+                    .then(function (r) {
+                        if (!r.success) {
+                            error.textContent = r.message || 'No se pudo registrar la firma.';
+                            btn.disabled = false;
+                            btn.textContent = 'Firmar consentimiento';
+                            return;
+                        }
+                        document.getElementById('panelFirma').style.display = 'none';
+                        document.getElementById('txtFechaFirma').textContent = 'Fecha y hora: ' + (r.fechaFirma || '');
+                        document.getElementById('txtCodigo').textContent = 'Código de verificación: ' + (r.codigo || '');
+                        document.getElementById('panelExito').style.display = '';
+                        document.getElementById('panelExito').scrollIntoView({ behavior: 'smooth' });
+                    })
+                    .catch(function () {
+                        error.textContent = 'No se pudo conectar. Revisa tu conexión e intenta nuevamente.';
+                        btn.disabled = false;
+                        btn.textContent = 'Firmar consentimiento';
+                    });
+            });
+        })();
+    </script>
+</body>
+</html>

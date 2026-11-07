@@ -276,6 +276,111 @@ namespace Fimel.Models.Migrations
                     b.ToTable("ConfiguracionesUsuario", (string)null);
                 });
 
+            modelBuilder.Entity("Fimel.Models.ConsentimientoFirma", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaExpiracion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaFirma")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirmaPaciente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirmaProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HashDocumento")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("HtmlCuerpo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("IdInstitucion")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPaciente")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IpFirma")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("NombreFirmante")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreInstitucion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombrePaciente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RutFirmante")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RutPaciente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RutProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TipoConsentimiento")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("TipoFirmante")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TituloDocumento")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TituloProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("UserAgentFirma")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Vigente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdPaciente");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("ConsentimientosFirma", (string)null);
+                });
+
             modelBuilder.Entity("Fimel.Models.Consultas", b =>
                 {
                     b.Property<int>("Id")
