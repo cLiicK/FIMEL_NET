@@ -39,6 +39,8 @@ var ModuloHorarioCita = (function () {
             populateTimeSelect('#horaFinNuevoBloque', blockMinutes);
             populateTimeSelect('#horaInicioEspecificoNuevoHorario', blockMinutes);
             populateTimeSelect('#horaFinEspecificoNuevoHorario', blockMinutes);
+            populateTimeSelect('#horaInicioBloqueadoNuevoHorario', blockMinutes);
+            populateTimeSelect('#horaFinBloqueadoNuevoHorario', blockMinutes);
 
             // Establecer fecha mínima para horarios específicos
             hoyLocal = new Date();
@@ -47,6 +49,7 @@ var ModuloHorarioCita = (function () {
             dia = String(hoyLocal.getDate()).padStart(2, '0');
             fechaChile = `${anio}-${mes}-${dia}`;
             $('#fechaEspecificaNuevoHorario').attr('min', fechaChile);
+            $('#fechaBloqueadaNuevoHorario').attr('min', fechaChile);
 
             // Validaciones para el input RUT del modal Iniciar Cita
             $("#inputRutIniciarCita").keypress(function (e) { 
@@ -249,6 +252,62 @@ var ModuloHorarioCita = (function () {
                 }
             });
 
+            // Manejar el clic en el tab de horarios bloqueados
+            $(document).on('click', '#horarios-bloqueados-tab', function() {
+                var idUsuario = $('#hdnUsuarioSeleccionado').val();
+
+                var hoyLocal = new Date();
+                var anio = hoyLocal.getFullYear();
+                var mes = String(hoyLocal.getMonth() + 1).padStart(2, '0');
+                var dia = String(hoyLocal.getDate()).padStart(2, '0');
+                var fechaChile = `${anio}-${mes}-${dia}`;
+                $('#fechaBloqueadaNuevoHorario').attr('min', fechaChile);
+
+                if (idUsuario) {
+                    $.ajax({
+                        url: $('#hdnURL_ObtenerHorariosBloqueados').val(),
+                        data: { idUsuario: idUsuario },
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response && response.success && response.horarios && response.horarios.length > 0) {
+                                var html = '<table class="table"><thead><tr><th>Fecha</th><th>Hora Inicio</th><th>Hora Fin</th><th>Comentario</th><th>&nbsp;</th></tr></thead><tbody>';
+
+                                response.horarios.forEach(function(horario) {
+                                    try {
+                                        var fecha = new Date(horario.FechaBloqueo).toLocaleDateString('es-ES');
+                                        var horaInicio = horario.HoraInicio ? horario.HoraInicio.substring(0, 5) : 'N/A';
+                                        var horaFin = horario.HoraFin ? horario.HoraFin.substring(0, 5) : 'N/A';
+                                        var comentario = horario.Comentario || '';
+                                        var id = horario.Id || horario.id || 0;
+
+                                        html += '<tr>';
+                                        html += '<td>' + fecha + '</td>';
+                                        html += '<td>' + horaInicio + '</td>';
+                                        html += '<td>' + horaFin + '</td>';
+                                        html += '<td>' + comentario + '</td>';
+                                        html += '<td><a class="btn btn-ico" onclick="ModuloHorarioCita.EliminarHorarioBloqueado(' + id + ')"><i class="fas fa-trash"></i></a></td>';
+                                        html += '</tr>';
+                                    } catch (e) {
+                                        console.log('Error al procesar horario bloqueado:', horario, e);
+                                    }
+                                });
+
+                                html += '</tbody></table>';
+                                $('#contenedorHorariosBloqueados').html(html);
+                            } else {
+                                $('#contenedorHorariosBloqueados').html('<div class="alert alert-info"><i class="fas fa-info-circle"></i> No hay horarios bloqueados configurados.</div>');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            $('#contenedorHorariosBloqueados').html('<div class="alert alert-danger">Error al cargar los horarios bloqueados</div>');
+                        }
+                    });
+                } else {
+                    $('#contenedorHorariosBloqueados').html('<div class="alert alert-warning">Seleccione un profesional primero</div>');
+                }
+            });
+
         },
         IniciarCalendario: function () {
             var calendarEl = document.getElementById('calendar');
@@ -360,6 +419,11 @@ var ModuloHorarioCita = (function () {
                 eventDidMount: function (info) {
                     // Cambiar el cursor cuando hay una cita agendada
                     info.el.style.cursor = 'pointer';
+
+                    if (info.event.display === 'background' && info.event.classNames.includes('fc-bloqueado-bg')) {
+                        var comentario = info.event.extendedProps.comentario;
+                        info.el.setAttribute('title', comentario ? 'Bloqueado: ' + comentario : 'Bloqueado');
+                    }
                 },
                 dateClick: function (info) {
                     if (info.allDay) return;
@@ -577,6 +641,129 @@ var ModuloHorarioCita = (function () {
                 else {
                     btnGuardar.prop('disabled', false);
                     btnGuardar.text('Guardar');
+                }
+            })
+        },
+
+        GuardarNuevoHorarioBloqueado: function () {
+            if (!$("#fechaBloqueadaNuevoHorario").val()) {
+                Swal.fire('Seleccione la Fecha', 'Nuevo Horario Bloqueado', 'warning');
+                return null;
+            }
+            if (!$("#horaInicioBloqueadoNuevoHorario").val()) {
+                Swal.fire('Seleccione la Hora de Inicio', 'Nuevo Horario Bloqueado', 'warning');
+                return null;
+            }
+            if (!$("#horaFinBloqueadoNuevoHorario").val()) {
+                Swal.fire('Seleccione la Hora Final', 'Nuevo Horario Bloqueado', 'warning');
+                return null;
+            }
+
+            var btnGuardar = $('#btnGuardarHorarioBloqueado');
+
+            Swal.fire({
+                title: 'Nuevo Horario Bloqueado',
+                text: '¿Esta seguro de crear este nuevo Horario Bloqueado?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    btnGuardar.prop('disabled', true);
+                    btnGuardar.text('Guardando...');
+
+                    $.ajax({
+                        url: $('#hdnURL_CrearHorarioBloqueado').val(),
+                        data: {
+                            horario: {
+                                Comentario: $('#comentarioBloqueadoNuevoHorario').val(),
+                                FechaBloqueo: $('#fechaBloqueadaNuevoHorario').val(),
+                                HoraFin: $('#horaFinBloqueadoNuevoHorario').val(),
+                                HoraInicio: $('#horaInicioBloqueadoNuevoHorario').val(),
+                            },
+                            idUsuarioDestino: $('#hdnUsuarioSeleccionado').val() || null
+                        },
+                        method: 'POST',
+                        success: function (response, jqXHR) {
+                            if (response.success === true) {
+                                Swal.fire({
+                                    title: response.message,
+                                    icon: 'success',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        setTimeout(function() {
+                                            location.reload();
+                                        }, 500);
+                                    }
+                                })
+                            }
+                            else {
+                                btnGuardar.prop('disabled', false);
+                                btnGuardar.text('Guardar');
+                                Swal.fire('Error', response.message, 'error');
+                                return;
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            Swal.fire('Error', 'Favor comuniquese con un administrador', 'error');
+                            btnGuardar.prop('disabled', false);
+                            btnGuardar.text('Guardar');
+                            return;
+                        }
+                    });
+                }
+                else {
+                    btnGuardar.prop('disabled', false);
+                    btnGuardar.text('Guardar');
+                }
+            })
+        },
+
+        EliminarHorarioBloqueado: function (idHorario) {
+            if (!idHorario || idHorario === 0) {
+                Swal.fire('Error', 'ID de horario bloqueado no válido', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Eliminar Horario Bloqueado',
+                text: '¿Esta seguro de eliminar este Horario Bloqueado?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: $('#hdnURL_EliminarHorarioBloqueado').val(),
+                        data: {
+                            id: idHorario,
+                        },
+                        method: 'POST',
+                        success: function (response, jqXHR) {
+                            if (response.success === true) {
+                                Swal.fire({
+                                    title: response.message,
+                                    icon: 'success',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload();
+                                    }
+                                })
+                            }
+                            else {
+                                Swal.fire('Error', response.message, 'error');
+                                return;
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            Swal.fire('Error', 'Favor comuniquese con un administrador', 'error');
+                            return;
+                        }
+                    });
+                }
+                else {
                 }
             })
         },

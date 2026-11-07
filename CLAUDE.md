@@ -35,7 +35,7 @@ dotnet ef database update --project Fimel.Models --startup-project Fimel.Api \
   --connection "Database=DB_A6CE9B_Fimel;Server=SQL5101.site4now.net;User=DB_A6CE9B_Fimel_admin;Password=admin123;Integrated Security=;Encrypt=false;TrustServerCertificate=true"
 ```
 
-No hay suite de tests automatizados en el repositorio.
+No hay suite de tests automatizados en el repositorio; existen guías de pruebas manuales en `Manual_Pruebas_FIMEL.md` y `Checklist_Pruebas_FIMEL.md` en la raíz.
 
 ## Arquitectura y flujo de datos
 
@@ -52,7 +52,9 @@ APIBase.Put<Pacientes>($"Pacientes/{id}", objeto);
 APIBase.Delete<bool>($"Pacientes/{id}");
 ```
 
-`API_URL` en `Fimel.Site/appsettings.json` controla el entorno: está comentada/descomentada manualmente para local / testing / producción.
+`API_URL` se resuelve por entorno vía `ASPNETCORE_ENVIRONMENT` (mecanismo estándar de ASP.NET Core: `appsettings.{Environment}.json` sobrescribe a `appsettings.json`). `Development` se fija en `Properties/launchSettings.json`; `Testing`/`Production` se fijan en los publish profiles (`Properties/PublishProfiles/*.pubxml`).
+
+**Excepción a tener en cuenta**: `Fimel.Utils.Utileria` arma su propio `APIClient` estático leyendo *solo* el `appsettings.json` base (`new ConfigurationBuilder().AddJsonFile("appsettings.json")`, sin overlay de entorno), a diferencia de los controllers del Site que reciben `IConfiguration` inyectado (ese sí resuelve por entorno). Esto afecta las llamadas a la API que hace `Utileria` (p.ej. `EnviarCorreo` registrando en `BitacoraMensajerias`): siempre usan el `API_URL` del `appsettings.json` base, independientemente del entorno desplegado.
 
 ### Serialización JSON — punto crítico
 - **Fimel.Api** usa `System.Text.Json` con policy **camelCase** (predeterminado).
@@ -63,6 +65,7 @@ APIBase.Delete<bool>($"Pacientes/{id}");
 ### Autenticación y sesión
 - Login compara contraseñas en texto plano contra la tabla `Usuarios`.
 - El usuario conectado se serializa completo en `HttpContext.Session` bajo la clave `"UsuarioConectado"` (timeout 4 horas).
+- La sesión no es in-memory: `Fimel.Site/Program.cs` la respalda con `AddDistributedSqlServerCache` contra la tabla `SessionCache` de la BD `Fimel` (misma connection string que usa `Fimel.Api`), así que persiste entre reinicios del proceso.
 - Para recuperar la sesión en cualquier controller del Site:
   ```csharp
   Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
@@ -71,12 +74,14 @@ APIBase.Delete<bool>($"Pacientes/{id}");
 ### Entidades heredadas
 `LayerSuperType` es la clase base de la mayoría de modelos: tiene `Id`, `Vigente` (soft-delete) y `FechaCreacion`.
 
-Algunas tablas están **excluidas de las migraciones** porque existen en la BD desde antes del ORM (`Usuarios`, `Reservas`, `Perfiles`). Sus entidades existen en el modelo pero tienen `ExcludeFromMigrations()` en `OnModelCreating`.
+Algunas tablas están **excluidas de las migraciones** porque existen en la BD desde antes del ORM: `Usuarios`, `Reservas`, `Perfiles`, `parExamenes`, `parEspecialidades`, `parTiposConsultas`, `Bitacoras`, `Documentos`, `BitacoraMensajerias`, `Config`, `HorariosAtencion`. Sus entidades existen en el modelo pero tienen `ExcludeFromMigrations()` en `FimelDbContext.OnModelCreating`.
 
 ### Servicios en segundo plano
-`Fimel.Site/Program.cs` registra dos `IHostedService`:
+`Fimel.Site/Program.cs` registra cuatro `IHostedService` (todos corren dentro del proceso del Site, no del Api, y calculan su propia demora hasta la próxima hora de ejecución con `Task.Delay`):
 - `CumpleanosBackgroundService` — diario a las 08:00, envía correos de cumpleaños.
 - `ProximoControlBackgroundService` — notificaciones de próximos controles.
+- `RecordatorioBackgroundService` — diario a las 08:00, envío de recordatorios manuales.
+- `RecordatorioCitaBackgroundService` — diario a las 08:00, recordatorios de citas.
 
 ### Email
 `Utileria.EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)>? imagenes, string? displayName)` envía vía SMTP `mail.fimel.cl:8889`. Las plantillas HTML están en `Fimel.Site/wwwroot/mails/`. Los logos de institución se almacenan como Base64 en la columna `Instituciones.Logo`.
@@ -92,6 +97,9 @@ iText7 se usa para generar PDFs desde HTML en `Utileria`. La impresión de recet
 - Datos del servidor accesibles en JS (doctor, institución, etc.) también se inyectan como hidden inputs desde el ViewBag o el modelo.
 - Archivos JS del site en `Fimel.Site/wwwroot/js/Site/`.
 
+## Localización
+`Fimel.Site/Program.cs` fija la cultura del thread y del request a `es-CL` (única cultura soportada, sin negociación por navegador) para evitar traducción automática y estandarizar formatos de fecha/número en las vistas.
+
 ## Entorno y configuración
 
-`Fimel.Site/appsettings.json` contiene las líneas de `API_URL` y `URL_SITIO` para los tres entornos (local / testing / prod) comentadas manualmente. Las credenciales de BD de testing y producción están guardadas en la memoria del proyecto (`~/.claude/projects/.../memory/reference_bases_de_datos.md`).
+Cada proyecto Web (`Fimel.Api`, `Fimel.Site`) tiene `appsettings.Development.json`, `appsettings.Testing.json` y `appsettings.Production.json` con su propio `API_URL` / `URL_SITIO` / connection string; ASP.NET Core selecciona el archivo según `ASPNETCORE_ENVIRONMENT` (ver sección anterior). Las credenciales de BD de testing y producción también están guardadas en la memoria del proyecto (`~/.claude/projects/.../memory/reference_bases_de_datos.md`).

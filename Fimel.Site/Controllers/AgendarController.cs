@@ -58,6 +58,7 @@ namespace Fimel.Site.Controllers
 
                 var horariosSemanales = _api.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{userId}") ?? new();
                 var horariosEspecificos = _api.Get<List<HorarioEspecifico>>($"HorariosEspecificos/GetByUser/{userId}") ?? new();
+                var horariosBloqueados = _api.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{userId}") ?? new();
                 var citas = _api.Get<List<Cita>>($"Citas/GetByCriteria", new
                 {
                     FechaInicio = desde,
@@ -92,7 +93,10 @@ namespace Fimel.Site.Controllers
                             if (dtInicio > maxPermitido) continue;
 
                             bool ocupado = citas.Any(c => c.FechaHoraInicio < dtFin && c.FechaHoraFinal > dtInicio);
-                            if (!ocupado)
+                            bool bloqueado = horariosBloqueados.Any(b =>
+                                b.FechaBloqueo.Date == fecha && b.HoraInicio < (t + duracion) && b.HoraFin > t);
+
+                            if (!ocupado && !bloqueado)
                                 slots.Add(new
                                 {
                                     fecha = fecha.ToString("yyyy-MM-dd"),
@@ -176,6 +180,18 @@ namespace Fimel.Site.Controllers
                 }) ?? new();
 
                 if (citasExistentes.Count > 0)
+                    return Json(new { ok = false, error = "Este horario ya no está disponible. Por favor elige otro." });
+
+                // Revalidación server-side: no confiar solo en que el frontend filtró
+                // correctamente los horarios bloqueados en ObtenerDisponibilidad.
+                var horariosBloqueados = _api.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{cfg.Usuario.Id}") ?? new();
+
+                bool bloqueado = horariosBloqueados.Any(b =>
+                    b.FechaBloqueo.Date == fechaHoraInicio.Date &&
+                    b.HoraInicio < fechaHoraFin.TimeOfDay &&
+                    b.HoraFin > fechaHoraInicio.TimeOfDay);
+
+                if (bloqueado)
                     return Json(new { ok = false, error = "Este horario ya no está disponible. Por favor elige otro." });
 
                 Usuarios? profesional = _api.Get<Usuarios>($"Usuarios/{cfg.Usuario.Id}");

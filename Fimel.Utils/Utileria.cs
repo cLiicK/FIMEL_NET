@@ -84,6 +84,22 @@ namespace Fimel.Utils
             }
         }
 
+        public byte[] HtmlToPdfDesdeContenido(string htmlContent)
+        {
+            try
+            {
+                using var pdfDest = new MemoryStream();
+                ConverterProperties converterProperties = new ConverterProperties();
+                HtmlConverter.ConvertToPdf(htmlContent, pdfDest, converterProperties);
+                return pdfDest.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error metodo HtmlToPdfDesdeContenido (Utileria): {ex}");
+                throw;
+            }
+        }
+
 
         public void EnviarCorreo(EnvioCorreo correo)
         {
@@ -168,7 +184,8 @@ namespace Fimel.Utils
             }
         }
 
-        public void EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)> inlineImages, string remitente)
+        public void EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)> inlineImages, string remitente,
+            List<(byte[] Bytes, string FileName, string Mime)>? adjuntos = null)
         {
             try
             {
@@ -237,6 +254,16 @@ namespace Fimel.Utils
                     }
 
                     mail.AlternateViews.Add(htmlView);
+                }
+
+                // Adjuntos (ej: PDF de receta/orden de exámenes)
+                if (adjuntos != null)
+                {
+                    foreach (var adj in adjuntos)
+                    {
+                        var attachmentStream = new MemoryStream(adj.Bytes);
+                        mail.Attachments.Add(new Attachment(attachmentStream, adj.FileName, adj.Mime));
+                    }
                 }
 
                 smtpClient.Send(mail);

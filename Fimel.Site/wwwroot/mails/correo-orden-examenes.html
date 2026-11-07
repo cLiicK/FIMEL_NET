@@ -42,43 +42,16 @@
                             <h1 style="margin:0 0 4px 0; color:#0d86b3;">Orden de Ex&aacute;menes</h1>
                             <p style="margin:0 0 20px 0; font-size:13px; color:#7a8794;">{{nombre_institucion}}</p>
 
-                            <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="font-size:14px; margin:0 0 20px 0;">
-                                <tr>
-                                    <td style="padding:4px 0; width:50%;"><strong>M&eacute;dico:</strong> {{titulo_profesional}} {{nombre_doctor}}</td>
-                                    <td style="padding:4px 0;"><strong>Fecha:</strong> {{fecha_consulta}}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:4px 0;"><strong>Paciente:</strong> {{nombre_paciente}}</td>
-                                    <td style="padding:4px 0;"><strong>Documento:</strong> {{rut_paciente}}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:4px 0;"><strong>Edad:</strong> {{edad_paciente}} a&ntilde;os</td>
-                                    <td></td>
-                                </tr>
-                            </table>
-
-                            <h4 style="margin:0 0 10px 0; color:#0d86b3; border-bottom:1px solid #eef0f3; padding-bottom:8px;">Ex&aacute;menes solicitados</h4>
-                            <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="font-size:14px; border-collapse:collapse;">
-                                <thead>
-                                    <tr style="background:#f0f8fd;">
-                                        <th style="padding:8px 10px; text-align:left; border-bottom:2px solid #0d86b3; width:30px;">#</th>
-                                        <th style="padding:8px 10px; text-align:left; border-bottom:2px solid #0d86b3;">Examen</th>
-                                        <th style="padding:8px 10px; text-align:left; border-bottom:2px solid #0d86b3;">Indicaciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{filas_examenes}}
-                                </tbody>
-                            </table>
-
-                            <table role="presentation" width="100%" style="margin-top:40px;">
-                                <tr>
-                                    <td align="right" style="border-top:1px solid #eef0f3; padding-top:14px;">
-                                        <p style="margin:0; font-size:14px; font-weight:bold; color:#333;">{{titulo_profesional}} {{nombre_doctor}}</p>
-                                        <p style="margin:4px 0 0 0; font-size:12px; color:#7a8794;">{{nombre_institucion}}</p>
-                                    </td>
-                                </tr>
-                            </table>
+                            <p style="margin:0 0 16px 0; font-size:14px; line-height:1.6;">
+                                Estimado/a <strong>{{nombre_paciente}}</strong>,
+                            </p>
+                            <p style="margin:0 0 16px 0; font-size:14px; line-height:1.6;">
+                                Junto con saludar, te adjuntamos tu orden de ex&aacute;menes emitida por
+                                <strong>{{titulo_profesional}} {{nombre_doctor}}</strong> con fecha <strong>{{fecha_consulta}}</strong>.
+                            </p>
+                            <p style="margin:0 0 8px 0; font-size:14px; line-height:1.6;">
+                                Encontrar&aacute;s el detalle de los ex&aacute;menes solicitados en el archivo PDF adjunto a este correo.
+                            </p>
                         </td>
                     </tr>
 

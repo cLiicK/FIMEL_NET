@@ -766,6 +766,20 @@ var ModuloConsulta = (function () {
                 ? 'data:image/png;base64,' + logoBase64
                 : (window.location.origin + '/img/logo_fimel_correo.png');
 
+            var firmaBase64 = $('#hdnFirmaProfesional').val();
+            var firmaImgHtml = firmaBase64
+                ? '<img class="firma-img" src="data:image/png;base64,' + firmaBase64 + '" alt="Firma">'
+                : '';
+            var rutProfesional = $('#hdnRutProfesional').val() || '';
+
+            var diagnostico = ($('#inputDiagnostico').val() || '').trim();
+            var diagnosticoSectionHtml = diagnostico
+                ? '<div class="section">' +
+                    '<div class="section-label">Diagnóstico</div>' +
+                    '<div class="diagnostico-text">' + escapeHtml(diagnostico) + '</div>' +
+                  '</div>'
+                : '';
+
             var medicamentosHtml = recetaMedicamentos.map(function (m, i) {
                 var detalle = [];
                 if (m.dosis) detalle.push(m.dosis);
@@ -792,7 +806,10 @@ var ModuloConsulta = (function () {
                         .replace(/\{\{paciente\}\}/g, nombrePaciente)
                         .replace(/\{\{rut_doc\}\}/g, rutPaciente)
                         .replace(/\{\{edad\}\}/g, edadPaciente)
-                        .replace(/\{\{medicamentos\}\}/g, medicamentosHtml);
+                        .replace(/\{\{diagnostico_section\}\}/g, diagnosticoSectionHtml)
+                        .replace(/\{\{medicamentos\}\}/g, medicamentosHtml)
+                        .replace(/\{\{firma_img\}\}/g, firmaImgHtml)
+                        .replace(/\{\{rut_profesional\}\}/g, rutProfesional);
 
                     var w = window.open('', '_blank', 'width=800,height=600');
                     w.document.write(html);
@@ -810,6 +827,17 @@ var ModuloConsulta = (function () {
                 Swal.fire('Sin correo', 'El paciente no tiene un correo electrónico registrado.', 'warning');
                 return;
             }
+
+            var tipoDocEnvio = $('#comboTipoDocumento').val();
+            var rutPacienteEnvio;
+            if (tipoDocEnvio === 'RUT') {
+                var rutNumEnvio = parseInt($('#hiddenRutPaciente').val());
+                var dvEnvio = getDV(rutNumEnvio).toString();
+                rutPacienteEnvio = ObtenerRutSTR(rutNumEnvio, dvEnvio);
+            } else {
+                rutPacienteEnvio = $('#hiddenNumDocumento').val() || '';
+            }
+
             showLoading(btn);
             $.ajax({
                 url: $('#hdnURL_EnviarReceta').val(),
@@ -817,10 +845,47 @@ var ModuloConsulta = (function () {
                 data: {
                     emailPaciente: email,
                     nombrePaciente: ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim(),
-                    rutPaciente: $('#hiddenRutPaciente').val() || $('#hiddenNumDocumento').val() || '',
+                    rutPaciente: rutPacienteEnvio,
                     edadPaciente: $('#inputEdad').val() || '',
                     fechaConsulta: $('#inputFechaConsulta').val(),
+                    diagnostico: $('#inputDiagnostico').val() || '',
                     medicamentosJson: JSON.stringify(recetaMedicamentos)
+                },
+                success: function (response) {
+                    closeLoading(btn);
+                    if (response.success) {
+                        Swal.fire('Correo enviado', response.message, 'success');
+                    } else {
+                        Swal.fire('Error', response.message || 'Error al enviar el correo.', 'error');
+                    }
+                },
+                error: function () {
+                    closeLoading(btn);
+                    Swal.fire('Error', 'Error al enviar el correo.', 'error');
+                }
+            });
+        },
+
+        EnviarIndicacionesCorreo: function (btn) {
+            var indicaciones = $('#inputIndicaciones').val().trim();
+            if (!indicaciones) {
+                Swal.fire('Sin indicaciones', 'Escriba las indicaciones antes de enviarlas.', 'warning');
+                return;
+            }
+            var email = $('#inputEmail').val();
+            if (!email) {
+                Swal.fire('Sin correo', 'El paciente no tiene un correo electrónico registrado.', 'warning');
+                return;
+            }
+
+            showLoading(btn);
+            $.ajax({
+                url: $('#hdnURL_EnviarIndicacionesCorreo').val(),
+                method: 'POST',
+                data: {
+                    emailPaciente: email,
+                    nombrePaciente: ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim(),
+                    indicaciones: indicaciones
                 },
                 success: function (response) {
                     closeLoading(btn);
@@ -847,6 +912,17 @@ var ModuloConsulta = (function () {
                 Swal.fire('Sin correo', 'El paciente no tiene un correo electrónico registrado.', 'warning');
                 return;
             }
+
+            var tipoDocEnvio = $('#comboTipoDocumento').val();
+            var rutPacienteEnvio;
+            if (tipoDocEnvio === 'RUT') {
+                var rutNumEnvio = parseInt($('#hiddenRutPaciente').val());
+                var dvEnvio = getDV(rutNumEnvio).toString();
+                rutPacienteEnvio = ObtenerRutSTR(rutNumEnvio, dvEnvio);
+            } else {
+                rutPacienteEnvio = $('#hiddenNumDocumento').val() || '';
+            }
+
             showLoading(btn);
             $.ajax({
                 url: $('#hdnURL_EnviarOrdenExamenes').val(),
@@ -854,7 +930,7 @@ var ModuloConsulta = (function () {
                 data: {
                     emailPaciente: email,
                     nombrePaciente: ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val()).trim(),
-                    rutPaciente: $('#hiddenRutPaciente').val() || $('#hiddenNumDocumento').val() || '',
+                    rutPaciente: rutPacienteEnvio,
                     edadPaciente: $('#inputEdad').val() || '',
                     fechaConsulta: $('#inputFechaConsulta').val(),
                     examenesJson: JSON.stringify(ordenExamenes)
@@ -1318,6 +1394,12 @@ var ModuloConsulta = (function () {
                 ? 'data:image/png;base64,' + logoBase64
                 : (window.location.origin + '/img/logo_fimel_correo.png');
 
+            var firmaBase64 = $('#hdnFirmaProfesional').val();
+            var firmaImgHtml = firmaBase64
+                ? '<img class="firma-img" src="data:image/png;base64,' + firmaBase64 + '" alt="Firma">'
+                : '';
+            var rutProfesional = $('#hdnRutProfesional').val() || '';
+
             var examenesHtml = ordenExamenes.map(function (e, i) {
                 return '<li class="exam-item">' +
                     '<div class="exam-bullet">' + (i + 1) + '</div>' +
@@ -1341,7 +1423,9 @@ var ModuloConsulta = (function () {
                         .replace(/\{\{paciente\}\}/g, nombrePaciente)
                         .replace(/\{\{rut_doc\}\}/g, rutPaciente)
                         .replace(/\{\{edad\}\}/g, edadPaciente)
-                        .replace(/\{\{examenes\}\}/g, examenesHtml);
+                        .replace(/\{\{examenes\}\}/g, examenesHtml)
+                        .replace(/\{\{firma_img\}\}/g, firmaImgHtml)
+                        .replace(/\{\{rut_profesional\}\}/g, rutProfesional);
 
                     var w = window.open('', '_blank', 'width=800,height=600');
                     w.document.write(html);

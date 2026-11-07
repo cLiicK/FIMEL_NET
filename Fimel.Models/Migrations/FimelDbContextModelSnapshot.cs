@@ -248,6 +248,9 @@ namespace Fimel.Models.Migrations
                     b.Property<DateTime?>("FechaCreacion")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Firma")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("MaxAntDias")
                         .HasColumnType("int");
 
@@ -488,6 +491,42 @@ namespace Fimel.Models.Migrations
                         {
                             t.ExcludeFromMigrations();
                         });
+                });
+
+            modelBuilder.Entity("Fimel.Models.HorarioBloqueado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comentario")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FechaBloqueo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("HoraFin")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("HoraInicio")
+                        .HasColumnType("time");
+
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Vigente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("HorariosBloqueados", (string)null);
                 });
 
             modelBuilder.Entity("Fimel.Models.HorarioEspecifico", b =>
@@ -1466,6 +1505,15 @@ namespace Fimel.Models.Migrations
                 });
 
             modelBuilder.Entity("Fimel.Models.HorarioAtencion", b =>
+                {
+                    b.HasOne("Fimel.Models.Usuarios", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Fimel.Models.HorarioBloqueado", b =>
                 {
                     b.HasOne("Fimel.Models.Usuarios", "Usuario")
                         .WithMany()

@@ -34,6 +34,17 @@ namespace Fimel.Site.Controllers
                 vm.HorariosEspecificos = new List<HorarioEspecifico>();
             }
 
+            try
+            {
+                var horariosBloqueados = APIBase.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{usuario.Id}");
+                vm.HorariosBloqueados = horariosBloqueados ?? new List<HorarioBloqueado>();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al obtener horarios bloqueados: {ex}");
+                vm.HorariosBloqueados = new List<HorarioBloqueado>();
+            }
+
             vm.ConfiguracionUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{usuario.Id}");
 
             if (usuario.TienePerfil(EnumPerfiles.Administrativo))
@@ -143,6 +154,33 @@ namespace Fimel.Site.Controllers
             catch (Exception ex)
             {
                 Logger.Log($"Error al obtener horarios específicos para usuario {idUsuarioFinal}: {ex}");
+            }
+
+            // Obtener horarios bloqueados del usuario correspondiente
+            try
+            {
+                List<HorarioBloqueado> horariosBloqueados = APIBase.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{idUsuarioFinal}");
+
+                if (horariosBloqueados != null)
+                {
+                    foreach (var bloqueo in horariosBloqueados)
+                    {
+                        jsonEventos.Add(new
+                        {
+                            title = "Bloqueado",
+                            start = bloqueo.FechaBloqueo.ToString("yyyy-MM-dd") + "T" + bloqueo.HoraInicio.ToString(@"hh\:mm\:ss"),
+                            end = bloqueo.FechaBloqueo.ToString("yyyy-MM-dd") + "T" + bloqueo.HoraFin.ToString(@"hh\:mm\:ss"),
+                            display = "background",
+                            backgroundColor = "#C62828",
+                            classNames = new[] { "fc-bloqueado-bg" },
+                            extendedProps = new { comentario = bloqueo.Comentario }
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al obtener horarios bloqueados para usuario {idUsuarioFinal}: {ex}");
             }
 
             return Json(jsonEventos);
@@ -268,6 +306,68 @@ namespace Fimel.Site.Controllers
             }
         }
 
+        public ActionResult _CrearHorarioBloqueado(HorarioBloqueado horario, int? idUsuarioDestino = null)
+        {
+            try
+            {
+                Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+
+                // Determinar para qué usuario se crea el horario bloqueado
+                int idUsuarioFinal;
+                if (idUsuarioDestino.HasValue && usuario.TienePerfil(EnumPerfiles.Administrativo))
+                {
+                    // Si es administrativo y se especifica un usuario destino, usar ese
+                    idUsuarioFinal = idUsuarioDestino.Value;
+                }
+                else
+                {
+                    // Si es especialista o no se especifica destino, usar el usuario conectado
+                    idUsuarioFinal = usuario.Id;
+                }
+
+                // Obtener el usuario destino completo para asignarlo al horario
+                Usuarios usuarioDestino = APIBase.Get<Usuarios>($"Usuarios/{idUsuarioFinal}");
+                horario.Usuario = usuarioDestino;
+
+                HorarioBloqueado? horarioPost = APIBase.Post<HorarioBloqueado>($"HorariosBloqueados", horario);
+
+                if (horarioPost == null)
+                    return Json(new { success = false, message = "Error interno al guardar Horario Bloqueado..." });
+
+                return Json(new { success = true, message = "Horario Bloqueado Guardado!" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Horario _CrearHorarioBloqueado: {ex}");
+                return null;
+            }
+        }
+
+        public ActionResult _EliminarHorarioBloqueado(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    return Json(new { success = false, message = "ID de horario bloqueado no válido" });
+                }
+
+                HorarioBloqueado horarioBloqueado = APIBase.Get<HorarioBloqueado>($"HorariosBloqueados/{id}");
+                horarioBloqueado.Vigente = "N";
+                HorarioBloqueado horarioBloqueadoPut = APIBase.Put<HorarioBloqueado>($"HorariosBloqueados/{id}", horarioBloqueado);
+
+                if (horarioBloqueadoPut == null)
+                    return Json(new { success = false, message = "Error al eliminar el Horario Bloqueado" });
+
+                return Json(new { success = true, message = "Horario Bloqueado eliminado" });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Horario _EliminarHorarioBloqueado: {ex}");
+                return null;
+            }
+        }
+
         public ActionResult _EliminarCita(int id)
         {
             try
@@ -316,6 +416,16 @@ namespace Fimel.Site.Controllers
 
                 if (dbCita.Count > 0)
                     return Json(new { success = false, message = "Ya existe una cita agendada que topa con el Día y Hora" });
+
+                List<HorarioBloqueado> horariosBloqueados = APIBase.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{idUsuarioFinal}") ?? new List<HorarioBloqueado>();
+
+                bool bloqueado = horariosBloqueados.Any(b =>
+                    b.FechaBloqueo.Date == cita.FechaHoraInicio.Date &&
+                    b.HoraInicio < cita.FechaHoraFinal.TimeOfDay &&
+                    b.HoraFin > cita.FechaHoraInicio.TimeOfDay);
+
+                if (bloqueado)
+                    return Json(new { success = false, message = "El horario seleccionado está bloqueado. No es posible agendar una cita en este rango." });
 
                 // Obtener el usuario destino completo para asignarlo a la cita
                 Usuarios usuarioDestino = APIBase.Get<Usuarios>($"Usuarios/{idUsuarioFinal}");
@@ -612,12 +722,24 @@ namespace Fimel.Site.Controllers
                     horariosEspecificos = new List<HorarioEspecifico>();
                 }
 
+                List<HorarioBloqueado> horariosBloqueados;
+                try
+                {
+                    horariosBloqueados = APIBase.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{idUsuario}") ?? new List<HorarioBloqueado>();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Error al obtener horarios bloqueados para usuario {idUsuario}: {ex}");
+                    horariosBloqueados = new List<HorarioBloqueado>();
+                }
+
                 var configUsuario = APIBase.Get<ConfiguracionUsuario>($"ConfiguracionesUsuario/GetByUser/{idUsuario}");
 
                 var vm = new MiHorarioVM
                 {
                     HorariosAtencion = horarios,
                     HorariosEspecificos = horariosEspecificos,
+                    HorariosBloqueados = horariosBloqueados,
                     ConfiguracionUsuario = configUsuario
                 };
 
@@ -674,6 +796,51 @@ namespace Fimel.Site.Controllers
                     count = 0
                 };
                 
+                return Json(errorResponse);
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ObtenerHorariosBloqueados(int idUsuario)
+        {
+            try
+            {
+                List<HorarioBloqueado> horariosBloqueados = new List<HorarioBloqueado>();
+
+                try
+                {
+                    var url = $"HorariosBloqueados/GetByUser/{idUsuario}";
+                    var resultado = APIBase.Get<List<HorarioBloqueado>>(url);
+
+                    if (resultado != null && resultado.Count > 0)
+                    {
+                        horariosBloqueados = resultado;
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                var response = new
+                {
+                    success = true,
+                    horarios = horariosBloqueados,
+                    count = horariosBloqueados.Count
+                };
+
+                return Json(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new
+                {
+                    success = false,
+                    message = "Error al obtener horarios bloqueados",
+                    horarios = new List<HorarioBloqueado>(),
+                    count = 0
+                };
+
                 return Json(errorResponse);
             }
         }
