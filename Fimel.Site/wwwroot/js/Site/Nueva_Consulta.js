@@ -9,6 +9,12 @@ var ModuloConsulta = (function () {
         IniciarScripts: function () {
             $("#inputRut").keypress(function (e) { onlyNumbersWithK(e); });
 
+            if (typeof ModuloConsentimientos !== 'undefined') {
+                $.each(ModuloConsentimientos.Tipos, function (codigo, tipo) {
+                    $('#comboTipoConsentimiento').append($('<option>').val(codigo).text(tipo.nombre));
+                });
+            }
+
             $("#inputPeso").keypress(function (e) { onlyNumbersWithDot(e); });
             $("#inputTalla").keypress(function (e) { onlyNumbersWithDot(e); });
 
@@ -1363,6 +1369,50 @@ var ModuloConsulta = (function () {
                     '</div>';
             }).join('');
             container.html('<div class="overflow-hidden" style="background:#fafafa;">' + items + '</div>');
+        },
+
+        CambiarTipoConsentimiento: function () {
+            var tipo = ModuloConsentimientos.Tipos[$('#comboTipoConsentimiento').val()];
+            $('#inputDispositivoConsentimiento').attr('placeholder', tipo ? tipo.placeholderDispositivo : 'Ej: T de Cobre, Mirena');
+        },
+
+        ImprimirConsentimiento: function () {
+            var codigoTipo = $('#comboTipoConsentimiento').val();
+            if (!codigoTipo) {
+                Swal.fire('Seleccione un consentimiento', 'Elija el tipo de consentimiento que desea imprimir.', 'warning');
+                return;
+            }
+            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim();
+            if (!nombrePaciente) {
+                Swal.fire('Sin paciente', 'Busque primero a la paciente para completar sus datos en el consentimiento.', 'warning');
+                return;
+            }
+            var rutPaciente;
+            if ($('#comboTipoDocumento').val() === 'RUT') {
+                var rutNum = parseInt($('#hiddenRutPaciente').val());
+                rutPaciente = isNaN(rutNum) ? '' : ObtenerRutSTR(rutNum, getDV(rutNum).toString());
+            } else {
+                rutPaciente = $('#hiddenNumDocumento').val() || '';
+            }
+            var fechaConsulta = $('#inputFechaConsulta').val() || new Date().toISOString().split('T')[0];
+            var partesFecha = fechaConsulta.split('-');
+            var fechaFormateada = partesFecha.length === 3 ? partesFecha[2] + '/' + partesFecha[1] + '/' + partesFecha[0] : fechaConsulta;
+            var logoBase64 = $('#hdnLogoInstitucion').val();
+
+            ModuloConsentimientos.Imprimir(codigoTipo, {
+                paciente: nombrePaciente,
+                rut: rutPaciente,
+                domicilio: ($('#inputDireccion').val() || '').trim(),
+                fecha: fechaFormateada,
+                profesional: $('#hdnNombreDoctor').val() || '',
+                tituloProfesional: $('#hdnTituloProfesional').val() || '',
+                rutProfesional: $('#hdnRutProfesional').val() || '',
+                firmaBase64: $('#hdnFirmaProfesional').val() || '',
+                dispositivo: ($('#inputDispositivoConsentimiento').val() || '').trim(),
+                observaciones: ($('#inputObservacionesConsentimiento').val() || '').trim(),
+                institucion: $('#hdnNombreInstitucion').val() || 'FIMEL',
+                logoUrl: logoBase64 ? 'data:image/png;base64,' + logoBase64 : (window.location.origin + '/img/logo_fimel_correo.png')
+            });
         },
 
         ImprimirOrdenExamenes: function () {
