@@ -48,6 +48,7 @@ namespace Fimel.Models
         public DbSet<PlanSuscripcion> PlanesSuscripcion { get; set; }
         public DbSet<SuscripcionUsuario> SuscripcionesUsuario { get; set; }
         public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
+        public DbSet<ConsentimientoFirma> ConsentimientosFirma { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -132,6 +133,16 @@ namespace Fimel.Models
 
             modelBuilder.Entity<PagoSuscripcion>().ToTable("PagosSuscripcion");
             modelBuilder.Entity<PagoSuscripcion>().HasIndex(p => p.FlowInvoiceId).IsUnique();
+
+            modelBuilder.Entity<ConsentimientoFirma>().ToTable("ConsentimientosFirma");
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.Token).HasMaxLength(64);
+            modelBuilder.Entity<ConsentimientoFirma>().HasIndex(c => c.Token).IsUnique();
+            modelBuilder.Entity<ConsentimientoFirma>().HasIndex(c => c.IdPaciente);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.TipoConsentimiento).HasMaxLength(40);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.Estado).HasMaxLength(20);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.TipoFirmante).HasMaxLength(20);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.IpFirma).HasMaxLength(64);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.HashDocumento).HasMaxLength(64);
         }
     }
 }

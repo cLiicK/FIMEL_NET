@@ -2,6 +2,8 @@
 var ordenExamenes = [];
 var bateriaExamenesActual = [];
 var idPacienteConsultaActual = 0;
+var consentimientoQRActual = null;
+var esperaConsentimientoTimer = null;
 var _catalogoExamenes = [];
 
 var ModuloConsulta = (function () {
@@ -9,11 +11,7 @@ var ModuloConsulta = (function () {
         IniciarScripts: function () {
             $("#inputRut").keypress(function (e) { onlyNumbersWithK(e); });
 
-            if (typeof ModuloConsentimientos !== 'undefined') {
-                $.each(ModuloConsentimientos.Tipos, function (codigo, tipo) {
-                    $('#comboTipoConsentimiento').append($('<option>').val(codigo).text(tipo.nombre));
-                });
-            }
+            $('#modalConsentimientoQR').on('hidden.bs.modal', function () { ModuloConsulta.DetenerEsperaConsentimiento(); });
 
             $("#inputPeso").keypress(function (e) { onlyNumbersWithDot(e); });
             $("#inputTalla").keypress(function (e) { onlyNumbersWithDot(e); });
@@ -92,6 +90,7 @@ var ModuloConsulta = (function () {
 
             LimpiarFormularioConsulta();
             idPacienteConsultaActual = 0;
+            ModuloConsulta.CargarConsentimientosFirmados(0);
             recetaMedicamentos = [];
             ModuloConsulta.RenderizarMedicamentos();
 
@@ -187,6 +186,7 @@ var ModuloConsulta = (function () {
                             idPacienteConsultaActual = response.Id;
                             ModuloConsulta.CargarExamenesConsulta(response.Id);
                             ModuloConsulta.CargarRecordatoriosConsulta(response.Id);
+                            ModuloConsulta.CargarConsentimientosFirmados(response.Id);
 
                             Swal.fire('Paciente encontrado', 'Se cargaron los datos del paciente', 'success')
 
@@ -1372,46 +1372,138 @@ var ModuloConsulta = (function () {
         },
 
         CambiarTipoConsentimiento: function () {
-            var tipo = ModuloConsentimientos.Tipos[$('#comboTipoConsentimiento').val()];
-            $('#inputDispositivoConsentimiento').attr('placeholder', tipo ? tipo.placeholderDispositivo : 'Ej: T de Cobre, Mirena');
+            var placeholder = $('#comboTipoConsentimiento option:selected').data('placeholder') || 'Ej: T de Cobre, Mirena';
+            $('#inputDispositivoConsentimiento').attr('placeholder', placeholder);
+        },
+
+        // Datos que se envían al servidor; el nombre, RUT y domicilio los toma el servidor desde la ficha.
+        DatosConsentimiento: function () {
+            var tipo = $('#comboTipoConsentimiento').val();
+            if (!tipo) {
+                Swal.fire('Seleccione un consentimiento', 'Elija el tipo de consentimiento.', 'warning');
+                return null;
+            }
+            if (!idPacienteConsultaActual) {
+                Swal.fire('Sin paciente', 'Busque primero a la paciente para completar sus datos en el consentimiento.', 'warning');
+                return null;
+            }
+            return {
+                tipo: tipo,
+                idPaciente: idPacienteConsultaActual,
+                fechaConsulta: $('#inputFechaConsulta').val() || '',
+                dispositivo: ($('#inputDispositivoConsentimiento').val() || '').trim(),
+                observaciones: ($('#inputObservacionesConsentimiento').val() || '').trim()
+            };
         },
 
         ImprimirConsentimiento: function () {
-            var codigoTipo = $('#comboTipoConsentimiento').val();
-            if (!codigoTipo) {
-                Swal.fire('Seleccione un consentimiento', 'Elija el tipo de consentimiento que desea imprimir.', 'warning');
-                return;
-            }
-            var nombrePaciente = ($('#inputNombres').val() + ' ' + $('#inputPrimerApellido').val() + ' ' + $('#inputSegundoApellido').val()).replace(/\s+/g, ' ').trim();
-            if (!nombrePaciente) {
-                Swal.fire('Sin paciente', 'Busque primero a la paciente para completar sus datos en el consentimiento.', 'warning');
-                return;
-            }
-            var rutPaciente;
-            if ($('#comboTipoDocumento').val() === 'RUT') {
-                var rutNum = parseInt($('#hiddenRutPaciente').val());
-                rutPaciente = isNaN(rutNum) ? '' : ObtenerRutSTR(rutNum, getDV(rutNum).toString());
-            } else {
-                rutPaciente = $('#hiddenNumDocumento').val() || '';
-            }
-            var fechaConsulta = $('#inputFechaConsulta').val() || new Date().toISOString().split('T')[0];
-            var partesFecha = fechaConsulta.split('-');
-            var fechaFormateada = partesFecha.length === 3 ? partesFecha[2] + '/' + partesFecha[1] + '/' + partesFecha[0] : fechaConsulta;
-            var logoBase64 = $('#hdnLogoInstitucion').val();
+            var datos = ModuloConsulta.DatosConsentimiento();
+            if (!datos) return;
 
-            ModuloConsentimientos.Imprimir(codigoTipo, {
-                paciente: nombrePaciente,
-                rut: rutPaciente,
-                domicilio: ($('#inputDireccion').val() || '').trim(),
-                fecha: fechaFormateada,
-                profesional: $('#hdnNombreDoctor').val() || '',
-                tituloProfesional: $('#hdnTituloProfesional').val() || '',
-                rutProfesional: $('#hdnRutProfesional').val() || '',
-                firmaBase64: $('#hdnFirmaProfesional').val() || '',
-                dispositivo: ($('#inputDispositivoConsentimiento').val() || '').trim(),
-                observaciones: ($('#inputObservacionesConsentimiento').val() || '').trim(),
-                institucion: $('#hdnNombreInstitucion').val() || 'FIMEL',
-                logoUrl: logoBase64 ? 'data:image/png;base64,' + logoBase64 : (window.location.origin + '/img/logo_fimel_correo.png')
+            // Se abre la ventana antes de la llamada para que el navegador no la bloquee como popup.
+            var w = window.open('', '_blank', 'width=850,height=700');
+            $.post($('#hdnURL_ConsentimientoImprimible').val(), datos)
+                .done(function (html) {
+                    w.document.open();
+                    w.document.write(html);
+                    w.document.close();
+                })
+                .fail(function () {
+                    if (w) w.close();
+                    Swal.fire('Error', 'No se pudo generar el consentimiento.', 'error');
+                });
+        },
+
+        FirmarConsentimientoQR: function (btn) {
+            var datos = ModuloConsulta.DatosConsentimiento();
+            if (!datos) return;
+
+            ModuloConsulta.DetenerEsperaConsentimiento();
+            if (btn) $(btn).prop('disabled', true);
+            $.post($('#hdnURL_CrearConsentimientoQR').val(), datos)
+                .done(function (r) {
+                    if (!r.success) {
+                        Swal.fire('Error', r.message || 'No se pudo crear el consentimiento para firma.', 'error');
+                        return;
+                    }
+                    consentimientoQRActual = r.token;
+                    $('#imgQRConsentimiento').attr('src', r.qr);
+                    $('#inputLinkConsentimientoQR').val(r.url);
+                    $('#txtExpiraConsentimientoQR').text(r.expira);
+                    $('#txtTipoConsentimientoQR').text($('#comboTipoConsentimiento option:selected').text());
+                    $('#qrConsentimientoPendiente').show();
+                    $('#qrConsentimientoFirmado, #qrConsentimientoExpirado').hide();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalConsentimientoQR')).show();
+                    esperaConsentimientoTimer = setInterval(ModuloConsulta.RevisarEstadoConsentimiento, 3000);
+                })
+                .fail(function () {
+                    Swal.fire('Error', 'No se pudo crear el consentimiento para firma.', 'error');
+                })
+                .always(function () {
+                    if (btn) $(btn).prop('disabled', false);
+                });
+        },
+
+        RevisarEstadoConsentimiento: function () {
+            if (!consentimientoQRActual) return;
+            $.get($('#hdnURL_EstadoConsentimiento').val(), { token: consentimientoQRActual }, function (r) {
+                if (!r.success) return;
+                if (r.estado === 'Firmado') {
+                    ModuloConsulta.DetenerEsperaConsentimiento(true);
+                    $('#txtFirmanteConsentimientoQR').text('Firmado por ' + (r.nombreFirmante || '') + ' el ' + (r.fechaFirma || ''));
+                    $('#qrConsentimientoPendiente, #qrConsentimientoExpirado').hide();
+                    $('#qrConsentimientoFirmado').show();
+                    ModuloConsulta.CargarConsentimientosFirmados(idPacienteConsultaActual);
+                } else if (r.expirado) {
+                    ModuloConsulta.DetenerEsperaConsentimiento(true);
+                    $('#qrConsentimientoPendiente, #qrConsentimientoFirmado').hide();
+                    $('#qrConsentimientoExpirado').show();
+                }
+            });
+        },
+
+        DetenerEsperaConsentimiento: function (mantenerToken) {
+            if (esperaConsentimientoTimer) clearInterval(esperaConsentimientoTimer);
+            esperaConsentimientoTimer = null;
+            if (!mantenerToken) consentimientoQRActual = null;
+        },
+
+        CopiarLinkConsentimiento: function () {
+            var link = $('#inputLinkConsentimientoQR').val();
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link).then(function () {
+                    Swal.fire({ icon: 'success', title: 'Link copiado', text: 'Puedes enviárselo a la paciente por WhatsApp o correo.', timer: 2200, showConfirmButton: false });
+                });
+            } else {
+                $('#inputLinkConsentimientoQR').trigger('select');
+                document.execCommand('copy');
+            }
+        },
+
+        VerConsentimientoFirmado: function (token) {
+            token = token || consentimientoQRActual;
+            if (!token) return;
+            window.open($('#hdnURL_VerConsentimiento').val() + '?token=' + encodeURIComponent(token), '_blank');
+        },
+
+        CargarConsentimientosFirmados: function (idPaciente) {
+            var contenedor = $('#listaConsentimientosFirmados');
+            if (!idPaciente) {
+                contenedor.html('<p class="text-muted small fst-italic mb-0">Sin consentimientos firmados.</p>');
+                return;
+            }
+            $.get($('#hdnURL_ObtenerConsentimientosFirmados').val(), { idPaciente: idPaciente }, function (r) {
+                if (!r.success || !r.data || r.data.length === 0) {
+                    contenedor.html('<p class="text-muted small fst-italic mb-0">Sin consentimientos firmados.</p>');
+                    return;
+                }
+                var items = r.data.map(function (c) {
+                    return '<a href="javascript:void(0)" class="list-group-item list-group-item-action py-2" onclick="ModuloConsulta.VerConsentimientoFirmado(\'' + encodeURIComponent(c.token) + '\')">' +
+                        '<div class="small fw-semibold"><i class="fas fa-file-signature me-1" style="color:#0E96CC;"></i>' + escapeHtml(c.titulo) + '</div>' +
+                        '<div class="small text-muted">' + escapeHtml(c.fechaFirma || '') + ' · ' + escapeHtml(c.nombreFirmante || '') + '</div>' +
+                        '</a>';
+                }).join('');
+                contenedor.html('<div class="list-group list-group-flush">' + items + '</div>');
             });
         },
 

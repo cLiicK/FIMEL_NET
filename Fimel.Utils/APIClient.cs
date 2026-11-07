@@ -16,11 +16,21 @@ namespace Fimel.Utils
 
         private readonly HttpClient Client = new HttpClient();
 
+        /// <summary>
+        /// Llave compartida con Fimel.Api; se envía en el header X-Api-Key en todas las llamadas.
+        /// Fimel.Site la asigna al iniciar (ApiSeguridad:ApiKey). Si no se asignó, se usa la variable de entorno FIMEL_API_KEY.
+        /// </summary>
+        public static string? ApiKeyCompartida { get; set; }
+        public const string HeaderApiKey = "X-Api-Key";
+
         public APIClient(string baseURI)
         {
             this.BASE_URL = baseURI;
 
             this.Client.BaseAddress = new Uri(BASE_URL);
+            string? llave = string.IsNullOrWhiteSpace(ApiKeyCompartida) ? Environment.GetEnvironmentVariable("FIMEL_API_KEY") : ApiKeyCompartida;
+            if (!string.IsNullOrWhiteSpace(llave))
+                this.Client.DefaultRequestHeaders.Add(HeaderApiKey, llave.Trim());
             this.Client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
             this.Client.Timeout = TimeSpan.FromMinutes(30);

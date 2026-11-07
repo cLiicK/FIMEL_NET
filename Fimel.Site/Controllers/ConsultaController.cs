@@ -11,10 +11,15 @@ using System.Text.Json;
 
 namespace Fimel.Site.Controllers
 {
-    public class ConsultaController : Controller
+    public partial class ConsultaController : Controller
     {
         private readonly APIClient APIBase;
-        public ConsultaController(IConfiguration config) => APIBase = new APIClient(config["API_URL"]);
+        private readonly IConfiguration config;
+        public ConsultaController(IConfiguration config)
+        {
+            this.config = config;
+            APIBase = new APIClient(config["API_URL"]);
+        }
 
 
         [HttpGet]

@@ -4,6 +4,10 @@ using Fimel.Site.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Llave compartida con Fimel.Api (header X-Api-Key). Desde user-secrets / variable de entorno
+// ApiSeguridad__ApiKey o FIMEL_API_KEY; nunca en appsettings versionado. Se asigna antes de crear cualquier APIClient.
+Fimel.Utils.APIClient.ApiKeyCompartida = builder.Configuration["ApiSeguridad:ApiKey"] ?? builder.Configuration["FIMEL_API_KEY"];
+
 // Add services to the container.
 
 // Configurar globalización para español de Chile
