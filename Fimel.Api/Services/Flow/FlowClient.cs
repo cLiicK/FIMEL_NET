@@ -57,6 +57,15 @@ namespace Fimel.Api.Services.Flow
             return Post("plans/create", parametros);
         }
 
+        public Task<JsonElement> EditarUrlCallbackPlan(string planId, string urlCallback)
+        {
+            return Post("plans/edit", new Dictionary<string, string>
+            {
+                ["planId"] = planId,
+                ["urlCallback"] = urlCallback
+            });
+        }
+
         public Task<JsonElement> ObtenerPlan(string planId)
         {
             return Get("plans/get", new Dictionary<string, string> { ["planId"] = planId });
@@ -111,6 +120,16 @@ namespace Fimel.Api.Services.Flow
             return Get("subscription/get", new Dictionary<string, string> { ["subscriptionId"] = subscriptionId });
         }
 
+        /// <param name="alFinalDelPeriodo">true: sigue vigente hasta el fin del período pagado; false: se cancela de inmediato.</param>
+        public Task<JsonElement> CancelarSuscripcion(string subscriptionId, bool alFinalDelPeriodo = true)
+        {
+            return Post("subscription/cancel", new Dictionary<string, string>
+            {
+                ["subscriptionId"] = subscriptionId,
+                ["at_period_end"] = alFinalDelPeriodo ? "1" : "0"
+            });
+        }
+
         public Task<JsonElement> EstadoPago(string token)
         {
             return Get("payment/getStatus", new Dictionary<string, string> { ["token"] = token });
@@ -146,6 +165,17 @@ namespace Fimel.Api.Services.Flow
                 JsonValueKind.Null or JsonValueKind.Undefined => null,
                 _ => valor.ToString()
             };
+        }
+
+        /// <summary>Lee una fecha de Flow ("yyyy-MM-dd HH:mm:ss", hora de Chile).</summary>
+        public static DateTime? Fecha(JsonElement json, string propiedad)
+        {
+            string? texto = Texto(json, propiedad);
+            if (string.IsNullOrWhiteSpace(texto))
+                return null;
+
+            string[] formatos = { "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
+            return DateTime.TryParseExact(texto, formatos, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fecha) ? fecha : null;
         }
 
         private string Url(string servicio) => $"{opciones.BaseUrl.TrimEnd('/')}/{servicio.TrimStart('/')}";

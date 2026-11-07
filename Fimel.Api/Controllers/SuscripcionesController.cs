@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Fimel.Api.Services.Flow;
 using Fimel.Models;
@@ -179,19 +180,17 @@ namespace Fimel.Api.Controllers
                 suscripcion.TipoTarjeta = FlowClient.Texto(estado, "creditCardType");
                 suscripcion.Ultimos4 = FlowClient.Texto(estado, "last4CardDigits");
                 suscripcion.FechaInicio = DateTime.Now;
+                suscripcion.PruebaUsada = true;
 
-                if (diasPrueba > 0)
+                // subscription/create devuelve la suscripción con el mismo formato que subscription/get
+                AplicarEstadoFlow(suscripcion, creada);
+
+                if (suscripcion.Estado == EstadosSuscripcion.Pendiente)
                 {
-                    DateTime finPrueba = DateTime.TryParse(FlowClient.Texto(creada, "trial_end"), out DateTime fin) ? fin : DateTime.Today.AddDays(diasPrueba);
-                    suscripcion.Estado = EstadosSuscripcion.Prueba;
-                    suscripcion.FinPrueba = finPrueba;
-                    suscripcion.PagadoHasta = finPrueba;
-                    suscripcion.PruebaUsada = true;
-                }
-                else
-                {
-                    // Sin prueba Flow cobra el primer período de inmediato; la notificación de pago actualiza PagadoHasta
-                    suscripcion.Estado = EstadosSuscripcion.Activa;
+                    // Respaldo si Flow no informó el estado: con días de prueba queda en Prueba, sin ellos Activa
+                    suscripcion.Estado = diasPrueba > 0 ? EstadosSuscripcion.Prueba : EstadosSuscripcion.Activa;
+                    suscripcion.FinPrueba ??= diasPrueba > 0 ? DateTime.Today.AddDays(diasPrueba) : null;
+                    suscripcion.PagadoHasta ??= suscripcion.FinPrueba;
                 }
 
                 db.SaveChanges();
@@ -209,6 +208,190 @@ namespace Fimel.Api.Controllers
             {
                 Logger.Log($"Error al confirmar tarjeta: {ex}");
                 return StatusCode(500, ex.Message);
+            }
+        }
+
+        // Trae de Flow el estado actual de la suscripción del usuario (estado, período pagado, cobros) y lo guarda.
+        [HttpPost("Sincronizar/{idUsuario}")]
+        public async Task<IActionResult> Sincronizar(int idUsuario)
+        {
+            try
+            {
+                SuscripcionUsuario? suscripcion = UltimaSuscripcion(idUsuario);
+
+                if (suscripcion != null && !string.IsNullOrWhiteSpace(suscripcion.FlowSubscriptionId))
+                {
+                    await SincronizarConFlow(suscripcion);
+                    db.SaveChanges();
+                }
+
+                if (suscripcion != null)
+                    suscripcion.Plan = db.PlanesSuscripcion.Find(suscripcion.IdPlan);
+
+                return Ok(suscripcion);
+            }
+            catch (Exception ex) when (ex is FlowException or HttpRequestException)
+            {
+                // Si Flow no responde se devuelve lo último guardado
+                Logger.Log($"No se pudo sincronizar con Flow la suscripción del usuario {idUsuario}: {ex.Message}");
+                SuscripcionUsuario? guardada = UltimaSuscripcion(idUsuario);
+                if (guardada != null)
+                    guardada.Plan = db.PlanesSuscripcion.Find(guardada.IdPlan);
+                return Ok(guardada);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al sincronizar suscripción del usuario {idUsuario}: {ex}");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // Sincroniza todas las suscripciones vivas. Lo usan el servicio diario del Site y las notificaciones de Flow.
+        [HttpPost("SincronizarTodas")]
+        public async Task<IActionResult> SincronizarTodas()
+        {
+            int sincronizadas = 0, errores = 0;
+
+            List<SuscripcionUsuario> suscripciones = db.SuscripcionesUsuario
+                .Where(s => s.Vigente == "S" && s.FlowSubscriptionId != null
+                    && s.Estado != EstadosSuscripcion.Cancelada && s.Estado != EstadosSuscripcion.Exenta)
+                .ToList();
+
+            foreach (SuscripcionUsuario suscripcion in suscripciones)
+            {
+                try
+                {
+                    await SincronizarConFlow(suscripcion);
+                    db.SaveChanges();
+                    sincronizadas++;
+                }
+                catch (Exception ex)
+                {
+                    errores++;
+                    Logger.Log($"Error al sincronizar la suscripción {suscripcion.FlowSubscriptionId}: {ex.Message}");
+                }
+            }
+
+            return Ok(new { sincronizadas, errores });
+        }
+
+        // Flow avisa aquí (vía el Site) cada cobro de un plan, con un token. No se confía en el aviso:
+        // se registra el estado del pago para auditoría y se vuelve a consultar a Flow el estado de las suscripciones.
+        [HttpPost("NotificacionFlow")]
+        public async Task<IActionResult> NotificacionFlow([FromBody] SolicitudSuscripcion solicitud)
+        {
+            if (!string.IsNullOrWhiteSpace(solicitud.Token))
+            {
+                try
+                {
+                    JsonElement pago = await flow.EstadoPago(solicitud.Token);
+                    Logger.Log($"Notificación de Flow recibida: {pago}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Notificación de Flow con token no consultable: {ex.Message}");
+                }
+            }
+
+            return await SincronizarTodas();
+        }
+
+        // Cancela al final del período pagado: el usuario mantiene el acceso hasta PagadoHasta.
+        [HttpPost("Cancelar/{idUsuario}")]
+        public async Task<IActionResult> Cancelar(int idUsuario)
+        {
+            SolicitudSuscripcion respuesta = new SolicitudSuscripcion { IdUsuario = idUsuario };
+
+            try
+            {
+                SuscripcionUsuario? suscripcion = UltimaSuscripcion(idUsuario);
+                if (suscripcion == null || string.IsNullOrWhiteSpace(suscripcion.FlowSubscriptionId))
+                    return Ok(Fallo(respuesta, "No tienes una suscripción para cancelar."));
+
+                JsonElement cancelada = await flow.CancelarSuscripcion(suscripcion.FlowSubscriptionId, alFinalDelPeriodo: true);
+                AplicarEstadoFlow(suscripcion, cancelada);
+                suscripcion.CancelaAlFinPeriodo = true;
+                suscripcion.UltimaSincronizacion = DateTime.Now;
+                db.SaveChanges();
+
+                respuesta.Exito = true;
+                respuesta.Suscripcion = suscripcion;
+                return Ok(respuesta);
+            }
+            catch (FlowException ex)
+            {
+                Logger.Log($"Error Flow al cancelar suscripción del usuario {idUsuario} ({ex.StatusHttp} {ex.Codigo}): {ex.Message}");
+                return Ok(Fallo(respuesta, "No pudimos cancelar la suscripción en Flow. Intenta nuevamente en unos minutos."));
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al cancelar suscripción del usuario {idUsuario}: {ex}");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        private async Task SincronizarConFlow(SuscripcionUsuario suscripcion)
+        {
+            JsonElement flowSuscripcion = await flow.ObtenerSuscripcion(suscripcion.FlowSubscriptionId!);
+            AplicarEstadoFlow(suscripcion, flowSuscripcion);
+            suscripcion.UltimaSincronizacion = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Traduce el estado de una suscripción de Flow (subscription/get) al de Fimel y registra sus cobros.
+        /// status de Flow: 1 activa, 2 en prueba, 4 cancelada (2 confirmado en sandbox). morose = 1: tiene cobros vencidos.
+        /// </summary>
+        private void AplicarEstadoFlow(SuscripcionUsuario suscripcion, JsonElement flowSuscripcion)
+        {
+            string? status = FlowClient.Texto(flowSuscripcion, "status");
+            bool morosa = FlowClient.Texto(flowSuscripcion, "morose") == "1";
+
+            suscripcion.Estado = status switch
+            {
+                "2" => EstadosSuscripcion.Prueba,
+                "1" => morosa ? EstadosSuscripcion.Morosa : EstadosSuscripcion.Activa,
+                "4" => EstadosSuscripcion.Cancelada,
+                _ => suscripcion.Estado
+            };
+
+            suscripcion.FinPrueba = FlowClient.Fecha(flowSuscripcion, "trial_end") ?? suscripcion.FinPrueba;
+            suscripcion.CancelaAlFinPeriodo = FlowClient.Texto(flowSuscripcion, "cancel_at_period_end") == "1";
+
+            if (flowSuscripcion.ValueKind != JsonValueKind.Object
+                || !flowSuscripcion.TryGetProperty("invoices", out JsonElement invoices)
+                || invoices.ValueKind != JsonValueKind.Array)
+                return;
+
+            foreach (JsonElement invoice in invoices.EnumerateArray())
+            {
+                if (!long.TryParse(FlowClient.Texto(invoice, "id"), out long idInvoice))
+                    continue;
+
+                PagoSuscripcion? pago = db.PagosSuscripcion.FirstOrDefault(p => p.FlowInvoiceId == idInvoice);
+                if (pago == null)
+                {
+                    pago = new PagoSuscripcion { FlowInvoiceId = idInvoice, IdSuscripcion = suscripcion.Id, Vigente = "S", FechaCreacion = DateTime.Now };
+                    db.PagosSuscripcion.Add(pago);
+                }
+
+                decimal.TryParse(FlowClient.Texto(invoice, "amount"), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal monto);
+                int.TryParse(FlowClient.Texto(invoice, "status"), out int estadoInvoice);
+
+                pago.Descripcion = FlowClient.Texto(invoice, "subject");
+                pago.Monto = (int)monto;
+                pago.EstadoFlow = estadoInvoice;
+                pago.PeriodoDesde = FlowClient.Fecha(invoice, "period_start");
+                pago.PeriodoHasta = FlowClient.Fecha(invoice, "period_end");
+                pago.RespuestaJson = invoice.GetRawText();
+
+                if (estadoInvoice == 1)
+                {
+                    pago.FechaPago ??= DateTime.Now;
+
+                    // El acceso llega hasta el fin del último período pagado (incluye el período de prueba, que Flow factura en $0)
+                    if (pago.PeriodoHasta.HasValue && (suscripcion.PagadoHasta == null || pago.PeriodoHasta > suscripcion.PagadoHasta))
+                        suscripcion.PagadoHasta = pago.PeriodoHasta;
+                }
             }
         }
 

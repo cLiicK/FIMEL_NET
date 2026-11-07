@@ -919,6 +919,9 @@ namespace Fimel.Models.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("EstadoFlow")
                         .HasColumnType("int");
 
@@ -928,7 +931,7 @@ namespace Fimel.Models.Migrations
                     b.Property<DateTime?>("FechaPago")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("FlowOrder")
+                    b.Property<long>("FlowInvoiceId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("IdSuscripcion")
@@ -936,6 +939,12 @@ namespace Fimel.Models.Migrations
 
                     b.Property<int>("Monto")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("PeriodoDesde")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("PeriodoHasta")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("RespuestaJson")
                         .HasColumnType("nvarchar(max)");
@@ -948,7 +957,7 @@ namespace Fimel.Models.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FlowOrder")
+                    b.HasIndex("FlowInvoiceId")
                         .IsUnique();
 
                     b.ToTable("PagosSuscripcion", (string)null);
@@ -1208,6 +1217,9 @@ namespace Fimel.Models.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("CancelaAlFinPeriodo")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1244,6 +1256,9 @@ namespace Fimel.Models.Migrations
 
                     b.Property<string>("TipoTarjeta")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UltimaSincronizacion")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Ultimos4")
                         .HasColumnType("nvarchar(max)");
@@ -1363,6 +1378,9 @@ namespace Fimel.Models.Migrations
                     b.Property<string>("ApellidoPaterno")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Dv")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
@@ -1383,6 +1401,9 @@ namespace Fimel.Models.Migrations
 
                     b.Property<string>("RequiereCambioClave")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Rut")
+                        .HasColumnType("int");
 
                     b.Property<string>("Usuario")
                         .HasColumnType("nvarchar(max)");

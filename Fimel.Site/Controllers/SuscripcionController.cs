@@ -1,5 +1,6 @@
 using Fimel.Models;
 using Fimel.Models.Integraciones;
+using Fimel.Site.Filters;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,9 @@ namespace Fimel.Site.Controllers
             if (usuario == null)
                 return RedirectToAction("Login", "Login");
 
-            SuscripcionUsuario? suscripcion = APIBase.Get<SuscripcionUsuario>($"Suscripciones/GetByUsuario/{usuario.Id}");
+            // Consulta a Flow el estado actual (cobros, morosidad, cancelación) antes de mostrarlo
+            SuscripcionUsuario? suscripcion = APIBase.Post<SuscripcionUsuario>($"Suscripciones/Sincronizar/{usuario.Id}", null!);
+            SuscripcionActivaFilter.GuardarEnSesion(HttpContext.Session, suscripcion);
             ViewBag.Planes = APIBase.Get<List<PlanSuscripcion>>("Suscripciones/Planes") ?? new List<PlanSuscripcion>();
             return View(suscripcion);
         }
@@ -44,6 +47,45 @@ namespace Fimel.Site.Controllers
 
             TempData["MensajeError"] = respuesta?.Mensaje ?? "No se pudo iniciar la suscripción.";
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Cancelar()
+        {
+            Usuarios? usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+            if (usuario == null)
+                return RedirectToAction("Login", "Login");
+
+            SolicitudSuscripcion? respuesta = APIBase.Post<SolicitudSuscripcion>($"Suscripciones/Cancelar/{usuario.Id}", new SolicitudSuscripcion { IdUsuario = usuario.Id });
+
+            if (respuesta?.Exito == true)
+                TempData["MensajeExito"] = respuesta.Suscripcion?.PagadoHasta != null
+                    ? $"Tu suscripción quedó cancelada. Mantienes el acceso hasta el {respuesta.Suscripcion.PagadoHasta:dd/MM/yyyy} y no se te volverá a cobrar."
+                    : "Tu suscripción quedó cancelada y no se te volverá a cobrar.";
+            else
+                TempData["MensajeError"] = respuesta?.Mensaje ?? "No se pudo cancelar la suscripción.";
+
+            return RedirectToAction("Index");
+        }
+
+        // URL de notificación de los planes en Flow (urlCallback): Flow hace POST con "token" en cada cobro.
+        // Es pública y sin sesión; la API verifica todo consultando a Flow, así que el aviso en sí no cambia nada por su cuenta.
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public ActionResult NotificacionFlow(string? token)
+        {
+            try
+            {
+                APIBase.Post<SolicitudSuscripcion>("Suscripciones/NotificacionFlow", new SolicitudSuscripcion { Token = token });
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error al procesar notificación de Flow: {ex}");
+            }
+
+            // Flow espera 200 para no reintentar
+            return Ok();
         }
 
         // Flow redirige aquí (POST con "token") después de que el usuario inscribe su tarjeta.

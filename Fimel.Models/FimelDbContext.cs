@@ -131,7 +131,7 @@ namespace Fimel.Models
             modelBuilder.Entity<SuscripcionUsuario>().HasIndex(s => s.FlowCustomerId);
 
             modelBuilder.Entity<PagoSuscripcion>().ToTable("PagosSuscripcion");
-            modelBuilder.Entity<PagoSuscripcion>().HasIndex(p => p.FlowOrder).IsUnique();
+            modelBuilder.Entity<PagoSuscripcion>().HasIndex(p => p.FlowInvoiceId).IsUnique();
         }
     }
 }

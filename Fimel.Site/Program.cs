@@ -11,7 +11,7 @@ var cultureInfo = new CultureInfo("es-CL");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
-builder.Services.AddControllersWithViews()
+builder.Services.AddControllersWithViews(o => o.Filters.Add<Fimel.Site.Filters.SuscripcionActivaFilter>())
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
 
@@ -26,6 +26,7 @@ builder.Services.AddHostedService<CumpleanosBackgroundService>();
 builder.Services.AddHostedService<ProximoControlBackgroundService>();
 builder.Services.AddHostedService<RecordatorioBackgroundService>();
 builder.Services.AddHostedService<RecordatorioCitaBackgroundService>();
+builder.Services.AddHostedService<SuscripcionesBackgroundService>();
 
 builder.Services.AddDistributedSqlServerCache(options =>
 {

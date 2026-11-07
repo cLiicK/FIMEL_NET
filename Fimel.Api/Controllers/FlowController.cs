@@ -64,6 +64,20 @@ namespace Fimel.Api.Controllers
             return Ejecutar(async () => await flow.ObtenerPlan(planId));
         }
 
+        // POST api/Flow/Planes/UrlCallback { "url": "https://fimel.cl/Suscripcion/NotificacionFlow" }
+        // Configura en todos los planes vigentes la URL donde Flow avisa los cobros. Debe ser pública (no localhost).
+        [HttpPost("Planes/UrlCallback")]
+        public Task<IActionResult> ConfigurarUrlCallback([FromBody] UrlCallbackRequest request)
+        {
+            return Ejecutar(async () =>
+            {
+                List<object> resultado = new List<object>();
+                foreach (PlanSuscripcion plan in db.PlanesSuscripcion.Where(p => p.Vigente == "S").ToList())
+                    resultado.Add(await flow.EditarUrlCallbackPlan(plan.CodigoFlow, request.Url));
+                return resultado;
+            });
+        }
+
         // GET api/Flow/Suscripciones/{subscriptionId} → respuesta cruda de Flow, para ver estados, períodos y cobros
         [HttpGet("Suscripciones/{subscriptionId}")]
         public Task<IActionResult> ObtenerSuscripcion(string subscriptionId)
@@ -140,6 +154,11 @@ namespace Fimel.Api.Controllers
                 Logger.Log($"Sin conexión con Flow ({flow.BaseUrl}): {ex}");
                 return StatusCode(502, new { Message = $"No se pudo conectar con Flow ({flow.BaseUrl}): {ex.Message}" });
             }
+        }
+
+        public class UrlCallbackRequest
+        {
+            public string Url { get; set; } = string.Empty;
         }
 
         public class CrearPlanRequest

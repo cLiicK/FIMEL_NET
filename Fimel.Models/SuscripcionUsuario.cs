@@ -14,6 +14,8 @@ namespace Fimel.Models
         public DateTime? FinPrueba { get; set; }
         public DateTime? PagadoHasta { get; set; }
         public bool PruebaUsada { get; set; }
+        public bool CancelaAlFinPeriodo { get; set; }  // el usuario canceló: sigue con acceso hasta PagadoHasta
+        public DateTime? UltimaSincronizacion { get; set; }
         public string? TipoTarjeta { get; set; }
         public string? Ultimos4 { get; set; }
 
