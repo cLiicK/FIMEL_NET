@@ -43,4 +43,11 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Secretos locales/servidor: nunca se publican ni se copian al output -->
+    <Content Update="appsettings.Secrets.json" CopyToPublishDirectory="Never" CopyToOutputDirectory="Never" />
+    <None Include="appsettings.Secrets.example.json" CopyToPublishDirectory="Never" />
+    <Content Remove="appsettings.Secrets.example.json" />
+  </ItemGroup>
+
 </Project>

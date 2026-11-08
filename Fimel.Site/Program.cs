@@ -4,6 +4,11 @@ using Fimel.Site.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Secretos del servidor (llave X-Api-Key, llaves de Flow, etc.) en un archivo fuera de git que se sube una vez
+// al servidor. Web Deploy no lo borra (SkipExtraFilesOnServer) y no se publica desde el equipo local (ver csproj).
+// Formato en appsettings.Secrets.example.json.
+builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: false);
+
 // Llave compartida con Fimel.Api (header X-Api-Key). Desde user-secrets / variable de entorno
 // ApiSeguridad__ApiKey o FIMEL_API_KEY; nunca en appsettings versionado. Se asigna antes de crear cualquier APIClient.
 Fimel.Utils.APIClient.ApiKeyCompartida = builder.Configuration["ApiSeguridad:ApiKey"] ?? builder.Configuration["FIMEL_API_KEY"];
