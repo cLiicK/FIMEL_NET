@@ -6,6 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Secretos del servidor (llave X-Api-Key, llaves de Flow, etc.) en un archivo fuera de git que se sube una vez
+// al servidor. Web Deploy no lo borra (SkipExtraFilesOnServer) y no se publica desde el equipo local (ver csproj).
+// Formato en appsettings.Secrets.example.json.
+builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: false);
+
 // No anunciar Kestrel en el header Server
 builder.WebHost.ConfigureKestrel(o => o.AddServerHeader = false);
 
