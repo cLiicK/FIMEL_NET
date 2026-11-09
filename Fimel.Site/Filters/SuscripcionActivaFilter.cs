@@ -23,7 +23,7 @@ namespace Fimel.Site.Filters
         // Páginas que deben funcionar sin suscripción (login, la propia página de pago, páginas públicas)
         private static readonly HashSet<string> ControladoresLibres = new(StringComparer.OrdinalIgnoreCase)
         {
-            "Login", "Suscripcion", "Landing", "AgendaPublica", "Agendar", "Error", "Consentimiento"
+            "Login", "Suscripcion", "Landing", "AgendaPublica", "Agendar", "Error", "Consentimiento", "CitaPaciente"
         };
 
         private readonly IConfiguration config;

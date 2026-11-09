@@ -108,6 +108,12 @@ namespace Fimel.Api.Controllers
                 dbCita.TipoDocumento = cita.TipoDocumento;
                 dbCita.CorreoPaciente = cita.CorreoPaciente;
                 dbCita.NombrePaciente = cita.NombrePaciente;
+                // Si se reagenda, la confirmación anterior ya no vale (y los links del recordatorio anterior caducan)
+                if (dbCita.FechaHoraInicio != cita.FechaHoraInicio)
+                {
+                    dbCita.EstadoConfirmacion = null;
+                    dbCita.FechaRespuestaPaciente = null;
+                }
                 dbCita.FechaHoraFinal = cita.FechaHoraFinal;
                 dbCita.FechaHoraInicio = cita.FechaHoraInicio;
                 dbCita.Telefono = cita.Telefono;
@@ -143,6 +149,12 @@ namespace Fimel.Api.Controllers
                 dbCita.TipoDocumento = cita.TipoDocumento;
                 dbCita.CorreoPaciente = cita.CorreoPaciente;
                 dbCita.NombrePaciente = cita.NombrePaciente;
+                // Si se reagenda, la confirmación anterior ya no vale (y los links del recordatorio anterior caducan)
+                if (dbCita.FechaHoraInicio != cita.FechaHoraInicio)
+                {
+                    dbCita.EstadoConfirmacion = null;
+                    dbCita.FechaRespuestaPaciente = null;
+                }
                 dbCita.FechaHoraFinal = cita.FechaHoraFinal;
                 dbCita.FechaHoraInicio = cita.FechaHoraInicio;
                 dbCita.Telefono = cita.Telefono;
@@ -155,6 +167,48 @@ namespace Fimel.Api.Controllers
             catch (Exception ex)
             {
                 Logger.Log($"Error al actualizar cita con correo: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
+        /// <summary>
+        /// Registra la respuesta del paciente desde el link del recordatorio. accion = "confirmar" | "anular".
+        /// Anular deja la cita no vigente para liberar el horario. La firma del link la valida Fimel.Site.
+        /// </summary>
+        [HttpPut("{id}/RespuestaPaciente")]
+        public IActionResult RespuestaPaciente(int id, [FromQuery] string accion)
+        {
+            try
+            {
+                Cita? dbCita = db.Citas
+                    .Where(x => x.Id == id && x.Vigente == "S")
+                    .Include(x => x.Usuario)
+                    .FirstOrDefault();
+
+                if (dbCita == null)
+                    return NotFound("Cita no encontrada");
+
+                switch (accion?.ToLowerInvariant())
+                {
+                    case "confirmar":
+                        dbCita.EstadoConfirmacion = "Confirmada";
+                        break;
+                    case "anular":
+                        dbCita.EstadoConfirmacion = "Anulada";
+                        dbCita.Vigente = "N";
+                        break;
+                    default:
+                        return BadRequest("Acción no válida");
+                }
+
+                dbCita.FechaRespuestaPaciente = DateTime.Now;
+                db.SaveChanges();
+
+                return Ok(dbCita);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Cita RespuestaPaciente: {ex}");
                 return StatusCode(500, ex);
             }
         }

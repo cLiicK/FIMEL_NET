@@ -101,6 +101,17 @@ namespace Fimel.Utils
         }
 
 
+        /// <summary>
+        /// Agrega el encabezado Reply-To: el correo sigue saliendo desde la casilla de Fimel,
+        /// pero al presionar "Responder" la respuesta le llega a esta dirección (p.ej. el profesional).
+        /// </summary>
+        private static void AgregarResponderA(MailMessage mail, string? responderA)
+        {
+            if (string.IsNullOrWhiteSpace(responderA)) return;
+            try { mail.ReplyToList.Add(new MailAddress(responderA.Trim())); }
+            catch (FormatException) { Logger.Log($"Reply-To inválido, se omite: {responderA}"); }
+        }
+
         public void EnviarCorreo(EnvioCorreo correo)
         {
             try
@@ -130,6 +141,8 @@ namespace Fimel.Utils
                     SubjectEncoding = Encoding.UTF8,
                     Body = correo.CuerpoCorreo ?? string.Empty
                 };
+
+                AgregarResponderA(mail, correo.ResponderA);
 
                 // To
                 if (correo.Destinatarios != null)
@@ -212,6 +225,8 @@ namespace Fimel.Utils
                     BodyEncoding = Encoding.UTF8,
                     SubjectEncoding = Encoding.UTF8
                 };
+
+                AgregarResponderA(mail, correo.ResponderA);
 
                 // To
                 if (correo.Destinatarios != null)

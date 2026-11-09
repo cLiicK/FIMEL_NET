@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Fimel - Recordatorio de cita</title>
+    <style>
+        @media only screen and (max-width:620px) {
+            .container {
+                width: 100% !important;
+                padding: 0 16px !important;
+            }
+
+            .btn {
+                display: block !important;
+                width: 100% !important;
+                margin: 8px 0 !important;
+            }
+
+            .btn-wrap {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0; background:#f7f7f9;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="center" style="padding:24px 10px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" width="600" class="container" style="width:600px; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #eef0f3;">
+
+                    <!-- Header blanco -->
+                    <tr>
+                        <td style="padding-top:22px; background:#ffffff;">
+                            <table role="presentation" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <img src="cid:logoImage" width="180" alt="Logo FIMEL">
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Línea coral -->
+                    <tr>
+                        <td style="height:6px; background:#f78a8a;"></td>
+                    </tr>
+
+                    <!-- Contenido -->
+                    <tr>
+                        <td style="padding:26px; font-family:Arial,Helvetica,sans-serif; color:#333;">
+                            <h1 style="margin:0 0 10px 0; color:#0d86b3;">Recordatorio de cita</h1>
+
+                            <!-- Datos de la cita -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="font-size:14px; margin:6px 0 12px 0;">
+                                <tr><td style="padding:4px 0;"><strong>Paciente:</strong> {{paciente}}</td></tr>
+                                <tr><td style="padding:4px 0;"><strong>Profesional:</strong> {{profesional}}</td></tr>
+                                <tr><td style="padding:4px 0;"><strong>Fecha:</strong> {{fecha_cita}}</td></tr>
+                                <tr><td style="padding:4px 0;"><strong>Hora:</strong> {{hora_cita}}</td></tr>
+                                <tr><td style="padding:4px 0;"><strong>Ubicación:</strong> {{direccion}}</td></tr>
+                            </table>
+
+                            {{bloque_acciones}}
+                        </td>
+                    </tr>
+
+                    <tr><td style="height:1px; background:#eef0f3;"></td></tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding:18px 26px 24px 26px; font-family:Arial,Helvetica,sans-serif; font-size:12px; color:#7a8794;">
+                            <table role="presentation" width="100%">
+                                <tr>
+                                    <td valign="top">
+                                        <strong style="color:#0d86b3;">FIMEL S.A.</strong><br>
+                                        <!-- {{direccion}} · {{ciudad}}, Chile ·  -->
+                                        <!-- Móvil: <a href="tel:+56xxxxxxxxx" style="color:#0d86b3; text-decoration:none;">+56 9 1234 5678</a> · -->
+                                        Web: <a href="https://fimel.cl/landing" style="color:#0d86b3; text-decoration:none;">fimel.cl</a>
+                                    </td>
+                                    <!-- <td align="right" valign="top"> -->
+                                    <!-- <a href="https://www.instagram.com/tu_cuenta" style="color:#0d86b3; text-decoration:none;">Instagram</a> · -->
+                                    <!-- <a href="https://www.tiktok.com/@tu_cuenta" style="color:#0d86b3; text-decoration:none;">TikTok</a> · -->
+                                    <!-- <a href="https://www.facebook.com/tu_cuenta" style="color:#0d86b3; text-decoration:none;">Facebook</a> -->
+                                    <!-- </td> -->
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="padding-top:10px; color:#9aa1a7;">
+                                        Este correo fue enviado automáticamente por FIMEL. Si tienes dudas, responde este correo y le llegará a tu profesional.
+                                        <!-- Ayuda: <a href="mailto:soporte@fimel.cl" style="color:#0d86b3;">soporte@fimel.cl</a>. -->
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

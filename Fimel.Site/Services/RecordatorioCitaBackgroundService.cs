@@ -1,4 +1,4 @@
-using Fimel.Models;
+﻿using Fimel.Models;
 using Fimel.Models.Integraciones;
 using Fimel.Utils;
 
@@ -51,7 +51,7 @@ namespace Fimel.Site.Services
                     return;
                 }
 
-                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-confirmacion-cita.html");
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-recordatorio-cita.html");
                 string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
 
                 if (!File.Exists(templatePath))
@@ -77,7 +77,13 @@ namespace Fimel.Site.Services
                             ? $"{profesional.Nombres} {profesional.ApellidoPaterno}".Trim()
                             : string.Empty;
 
-                        string remitente = profesional?.Institucion?.RazonSocial ?? "FIMEL";
+                        // Sale desde la casilla de Fimel, pero las respuestas le llegan al profesional (Reply-To)
+                        string remitente = !string.IsNullOrEmpty(nombreProfesional)
+                            ? $"Mat. {nombreProfesional} vía FIMEL"
+                            : profesional?.Institucion?.RazonSocial ?? "FIMEL";
+                        string? responderA = !string.IsNullOrWhiteSpace(profesional?.Email)
+                            ? profesional!.Email
+                            : profesional?.Institucion?.Email;
                         string direccion = profesional?.Institucion?.Dirección ?? "Dirección no disponible";
                         string fechaCita = cita.FechaHoraInicio.ToString("dddd, dd 'de' MMMM 'de' yyyy", culture);
                         string horaCita = cita.FechaHoraInicio.ToString("HH:mm");
@@ -88,11 +94,13 @@ namespace Fimel.Site.Services
                             : $"Recordatorio: tu cita es en 2 días ({cita.FechaHoraInicio.ToString("dd/MM")})";
 
                         string cuerpo = templateHtml
-                            .Replace("{{paciente}}", cita.NombrePaciente)
+                            .Replace("{{paciente}}", string.Join(" ", new[] { cita.NombrePaciente, cita.ApellidoPaciente, cita.SegundoApellidoPaciente }
+                                .Where(x => !string.IsNullOrWhiteSpace(x))))
                             .Replace("{{profesional}}", nombreProfesional)
                             .Replace("{{fecha_cita}}", fechaCita)
                             .Replace("{{hora_cita}}", horaCita)
-                            .Replace("{{direccion}}", direccion);
+                            .Replace("{{direccion}}", direccion)
+                            .Replace("{{bloque_acciones}}", BloqueAcciones(cita));
 
                         string logoEfectivo = logoPath;
                         string? logoBase64 = profesional?.Institucion?.Logo;
@@ -114,7 +122,8 @@ namespace Fimel.Site.Services
                         {
                             Destinatarios = new List<string> { cita.CorreoPaciente },
                             Asunto = asunto,
-                            CuerpoCorreo = cuerpo
+                            CuerpoCorreo = cuerpo,
+                            ResponderA = responderA
                         };
 
                         utileria.EnviarCorreo(correo, imagenesCorreo, remitente);
@@ -135,6 +144,47 @@ namespace Fimel.Site.Services
             {
                 _logger.LogError(ex, "Error en el servicio de recordatorio de citas.");
             }
+        }
+
+        /// <summary>
+        /// Botones Confirmar / Anular con links firmados. Si la cita ya fue confirmada se muestra solo el aviso,
+        /// y si no hay llave para firmar (ApiSeguridad:ApiKey) o URL_SITIO no se muestran botones.
+        /// </summary>
+        private string BloqueAcciones(Cita cita)
+        {
+            if (cita.EstadoConfirmacion == "Confirmada")
+                return "<p style=\"margin:10px 0 0 0; font-size:14px; color:#1e8a4c;\"><strong>&#10003; Ya confirmaste tu asistencia.</strong> ¡Te esperamos!</p>";
+
+            string? urlSitio = _config["URL_SITIO"];
+            if (!EnlacesCita.Disponible || string.IsNullOrWhiteSpace(urlSitio))
+            {
+                _logger.LogWarning("Recordatorio de cita sin botones: falta ApiSeguridad:ApiKey o URL_SITIO.");
+                return string.Empty;
+            }
+
+            string urlConfirmar = EnlacesCita.Url(urlSitio, cita.Id, EnlacesCita.Confirmar, cita.FechaHoraInicio);
+            string urlAnular = EnlacesCita.Url(urlSitio, cita.Id, EnlacesCita.Anular, cita.FechaHoraInicio);
+
+            return $@"<p style=""margin:10px 0 16px 0; font-size:14px; line-height:1.55;"">
+                                Por favor confirma tu asistencia o anula la cita si no puedes asistir.
+                            </p>
+                            <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" width=""100%"" style=""margin:8px 0 4px 0;"">
+                                <tr class=""btn-wrap"">
+                                    <td align=""left"" style=""padding:4px 0;"">
+                                        <a class=""btn"" href=""{urlConfirmar}"" target=""_blank""
+                                           style=""background:#0d86b3; color:#ffffff; text-decoration:none; padding:12px 20px; border-radius:8px; font-weight:700; display:inline-block;"">Confirmar cita</a>
+                                    </td>
+                                    <td align=""right"" style=""padding:4px 0;"">
+                                        <a class=""btn"" href=""{urlAnular}"" target=""_blank""
+                                           style=""background:#f78a8a; color:#ffffff; text-decoration:none; padding:12px 20px; border-radius:8px; font-weight:700; display:inline-block;"">Anular cita</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style=""margin:14px 0 0 0; font-size:12px; color:#7a8794;"">
+                                Si los botones no funcionan, usa estos enlaces:<br>
+                                Confirmar: <a href=""{urlConfirmar}"" style=""color:#0d86b3; word-break:break-all;"">{urlConfirmar}</a><br>
+                                Anular: <a href=""{urlAnular}"" style=""color:#0d86b3; word-break:break-all;"">{urlAnular}</a>
+                            </p>";
         }
     }
 }

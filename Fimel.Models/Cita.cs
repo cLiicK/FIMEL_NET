@@ -19,6 +19,10 @@ namespace Fimel.Models
         public string? Telefono { get; set; }
         public string? Nota { get; set; }
 
+        /// <summary>Respuesta del paciente desde el link del recordatorio: null = sin respuesta, "Confirmada" o "Anulada".</summary>
+        public string? EstadoConfirmacion { get; set; }
+        public DateTime? FechaRespuestaPaciente { get; set; }
+
         public Usuarios? Usuario { get; set; }
 
     }

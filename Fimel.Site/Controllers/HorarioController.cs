@@ -88,16 +88,21 @@ namespace Fimel.Site.Controllers
 
             foreach (var cita in citas)
             {
+                // Verde con ✓ si el paciente confirmó desde el correo de recordatorio
+                bool confirmada = cita.EstadoConfirmacion == "Confirmada";
+                string color = confirmada ? "#4CAF7D" : "#75BDE0";
+
                 jsonEventos.Add(new
                 {
-                    title = cita.NombrePaciente,
+                    title = confirmada ? $"✓ {cita.NombrePaciente}" : cita.NombrePaciente,
                     start = cita.FechaHoraInicio.ToString("yyyy-MM-dd HH:mm:ss"),
                     end = cita.FechaHoraFinal.ToString("yyyy-MM-dd HH:mm:ss"),
-                    backgroundColor = "#75BDE0",
-                    borderColor = "#75BDE0",
+                    backgroundColor = color,
+                    borderColor = color,
                     extendedProps = new
                     {
                         idCita = cita.Id,
+                        confirmada,
                         nombre = cita.NombrePaciente,
                         apellidoPaterno = cita.ApellidoPaciente,
                         apellidoMaterno = cita.SegundoApellidoPaciente,
@@ -465,7 +470,8 @@ namespace Fimel.Site.Controllers
                 {
                     Destinatarios = new List<string> { cita.CorreoPaciente },
                     Asunto = $"Confirmación de Cita - {cita.FechaHoraInicio.ToString("dd/MM/yyyy")}",
-                    CuerpoCorreo = contenidoCorreo
+                    CuerpoCorreo = contenidoCorreo,
+                    ResponderA = profesional.Email
                 };
 
                 var imagenes = new List<(string, string, string)>
@@ -474,7 +480,7 @@ namespace Fimel.Site.Controllers
                 };
 
                 Utileria utileria = new Utileria();
-                utileria.EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno}");
+                utileria.EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno} vía FIMEL");
             }
             catch (Exception ex)
             {

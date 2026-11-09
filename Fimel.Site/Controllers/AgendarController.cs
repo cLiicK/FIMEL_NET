@@ -1,4 +1,4 @@
-using Fimel.Models;
+﻿using Fimel.Models;
 using Fimel.Models.Integraciones;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -294,7 +294,8 @@ namespace Fimel.Site.Controllers
             {
                 Destinatarios = new List<string> { cita.CorreoPaciente },
                 Asunto = $"Confirmación de Cita — {cita.FechaHoraInicio:dd/MM/yyyy}",
-                CuerpoCorreo = html
+                CuerpoCorreo = html,
+                ResponderA = profesional.Email
             };
 
             var imagenes = new List<(string, string, string)>
@@ -302,7 +303,7 @@ namespace Fimel.Site.Controllers
                 (rutaLogo, "logoImage", "image/png")
             };
 
-            new Utileria().EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno}");
+            new Utileria().EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno} vía FIMEL");
         }
 
         private void CrearOActualizarPacienteDesde(Cita cita, int idUsuario)
