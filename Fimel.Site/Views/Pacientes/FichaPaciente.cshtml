@@ -16,6 +16,8 @@
 <input type="hidden" id="hdnURL_ObtenerRecordatorios" value='@Url.Action("ObtenerRecordatorios", "Pacientes")' />
 <input type="hidden" id="hdnURL_GuardarRecordatorioManual" value='@Url.Action("GuardarRecordatorioManual", "Pacientes")' />
 <input type="hidden" id="hdnURL_EliminarRecordatorio" value='@Url.Action("EliminarRecordatorio", "Pacientes")' />
+<input type="hidden" id="hdnURL_ObtenerConsentimientosFirmados" value='@Url.Action("ObtenerConsentimientosFirmados", "Consulta")' />
+<input type="hidden" id="hdnURL_VerConsentimiento" value='@Url.Action("VerConsentimiento", "Consulta")' />
 <!-- fin sidebar -->
 <!-- contenido central -->
 <div id="content-wrapper" class="container-9">
@@ -434,6 +436,21 @@
                                             <div id="tablaRecordatoriosContainer">
                                                 <p class="text-muted small fst-italic mb-0">Sin recordatorios registrados.</p>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion mt-2" id="accordionConsentimientosLateral">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionFicha-consentimientos" aria-expanded="false">
+                                            Consentimientos firmados
+                                        </button>
+                                    </h2>
+                                    <div id="accordionFicha-consentimientos" class="accordion-collapse collapse">
+                                        <div class="accordion-body p-2" id="listaConsentimientosFirmados">
+                                            <p class="text-muted small fst-italic mb-0">Sin consentimientos firmados.</p>
                                         </div>
                                     </div>
                                 </div>
