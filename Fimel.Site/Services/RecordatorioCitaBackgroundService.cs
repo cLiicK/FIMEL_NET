@@ -108,7 +108,7 @@ namespace Fimel.Site.Services
                 bool esManana = cita.FechaHoraInicio.Date == manana;
                 string asunto = esManana
                     ? $"Recordatorio: tu cita es mañana a las {horaCita}"
-                    : $"Recordatorio: tu cita es en 2 días ({cita.FechaHoraInicio.ToString("dd/MM")})";
+                    : $"Recordatorio: tu cita es el {cita.FechaHoraInicio.ToString("dddd dd/MM", culture)} a las {horaCita}";
 
                 string cuerpo = templateHtml
                     .Replace("{{paciente}}", string.Join(" ", new[] { cita.NombrePaciente, cita.ApellidoPaciente, cita.SegundoApellidoPaciente }
