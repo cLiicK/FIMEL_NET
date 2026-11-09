@@ -28,9 +28,13 @@ namespace Fimel.Site.Controllers
             public string Hora { get; set; } = string.Empty;
         }
 
+        // La segunda ruta lleva la firma en el path: la usan los botones de WhatsApp,
+        // donde solo se puede agregar una parte variable al final de la URL de la plantilla.
         [HttpGet("Cita/{id:int}/{accion}")]
-        public IActionResult Responder(int id, string accion, string? t)
+        [HttpGet("Cita/{id:int}/{accion}/{firma}")]
+        public IActionResult Responder(int id, string accion, string? t, string? firma)
         {
+            t ??= firma;
             try
             {
                 var (cita, error) = ObtenerCitaValida(id, accion, t);

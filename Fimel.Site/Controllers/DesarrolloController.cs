@@ -24,10 +24,11 @@ namespace Fimel.Site.Controllers
         /// <summary>
         /// Envía ahora el recordatorio de la cita indicada, sin esperar a las 08:00.
         /// Con ?para=correo se envía a esa casilla en vez de la del paciente.
-        /// Ej.: /Desarrollo/EnviarRecordatorio/123?para=yo@correo.cl
+        /// Con ?whatsapp=+56912345678 se envía además el recordatorio por WhatsApp a ese número (no al del paciente).
+        /// Ej.: /Desarrollo/EnviarRecordatorio/123?para=yo@correo.cl&amp;whatsapp=+56912345678
         /// </summary>
         [HttpGet("Desarrollo/EnviarRecordatorio/{id:int}")]
-        public IActionResult EnviarRecordatorio(int id, string? para)
+        public async Task<IActionResult> EnviarRecordatorio(int id, string? para, string? whatsapp)
         {
             if (!_env.IsDevelopment()) return NotFound();
 
@@ -39,8 +40,28 @@ namespace Fimel.Site.Controllers
 
             if (!string.IsNullOrWhiteSpace(para)) cita.CorreoPaciente = para.Trim();
 
-            RecordatorioCitaBackgroundService.EnviarRecordatorio(cita, _logger);
-            return Content($"Recordatorio de la cita {id} enviado a {cita.CorreoPaciente}. Botones: {(EnlacesCita.Disponible ? "sí" : "no (falta ApiSeguridad:ApiKey)")}.");
+            string resultado = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(para) || string.IsNullOrWhiteSpace(whatsapp))
+            {
+                RecordatorioCitaBackgroundService.EnviarRecordatorio(cita, _logger);
+                resultado = $"Correo enviado a {cita.CorreoPaciente}. Botones: {(EnlacesCita.Disponible ? "sí" : "no (falta ApiSeguridad:ApiKey)")}.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(whatsapp))
+            {
+                if (!WhatsAppCloud.Habilitado)
+                    resultado += " WhatsApp: no habilitado (revisa la sección WhatsApp en appsettings.Secrets.json).";
+                else
+                {
+                    bool ok = await RecordatorioCitaBackgroundService.EnviarRecordatorioWhatsAppAsync(cita, _logger, whatsapp);
+                    resultado += ok
+                        ? $" WhatsApp enviado a {WhatsAppCloud.NormalizarTelefono(whatsapp)}."
+                        : " WhatsApp: no se pudo enviar (ver log; teléfono inválido, cita confirmada o error de Meta).";
+                }
+            }
+
+            return Content($"Cita {id}. {resultado.Trim()}");
         }
     }
 }
