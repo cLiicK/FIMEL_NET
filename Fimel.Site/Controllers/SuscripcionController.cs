@@ -3,6 +3,8 @@ using Fimel.Models.Integraciones;
 using Fimel.Site.Filters;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Fimel.Site.Controllers
 {
@@ -11,6 +13,18 @@ namespace Fimel.Site.Controllers
         private readonly IConfiguration config;
         private readonly APIClient APIBase;
         public SuscripcionController(IConfiguration configuration) { config = configuration; APIBase = new APIClient(config["API_URL"]); }
+
+        private bool Habilitada => config.GetValue<bool>("Suscripcion:Habilitada");
+
+        // Con el cobro con Flow apagado (Suscripcion:Habilitada = false) ninguna pantalla de suscripción está disponible.
+        // NotificacionFlow queda fuera: responde 200 sin hacer nada para que Flow no reintente.
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            if (!Habilitada && context.ActionDescriptor is ControllerActionDescriptor accion && accion.ActionName != nameof(NotificacionFlow))
+                context.Result = RedirectToAction("Inicio", "Login");
+
+            base.OnActionExecuting(context);
+        }
 
         public ActionResult Index()
         {
@@ -95,6 +109,9 @@ namespace Fimel.Site.Controllers
         [IgnoreAntiforgeryToken]
         public ActionResult NotificacionFlow(string? token)
         {
+            if (!Habilitada)
+                return Ok();
+
             try
             {
                 APIBase.Post<SolicitudSuscripcion>("Suscripciones/NotificacionFlow", new SolicitudSuscripcion { Token = token });

@@ -35,8 +35,14 @@ namespace Fimel.Site.Services
 
                 await Task.Delay(demora, stoppingToken);
 
-                if (!stoppingToken.IsCancellationRequested)
+                if (stoppingToken.IsCancellationRequested)
+                    break;
+
+                // Con el cobro con Flow apagado no se consulta a Flow; se revisa en cada ciclo por si se habilita
+                if (_config.GetValue<bool>("Suscripcion:Habilitada"))
                     Sincronizar();
+                else
+                    _logger.LogInformation("Suscripciones deshabilitadas (Suscripcion:Habilitada = false): no se sincroniza con Flow.");
             }
         }
 

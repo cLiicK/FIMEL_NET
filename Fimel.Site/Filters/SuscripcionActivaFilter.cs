@@ -37,7 +37,8 @@ namespace Fimel.Site.Filters
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            if (!config.GetValue<bool>("Suscripcion:Exigir"))
+            // Con el cobro con Flow apagado nunca se bloquea, aunque Exigir esté en true
+            if (!config.GetValue<bool>("Suscripcion:Habilitada") || !config.GetValue<bool>("Suscripcion:Exigir"))
                 return;
 
             if (context.ActionDescriptor is not ControllerActionDescriptor accion || ControladoresLibres.Contains(accion.ControllerName))

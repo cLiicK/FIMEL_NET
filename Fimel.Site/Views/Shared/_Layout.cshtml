@@ -1,5 +1,6 @@
 ﻿@using Fimel.Utils
 @using System.Text.Json
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 <!DOCTYPE html>
 
 @{
@@ -88,9 +89,12 @@
                         <a class="nav-link" href="@Url.Action("Configuracion", "Usuario")">
                             <span>Configuración <i class="fas fa-cog"></i></span>
                         </a>
-                        <a class="nav-link" href="@Url.Action("Index", "Suscripcion")">
-                            <span>Mi suscripción <i class="fas fa-credit-card"></i></span>
-                        </a>
+                        @if (Configuration.GetValue<bool>("Suscripcion:Habilitada"))
+                        {
+                            <a class="nav-link" href="@Url.Action("Index", "Suscripcion")">
+                                <span>Mi suscripción <i class="fas fa-credit-card"></i></span>
+                            </a>
+                        }
                         <a class="dropdown-item" href="@Url.Action("Login", "Login")">Cerrar sesión <i class="fas fa-right-from-bracket"></i></a>
                     </div>
                 </div>
