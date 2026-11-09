@@ -13,6 +13,9 @@ builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true, re
 // ApiSeguridad__ApiKey o FIMEL_API_KEY; nunca en appsettings versionado. Se asigna antes de crear cualquier APIClient.
 Fimel.Utils.APIClient.ApiKeyCompartida = builder.Configuration["ApiSeguridad:ApiKey"] ?? builder.Configuration["FIMEL_API_KEY"];
 
+// WhatsApp Cloud API (Meta): sección "WhatsApp" de la configuración; el AccessToken va en appsettings.Secrets.json
+Fimel.Utils.WhatsAppCloud.Configurar(builder.Configuration);
+
 // Add services to the container.
 
 // Configurar globalización para español de Chile

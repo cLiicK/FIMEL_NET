@@ -41,5 +41,9 @@ namespace Fimel.Utils
         /// <summary>URL pública (en Fimel.Site) para responder a la cita.</summary>
         public static string Url(string urlSitio, int idCita, string accion, DateTime fechaHoraInicio) =>
             $"{urlSitio.TrimEnd('/')}/Cita/{idCita}/{accion}?t={Firmar(idCita, accion, fechaHoraInicio)}";
+
+        /// <summary>Parte variable del botón de URL de la plantilla de WhatsApp: "{id}/{accion}/{firma}".</summary>
+        public static string SufijoWhatsApp(int idCita, string accion, DateTime fechaHoraInicio) =>
+            $"{idCita}/{accion}/{Firmar(idCita, accion, fechaHoraInicio)}";
     }
 }

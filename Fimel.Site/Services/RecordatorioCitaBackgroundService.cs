@@ -51,15 +51,20 @@ namespace Fimel.Site.Services
                     return;
                 }
 
-                int enviados = 0;
+                int enviados = 0, enviadosWhatsApp = 0;
 
                 foreach (var cita in citas)
                 {
                     try
                     {
-                        if (string.IsNullOrEmpty(cita.CorreoPaciente)) continue;
-                        EnviarRecordatorio(cita, _logger);
-                        enviados++;
+                        if (!string.IsNullOrEmpty(cita.CorreoPaciente))
+                        {
+                            EnviarRecordatorio(cita, _logger);
+                            enviados++;
+                        }
+
+                        if (WhatsAppCloud.Habilitado && EnviarRecordatorioWhatsAppAsync(cita, _logger).GetAwaiter().GetResult())
+                            enviadosWhatsApp++;
                     }
                     catch (Exception ex)
                     {
@@ -67,7 +72,7 @@ namespace Fimel.Site.Services
                     }
                 }
 
-                _logger.LogInformation("Recordatorios de citas enviados: {Enviados}/{Total}.", enviados, citas.Count);
+                _logger.LogInformation("Recordatorios de citas enviados: {Enviados} por correo y {WhatsApp} por WhatsApp, de {Total} citas.", enviados, enviadosWhatsApp, citas.Count);
             }
             catch (Exception ex)
             {
@@ -147,6 +152,58 @@ namespace Fimel.Site.Services
 
                 if (logoTempPath != null && File.Exists(logoTempPath))
                     File.Delete(logoTempPath);
+        }
+
+        /// <summary>
+        /// Envía el recordatorio por WhatsApp con la plantilla aprobada en Meta (WhatsApp:PlantillaRecordatorioCita).
+        /// Cuerpo: {{1}} paciente, {{2}} profesional, {{3}} fecha, {{4}} hora, {{5}} dirección.
+        /// Botones de URL: 0 = Confirmar, 1 = Anular, con sufijo "{id}/{accion}/{firma}".
+        /// Si la cita ya está confirmada no se envía (el correo ya avisa "ya confirmaste").
+        /// </summary>
+        public static async Task<bool> EnviarRecordatorioWhatsAppAsync(Cita cita, ILogger logger, string? telefonoDestino = null)
+        {
+            if (cita.EstadoConfirmacion == "Confirmada") return false;
+
+            string? telefono = WhatsAppCloud.NormalizarTelefono(telefonoDestino ?? cita.Telefono);
+            if (telefono == null)
+            {
+                if (!string.IsNullOrWhiteSpace(cita.Telefono))
+                    logger.LogWarning("Cita {Id}: teléfono '{Telefono}' no válido para WhatsApp.", cita.Id, cita.Telefono);
+                return false;
+            }
+
+            if (!EnlacesCita.Disponible)
+            {
+                logger.LogWarning("Cita {Id}: no se envía WhatsApp porque falta ApiSeguridad:ApiKey para firmar los botones.", cita.Id);
+                return false;
+            }
+
+            var culture = new System.Globalization.CultureInfo("es-ES");
+            var profesional = cita.Usuario;
+            string nombreProfesional = profesional != null
+                ? $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno}".Trim()
+                : "tu profesional";
+
+            var (ok, detalle) = await WhatsAppCloud.EnviarPlantillaAsync(
+                telefono,
+                WhatsAppCloud.PlantillaRecordatorioCita,
+                new[]
+                {
+                    cita.NombrePaciente,
+                    nombreProfesional,
+                    cita.FechaHoraInicio.ToString("dddd dd 'de' MMMM", culture),
+                    cita.FechaHoraInicio.ToString("HH:mm"),
+                    profesional?.Institucion?.Dirección ?? "la consulta"
+                },
+                new[]
+                {
+                    EnlacesCita.SufijoWhatsApp(cita.Id, EnlacesCita.Confirmar, cita.FechaHoraInicio),
+                    EnlacesCita.SufijoWhatsApp(cita.Id, EnlacesCita.Anular, cita.FechaHoraInicio)
+                });
+
+            if (ok) logger.LogInformation("Cita {Id}: recordatorio WhatsApp enviado a {Telefono} ({Wamid}).", cita.Id, telefono, detalle);
+            else logger.LogError("Cita {Id}: error al enviar WhatsApp a {Telefono}: {Error}", cita.Id, telefono, detalle);
+            return ok;
         }
 
         /// <summary>

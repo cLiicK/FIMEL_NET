@@ -224,7 +224,7 @@ namespace Fimel.Api.Controllers
 
                 var citas = db.Citas
                     .Where(c => c.Vigente == "S"
-                             && !string.IsNullOrEmpty(c.CorreoPaciente)
+                             && (!string.IsNullOrEmpty(c.CorreoPaciente) || !string.IsNullOrEmpty(c.Telefono))
                              && (c.FechaHoraInicio.Date == manana || c.FechaHoraInicio.Date == pasadoManana))
                     .Include(c => c.Usuario)
                     .ToList();
