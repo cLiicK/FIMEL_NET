@@ -163,6 +163,9 @@ namespace Fimel.Models.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EstadoConfirmacion")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("FechaCreacion")
                         .HasColumnType("datetime2");
 
@@ -170,6 +173,9 @@ namespace Fimel.Models.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaHoraInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaRespuestaPaciente")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NombrePaciente")
