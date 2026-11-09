@@ -51,86 +51,15 @@ namespace Fimel.Site.Services
                     return;
                 }
 
-                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-recordatorio-cita.html");
-                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
-
-                if (!File.Exists(templatePath))
-                {
-                    _logger.LogError("No se encontró la plantilla: {Path}", templatePath);
-                    return;
-                }
-
-                string templateHtml = File.ReadAllText(templatePath);
-                var utileria = new Utileria();
                 int enviados = 0;
-                var manana = DateTime.Today.AddDays(1);
-                var culture = new System.Globalization.CultureInfo("es-ES");
 
                 foreach (var cita in citas)
                 {
                     try
                     {
                         if (string.IsNullOrEmpty(cita.CorreoPaciente)) continue;
-
-                        var profesional = cita.Usuario;
-                        string nombreProfesional = profesional != null
-                            ? $"{profesional.Nombres} {profesional.ApellidoPaterno}".Trim()
-                            : string.Empty;
-
-                        // Sale desde la casilla de Fimel, pero las respuestas le llegan al profesional (Reply-To)
-                        string remitente = !string.IsNullOrEmpty(nombreProfesional)
-                            ? $"Mat. {nombreProfesional} vía FIMEL"
-                            : profesional?.Institucion?.RazonSocial ?? "FIMEL";
-                        string? responderA = !string.IsNullOrWhiteSpace(profesional?.Email)
-                            ? profesional!.Email
-                            : profesional?.Institucion?.Email;
-                        string direccion = profesional?.Institucion?.Dirección ?? "Dirección no disponible";
-                        string fechaCita = cita.FechaHoraInicio.ToString("dddd, dd 'de' MMMM 'de' yyyy", culture);
-                        string horaCita = cita.FechaHoraInicio.ToString("HH:mm");
-
-                        bool esManana = cita.FechaHoraInicio.Date == manana;
-                        string asunto = esManana
-                            ? $"Recordatorio: tu cita es mañana a las {horaCita}"
-                            : $"Recordatorio: tu cita es en 2 días ({cita.FechaHoraInicio.ToString("dd/MM")})";
-
-                        string cuerpo = templateHtml
-                            .Replace("{{paciente}}", string.Join(" ", new[] { cita.NombrePaciente, cita.ApellidoPaciente, cita.SegundoApellidoPaciente }
-                                .Where(x => !string.IsNullOrWhiteSpace(x))))
-                            .Replace("{{profesional}}", nombreProfesional)
-                            .Replace("{{fecha_cita}}", fechaCita)
-                            .Replace("{{hora_cita}}", horaCita)
-                            .Replace("{{direccion}}", direccion)
-                            .Replace("{{bloque_acciones}}", BloqueAcciones(cita));
-
-                        string logoEfectivo = logoPath;
-                        string? logoBase64 = profesional?.Institucion?.Logo;
-                        string? logoTempPath = null;
-
-                        if (!string.IsNullOrEmpty(logoBase64))
-                        {
-                            logoTempPath = Path.Combine(Path.GetTempPath(), $"logo_inst_{profesional!.IdInstitucion}.png");
-                            File.WriteAllBytes(logoTempPath, Convert.FromBase64String(logoBase64));
-                            logoEfectivo = logoTempPath;
-                        }
-
-                        var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
-                        {
-                            (logoEfectivo, "logoImage", "image/png")
-                        };
-
-                        var correo = new EnvioCorreo
-                        {
-                            Destinatarios = new List<string> { cita.CorreoPaciente },
-                            Asunto = asunto,
-                            CuerpoCorreo = cuerpo,
-                            ResponderA = responderA
-                        };
-
-                        utileria.EnviarCorreo(correo, imagenesCorreo, remitente);
+                        EnviarRecordatorio(cita, _logger);
                         enviados++;
-
-                        if (logoTempPath != null && File.Exists(logoTempPath))
-                            File.Delete(logoTempPath);
                     }
                     catch (Exception ex)
                     {
@@ -147,10 +76,84 @@ namespace Fimel.Site.Services
         }
 
         /// <summary>
+        /// Arma y envía el recordatorio de una cita. Público para poder enviarlo a mano en desarrollo
+        /// (ver DesarrolloController), sin esperar a las 08:00.
+        /// </summary>
+        public static void EnviarRecordatorio(Cita cita, ILogger logger)
+        {
+            string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mails", "correo-recordatorio-cita.html");
+            string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo_fimel_correo.png");
+            string templateHtml = File.ReadAllText(templatePath);
+            var utileria = new Utileria();
+            var manana = DateTime.Today.AddDays(1);
+            var culture = new System.Globalization.CultureInfo("es-ES");
+
+
+                var profesional = cita.Usuario;
+                string nombreProfesional = profesional != null
+                    ? $"{profesional.Nombres} {profesional.ApellidoPaterno}".Trim()
+                    : string.Empty;
+
+                // Sale desde la casilla de Fimel, pero las respuestas le llegan al profesional (Reply-To)
+                string remitente = !string.IsNullOrEmpty(nombreProfesional)
+                    ? $"Mat. {nombreProfesional} vía FIMEL"
+                    : profesional?.Institucion?.RazonSocial ?? "FIMEL";
+                string? responderA = !string.IsNullOrWhiteSpace(profesional?.Email)
+                    ? profesional!.Email
+                    : profesional?.Institucion?.Email;
+                string direccion = profesional?.Institucion?.Dirección ?? "Dirección no disponible";
+                string fechaCita = cita.FechaHoraInicio.ToString("dddd, dd 'de' MMMM 'de' yyyy", culture);
+                string horaCita = cita.FechaHoraInicio.ToString("HH:mm");
+
+                bool esManana = cita.FechaHoraInicio.Date == manana;
+                string asunto = esManana
+                    ? $"Recordatorio: tu cita es mañana a las {horaCita}"
+                    : $"Recordatorio: tu cita es en 2 días ({cita.FechaHoraInicio.ToString("dd/MM")})";
+
+                string cuerpo = templateHtml
+                    .Replace("{{paciente}}", string.Join(" ", new[] { cita.NombrePaciente, cita.ApellidoPaciente, cita.SegundoApellidoPaciente }
+                        .Where(x => !string.IsNullOrWhiteSpace(x))))
+                    .Replace("{{profesional}}", nombreProfesional)
+                    .Replace("{{fecha_cita}}", fechaCita)
+                    .Replace("{{hora_cita}}", horaCita)
+                    .Replace("{{direccion}}", direccion)
+                    .Replace("{{bloque_acciones}}", BloqueAcciones(cita, logger));
+
+                string logoEfectivo = logoPath;
+                string? logoBase64 = profesional?.Institucion?.Logo;
+                string? logoTempPath = null;
+
+                if (!string.IsNullOrEmpty(logoBase64))
+                {
+                    logoTempPath = Path.Combine(Path.GetTempPath(), $"logo_inst_{profesional!.IdInstitucion}.png");
+                    File.WriteAllBytes(logoTempPath, Convert.FromBase64String(logoBase64));
+                    logoEfectivo = logoTempPath;
+                }
+
+                var imagenesCorreo = new List<(string Path, string ContentId, string Mime)>
+                {
+                    (logoEfectivo, "logoImage", "image/png")
+                };
+
+                var correo = new EnvioCorreo
+                {
+                    Destinatarios = new List<string> { cita.CorreoPaciente },
+                    Asunto = asunto,
+                    CuerpoCorreo = cuerpo,
+                    ResponderA = responderA
+                };
+
+                utileria.EnviarCorreo(correo, imagenesCorreo, remitente);
+
+                if (logoTempPath != null && File.Exists(logoTempPath))
+                    File.Delete(logoTempPath);
+        }
+
+        /// <summary>
         /// Botones Confirmar / Anular con links firmados. Si la cita ya fue confirmada se muestra solo el aviso,
         /// y si no hay llave para firmar (ApiSeguridad:ApiKey) o URL_SITIO no se muestran botones.
         /// </summary>
-        private string BloqueAcciones(Cita cita)
+        private static string BloqueAcciones(Cita cita, ILogger logger)
         {
             if (cita.EstadoConfirmacion == "Confirmada")
                 return "<p style=\"margin:10px 0 0 0; font-size:14px; color:#1e8a4c;\"><strong>&#10003; Ya confirmaste tu asistencia.</strong> ¡Te esperamos!</p>";
@@ -158,7 +161,7 @@ namespace Fimel.Site.Services
             string? urlSitio = _config["URL_SITIO"];
             if (!EnlacesCita.Disponible || string.IsNullOrWhiteSpace(urlSitio))
             {
-                _logger.LogWarning("Recordatorio de cita sin botones: falta ApiSeguridad:ApiKey o URL_SITIO.");
+                logger.LogWarning("Recordatorio de cita sin botones: falta ApiSeguridad:ApiKey o URL_SITIO.");
                 return string.Empty;
             }
 
