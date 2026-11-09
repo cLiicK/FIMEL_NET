@@ -128,6 +128,9 @@
         .cita-item:hover { background: var(--f-light); }
         .cita-hora { font-size: 0.82rem; font-weight: 700; color: var(--f-blue); min-width: 90px; white-space: nowrap; }
         .cita-paciente { font-size: 0.92rem; font-weight: 600; color: #1a2a3a; }
+        .cita-item.confirmada { border-left-color: #4CAF7D; background: #eef8f2; }
+        .cita-item.confirmada .cita-hora { color: #2e8a5a; }
+        .cita-confirmada-tag { font-size: 0.72rem; font-weight: 700; color: #2e8a5a; margin-left: 6px; white-space: nowrap; }
 
         .ag-loading { text-align: center; padding: 30px 0; color: #aaa; font-size: 0.9rem; }
 
@@ -188,6 +191,10 @@
                         <div class="leyenda-item">
                             <div class="leyenda-dot" style="background:var(--f-blue)"></div>
                             <span>Día seleccionado</span>
+                        </div>
+                        <div class="leyenda-item">
+                            <div class="leyenda-dot" style="background:#4CAF7D"></div>
+                            <span>Cita confirmada por el paciente</span>
                         </div>
                     </div>
                 </div>
@@ -360,9 +367,9 @@
                 var html = '';
                 citas.forEach(function(c) {
                     html += `
-                        <div class="cita-item">
+                        <div class="cita-item${c.confirmada ? ' confirmada' : ''}">
                             <div class="cita-hora"><i class="fas fa-clock me-1" style="opacity:.6"></i>${c.horaInicio} – ${c.horaFin}</div>
-                            <div class="cita-paciente"><i class="fas fa-user me-1" style="opacity:.4;font-size:.8rem"></i>${c.paciente || 'Paciente'}</div>
+                            <div class="cita-paciente"><i class="fas fa-user me-1" style="opacity:.4;font-size:.8rem"></i>${c.paciente || 'Paciente'}${c.confirmada ? '<span class="cita-confirmada-tag"><i class="fas fa-check"></i> Confirmada</span>' : ''}</div>
                         </div>`;
                 });
                 container.innerHTML = html;
