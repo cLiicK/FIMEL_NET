@@ -30,10 +30,14 @@ namespace Fimel.Utils
 {
     public class Utileria
     {
-        // appsettings.Secrets.json (opcional, solo en el servidor) sobrescribe valores sensibles como SMTP_Config:Contrasena
+        // appsettings.Secrets.json (opcional, no va a git) sobrescribe valores sensibles como SMTP_Config:Contrasena.
+        // Se busca junto a la app publicada (servidor) y en la carpeta del proyecto (local: Fimel.Site\appsettings.Secrets.json,
+        // que no se copia a bin).
         private static IConfiguration config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile("appsettings.Secrets.json", optional: true)
+            .AddJsonFile(new Microsoft.Extensions.FileProviders.PhysicalFileProvider(Directory.GetCurrentDirectory()),
+                "appsettings.Secrets.json", optional: true, reloadOnChange: false)
             .Build();
         private static readonly APIClient APIBase = new APIClient(config["API_URL"]);
         public static readonly string SeparadorMiles = "#,##0";
