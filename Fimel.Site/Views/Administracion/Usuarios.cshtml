@@ -6,6 +6,8 @@
 <input type="hidden" id="hdnURL_GuardarUsuario" value='@Url.Action("_GuardarUsuario", "Administracion")' />
 <input type="hidden" id="hdnURL_AsignarPerfil" value='@Url.Action("_AsignarPerfil", "Administracion")' />
 <input type="hidden" id="hdnURL_QuitarPerfil" value='@Url.Action("_QuitarPerfil", "Administracion")' />
+<input type="hidden" id="hdnURL_DarBajaUsuario" value='@Url.Action("_DarBajaUsuario", "Administracion")' />
+<input type="hidden" id="hdnURL_ReactivarUsuario" value='@Url.Action("_ReactivarUsuario", "Administracion")' />
 
 <div id="content-wrapper" class="container-9">
     <div class="row">
@@ -35,11 +37,12 @@
                         <th>Email</th>
                         <th>Institución</th>
                         <th>Perfiles</th>
-                        <th class="text-end" style="width:70px"></th>
+                        <th>Estado</th>
+                        <th class="text-end" style="width:90px"></th>
                     </tr>
                 </thead>
                 <tbody id="tbodyUsuarios">
-                    <tr><td colspan="6" class="text-center text-muted py-3">Cargando...</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-3">Cargando...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -82,6 +85,16 @@
                             <option value="">Sin institución (SuperAdmin)</option>
                         </select>
                     </div>
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            RUT
+                            <i class="fas fa-circle-info ms-1 text-muted"
+                               data-bs-toggle="tooltip" data-bs-placement="top"
+                               title="Aparece en la firma de la receta y la orden de exámenes. Solo se define aquí, el profesional no puede editarlo."
+                               style="cursor:help;"></i>
+                        </label>
+                        <input type="text" class="form-control" id="usrRut" maxlength="12" placeholder="12.345.678-9">
+                    </div>
                     <div class="col-md-12">
                         <label class="form-label">Perfiles <span class="text-danger">*</span></label>
                         <div id="usrPerfiles" class="d-flex flex-wrap gap-3"></div>
@@ -117,5 +130,5 @@
 </div>
 
 @section scripts {
-    <script src="~/js/Site/Administracion_Usuarios.js?v=1.0" type="text/javascript"></script>
+    <script src="~/js/Site/Administracion_Usuarios.js" asp-append-version="true" type="text/javascript"></script>
 }

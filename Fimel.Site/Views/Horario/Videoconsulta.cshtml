@@ -1,0 +1,130 @@
+@model Fimel.Site.ViewModels.VideoconsultaVM
+@using Fimel.Site.ViewModels
+@{
+    ViewData["Title"] = "Videoconsulta";
+    bool abierta = Model.Estado == VideoconsultaVM.EstadoSala.Abierta;
+}
+
+<input type="hidden" id="hdnVideoEstado" value="@Model.Estado" />
+<input type="hidden" id="hdnVideoUrlSala" value="@(abierta ? Model.UrlSala : "")" />
+<input type="hidden" id="hdnVideoSegundosParaAbrir" value="@Model.SegundosParaAbrir" />
+<input type="hidden" id="hdnVideoSegundosParaCerrar" value="@Model.SegundosParaCerrar" />
+
+<style>
+    .video-pro { height: calc(100vh - 110px); min-height: 420px; position: relative; border-radius: 10px; overflow: hidden; background: #1a1a1a; }
+    .video-pro .caja { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; padding: 24px; }
+    .video-pro .caja h4 { color: #fff; }
+    .video-pro .hora { font-size: 34px; font-weight: 700; color: #75BDE0; }
+    #contenedorVideo { position: absolute; inset: 0; }
+    @@media (max-width: 991.98px) { .video-pro { height: 62vh; min-height: 320px; } }
+</style>
+
+<div class="container-fluid" style="margin-top: 16px;">
+    <div class="row g-3">
+        <div class="col-12 col-lg-8">
+            <div class="video-pro">
+                @if (abierta)
+                {
+                    <div id="contenedorVideo"></div>
+                }
+
+                @switch (Model.Estado)
+                {
+                    case VideoconsultaVM.EstadoSala.Pendiente:
+                        <div class="caja">
+                            <h4>La sala se abrirá a las</h4>
+                            <div class="hora">@Model.HoraApertura</div>
+                            <p class="mb-0">15 minutos antes de la cita. Esta página se actualizará sola.</p>
+                        </div>
+                        break;
+                    case VideoconsultaVM.EstadoSala.SinSala:
+                        <div class="caja">
+                            <h4>No se pudo crear la sala</h4>
+                            @if (ViewBag.VideoconsultaHabilitada != true)
+                            {
+                                <p class="mb-0">Las videoconsultas no están habilitadas en el servidor (Videoconsulta:Habilitada / API key de Daily).</p>
+                            }
+                            else
+                            {
+                                <p class="mb-0">Se reintentará en un minuto. Si el problema continúa, revisa el log de Fimel.Api.</p>
+                            }
+                        </div>
+                        break;
+                    case VideoconsultaVM.EstadoSala.Finalizada:
+                        <div class="caja">
+                            <h4>La videoconsulta finalizó</h4>
+                            <p class="mb-0">La sala se cerró 30 minutos después del término de la cita.</p>
+                        </div>
+                        break;
+                }
+
+                <div id="panelVideoSalida" class="caja d-none">
+                    <h4>Saliste de la videoconsulta</h4>
+                    <button type="button" class="btn btn-light mt-2" onclick="ModuloVideoconsulta.VolverAEntrar()">Volver a entrar</button>
+                </div>
+                <div id="panelVideoFinalizada" class="caja d-none">
+                    <h4>La videoconsulta finalizó</h4>
+                    <p class="mb-0">La sala se cerró.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-video me-1"></i> Videoconsulta</h5>
+                    <p class="mb-1"><strong>Paciente:</strong> @Model.NombrePaciente</p>
+                    @if (!string.IsNullOrWhiteSpace(Model.Cita.NumeroDocumento))
+                    {
+                        <p class="mb-1"><strong>@Model.Cita.TipoDocumento:</strong> @Model.Cita.NumeroDocumento</p>
+                    }
+                    <p class="mb-1"><strong>Fecha:</strong> @Model.Fecha</p>
+                    <p class="mb-1"><strong>Hora:</strong> @Model.Hora – @Model.Cita.FechaHoraFinal.ToString("HH:mm")</p>
+                    @if (!string.IsNullOrWhiteSpace(Model.Cita.Telefono))
+                    {
+                        <p class="mb-1"><strong>Teléfono:</strong> @Model.Cita.Telefono</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Cita.Nota))
+                    {
+                        <p class="mb-1"><strong>Nota:</strong> @Model.Cita.Nota</p>
+                    }
+
+                    <hr />
+
+                    @if (Model.UrlFichaPaciente != null)
+                    {
+                        @if (Model.PacienteRegistrado)
+                        {
+                            <a class="btn btn-blue w-100 mb-2" href="@Model.UrlNuevaConsulta" target="_blank" rel="noopener">Nueva consulta</a>
+                            <a class="btn btn-outline-secondary w-100 mb-2" href="@Model.UrlFichaPaciente" target="_blank" rel="noopener">Ver ficha del paciente</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-blue w-100 mb-2" href="@Model.UrlFichaPaciente" target="_blank" rel="noopener">Completar ficha del paciente</a>
+                        }
+                        <p class="text-muted small mb-0">Se abren en otra pestaña para no cortar la llamada.</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-0">La cita no tiene documento del paciente, así que no se puede vincular a una ficha.</p>
+                    }
+
+                    <hr />
+                    <p class="text-muted small mb-0">
+                        El paciente entra desde el botón "Unirse a la videoconsulta" de su correo de confirmación o recordatorio.
+                        La sala abre a las @Model.HoraApertura y se cierra 30 minutos después del término.
+                    </p>
+                </div>
+            </div>
+            <a class="btn btn-link mt-2 px-0" href="@Url.Action("MiHorario", "Horario")">&larr; Volver a la agenda</a>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @if (abierta)
+    {
+        <script crossorigin src="https://unpkg.com/@@daily-co/daily-js"></script>
+    }
+    <script src="~/js/Site/Videoconsulta.js" asp-append-version="true" type="text/javascript"></script>
+}

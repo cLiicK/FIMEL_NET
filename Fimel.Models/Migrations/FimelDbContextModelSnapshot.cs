@@ -163,6 +163,12 @@ namespace Fimel.Models.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("EsVideoconsulta")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("EstadoConfirmacion")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("FechaCreacion")
                         .HasColumnType("datetime2");
 
@@ -170,6 +176,9 @@ namespace Fimel.Models.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaHoraInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaRespuestaPaciente")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NombrePaciente")
@@ -194,12 +203,32 @@ namespace Fimel.Models.Migrations
                     b.Property<int?>("UsuarioId")
                         .HasColumnType("int");
 
+                    b.Property<string>("VideoSalaNombre")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("VideoToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("VideoUrlPaciente")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("VideoUrlProfesional")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<string>("Vigente")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UsuarioId");
+
+                    b.HasIndex("VideoToken")
+                        .IsUnique()
+                        .HasFilter("[VideoToken] IS NOT NULL");
 
                     b.ToTable("Citas", (string)null);
                 });
@@ -248,6 +277,9 @@ namespace Fimel.Models.Migrations
                     b.Property<DateTime?>("FechaCreacion")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Firma")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("MaxAntDias")
                         .HasColumnType("int");
 
@@ -271,6 +303,111 @@ namespace Fimel.Models.Migrations
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("ConfiguracionesUsuario", (string)null);
+                });
+
+            modelBuilder.Entity("Fimel.Models.ConsentimientoFirma", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaExpiracion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaFirma")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirmaPaciente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirmaProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HashDocumento")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("HtmlCuerpo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("IdInstitucion")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPaciente")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IpFirma")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("NombreFirmante")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreInstitucion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombrePaciente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RutFirmante")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RutPaciente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RutProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TipoConsentimiento")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("TipoFirmante")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TituloDocumento")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TituloProfesional")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("UserAgentFirma")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Vigente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdPaciente");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("ConsentimientosFirma", (string)null);
                 });
 
             modelBuilder.Entity("Fimel.Models.Consultas", b =>
@@ -488,6 +625,42 @@ namespace Fimel.Models.Migrations
                         {
                             t.ExcludeFromMigrations();
                         });
+                });
+
+            modelBuilder.Entity("Fimel.Models.HorarioBloqueado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comentario")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FechaBloqueo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("HoraFin")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("HoraInicio")
+                        .HasColumnType("time");
+
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Vigente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("HorariosBloqueados", (string)null);
                 });
 
             modelBuilder.Entity("Fimel.Models.HorarioEspecifico", b =>
@@ -872,6 +1045,58 @@ namespace Fimel.Models.Migrations
                     b.ToTable("Pacientes", (string)null);
                 });
 
+            modelBuilder.Entity("Fimel.Models.PagoSuscripcion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EstadoFlow")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("FlowInvoiceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("IdSuscripcion")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Monto")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PeriodoDesde")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("PeriodoHasta")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RespuestaJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Vigente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FlowInvoiceId")
+                        .IsUnique();
+
+                    b.ToTable("PagosSuscripcion", (string)null);
+                });
+
             modelBuilder.Entity("Fimel.Models.Perfiles", b =>
                 {
                     b.Property<int>("Id")
@@ -895,6 +1120,45 @@ namespace Fimel.Models.Migrations
                         {
                             t.ExcludeFromMigrations();
                         });
+                });
+
+            modelBuilder.Entity("Fimel.Models.PlanSuscripcion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodigoFlow")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("DiasPrueba")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Meses")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Monto")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Vigente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodigoFlow")
+                        .IsUnique();
+
+                    b.ToTable("PlanesSuscripcion", (string)null);
                 });
 
             modelBuilder.Entity("Fimel.Models.PlantillaCampo", b =>
@@ -1079,6 +1343,72 @@ namespace Fimel.Models.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Fimel.Models.SuscripcionUsuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CancelaAlFinPeriodo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FinPrueba")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FlowCustomerId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FlowSubscriptionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("IdPlan")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PagadoHasta")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("PruebaUsada")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TipoTarjeta")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UltimaSincronizacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Ultimos4")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Vigente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FlowCustomerId");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("SuscripcionesUsuario", (string)null);
+                });
+
             modelBuilder.Entity("Fimel.Models.TipoConsulta", b =>
                 {
                     b.Property<int>("Id")
@@ -1182,6 +1512,9 @@ namespace Fimel.Models.Migrations
                     b.Property<string>("ApellidoPaterno")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Dv")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
@@ -1202,6 +1535,9 @@ namespace Fimel.Models.Migrations
 
                     b.Property<string>("RequiereCambioClave")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Rut")
+                        .HasColumnType("int");
 
                     b.Property<string>("Usuario")
                         .HasColumnType("nvarchar(max)");
@@ -1324,6 +1660,15 @@ namespace Fimel.Models.Migrations
                 });
 
             modelBuilder.Entity("Fimel.Models.HorarioAtencion", b =>
+                {
+                    b.HasOne("Fimel.Models.Usuarios", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Fimel.Models.HorarioBloqueado", b =>
                 {
                     b.HasOne("Fimel.Models.Usuarios", "Usuario")
                         .WithMany()

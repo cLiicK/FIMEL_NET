@@ -22,7 +22,6 @@ namespace Fimel.Api.Controllers
             try
             {
                 var usuarios = db.Usuarios
-                    .Where(u => u.Vigente == "S")
                     .OrderBy(u => u.Nombres)
                     .ToList();
 
@@ -230,6 +229,46 @@ namespace Fimel.Api.Controllers
             catch (Exception ex)
             {
                 Logger.Log($"Error Put Usuario: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                Usuarios? dbUsuario = db.Usuarios.Find(id);
+                if (dbUsuario == null) return NotFound();
+
+                dbUsuario.Vigente = "N";
+                db.SaveChanges();
+
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error DELETE Usuario: {ex}");
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPost("{id}/Reactivar")]
+        public IActionResult Reactivar(int id)
+        {
+            try
+            {
+                Usuarios? dbUsuario = db.Usuarios.Find(id);
+                if (dbUsuario == null) return NotFound();
+
+                dbUsuario.Vigente = "S";
+                db.SaveChanges();
+
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Reactivar Usuario: {ex}");
                 return StatusCode(500, ex);
             }
         }

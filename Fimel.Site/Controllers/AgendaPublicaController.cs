@@ -44,6 +44,7 @@ namespace Fimel.Site.Controllers
                         fecha = c.FechaHoraInicio.ToString("yyyy-MM-dd"),
                         horaInicio = c.FechaHoraInicio.ToString("HH:mm"),
                         horaFin = c.FechaHoraFinal.ToString("HH:mm"),
+                        confirmada = c.EstadoConfirmacion == "Confirmada",
                         paciente = string.Join(" ", new[] { c.NombrePaciente, c.ApellidoPaciente }
                             .Where(s => !string.IsNullOrWhiteSpace(s)))
                     });

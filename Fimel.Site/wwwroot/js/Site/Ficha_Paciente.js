@@ -9,6 +9,9 @@ var ModuloFichaPaciente = (function () {
             $("#inputRut").keypress(function (e) { onlyNumbersWithK(e); });
             $("#inputRutData").keypress(function (e) { onlyNumbersWithK(e); });
             $("#inputCelular").keypress(function (e) { onlyNumbers(e); });
+            $("#inputCelular").on('input', function () {
+                this.value = this.value.replace(/\D/g, '').substring(0, 9);
+            });
             $("#inputNombres").keypress(function (e) { onlyLetters(e); });
             $("#inputPrimerApellido").keypress(function (e) { onlyLetters(e); });
             $("#inputSegundoApellido").keypress(function (e) { onlyLetters(e); });
@@ -85,7 +88,20 @@ var ModuloFichaPaciente = (function () {
             });
 
             $('#inputFechaNacimiento').change(function () {
-                $('#inputEdad').val(calcularEdad($('#inputFechaNacimiento').val()));
+                let fecha = $(this).val();
+                $('#inputEdad').val(fecha ? calcularEdad(fecha) : '');
+            });
+
+            $('#inputFechaNacimiento').on('blur', function () {
+                let fecha = $(this).val();
+                if (!fecha) return;
+
+                let edad = calcularEdad(fecha);
+                if (edad < 0 || edad > 120) {
+                    Swal.fire('Fecha de Nacimiento inválida', '', 'warning');
+                    $(this).val('');
+                    $('#inputEdad').val('');
+                }
             });
 
 
@@ -218,6 +234,7 @@ var ModuloFichaPaciente = (function () {
                             ObtenerConsultasAnteriores(validacionRut, response.TipoDocumento);
                             ModuloFichaPaciente.CargarExamenes(response.Id);
                             ModuloFichaPaciente.CargarRecordatorios(response.Id);
+                            ModuloFichaPaciente.CargarConsentimientosFirmados(response.Id);
 
                             Swal.fire('Paciente encontrado', 'Se cargaron los datos del paciente', 'success')
                         }
@@ -225,6 +242,7 @@ var ModuloFichaPaciente = (function () {
                             Swal.fire('Nuevo paciente', 'Favor complete los datos del nuevo paciente', 'info')
 
                             idPacienteActual = 0;
+                            ModuloFichaPaciente.CargarConsentimientosFirmados(0);
                             $('#btnGuardarPaciente').prop('disabled', false);
                             $("#btnGuardarPaciente").show();
                             $("#btnActualizarPaciente").hide();
@@ -238,6 +256,7 @@ var ModuloFichaPaciente = (function () {
                         Swal.fire('Nuevo paciente', 'Favor complete los datos del nuevo paciente', 'info')
 
                         idPacienteActual = 0;
+                        ModuloFichaPaciente.CargarConsentimientosFirmados(0);
                         $('#btnGuardarPaciente').prop('disabled', false);
                         $("#btnGuardarPaciente").show();
                         $("#btnActualizarPaciente").hide();
@@ -679,6 +698,35 @@ var ModuloFichaPaciente = (function () {
                 }
             });
         },
+        VerConsentimientoFirmado: function (token) {
+            if (!token) return;
+            window.open($('#hdnURL_VerConsentimiento').val() + '?token=' + encodeURIComponent(token), '_blank');
+        },
+
+        CargarConsentimientosFirmados: function (idPaciente) {
+            var contenedor = $('#listaConsentimientosFirmados');
+            var vacio = '<p class="text-muted small fst-italic mb-0">Sin consentimientos firmados.</p>';
+            if (!idPaciente) {
+                contenedor.html(vacio);
+                return;
+            }
+            $.get($('#hdnURL_ObtenerConsentimientosFirmados').val(), { idPaciente: idPaciente }, function (r) {
+                if (!r.success || !r.data || r.data.length === 0) {
+                    contenedor.html(vacio);
+                    return;
+                }
+                var items = r.data.map(function (c) {
+                    return '<a href="javascript:void(0)" class="list-group-item list-group-item-action py-2" onclick="ModuloFichaPaciente.VerConsentimientoFirmado(\'' + encodeURIComponent(c.token) + '\')">' +
+                        '<div class="small fw-semibold"><i class="fas fa-file-signature me-1" style="color:#0E96CC;"></i>' + escapeHtml(c.titulo) + '</div>' +
+                        '<div class="small text-muted">' + escapeHtml(c.fechaFirma || '') + ' · ' + escapeHtml(c.nombreFirmante || '') + '</div>' +
+                        '</a>';
+                }).join('');
+                contenedor.html('<div class="list-group list-group-flush">' + items + '</div>');
+            }).fail(function () {
+                contenedor.html(vacio);
+            });
+        },
+
         CargarRecordatorios: function (idPaciente) {
             var etiquetasRepetirCada = {
                 'Semana': 'Cada semana',

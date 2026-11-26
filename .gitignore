@@ -45,3 +45,6 @@ TestResults/
 *.swp
 *.DS_Store
 Thumbs.db
+
+# Secretos del servidor (ver appsettings.Secrets.example.json)
+appsettings.Secrets.json

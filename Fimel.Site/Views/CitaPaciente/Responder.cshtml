@@ -1,0 +1,48 @@
+@model Fimel.Site.Controllers.CitaPacienteController.RespuestaCitaVM
+@{
+    Layout = null;
+    bool anular = Model.Accion == Fimel.Utils.EnlacesCita.Anular;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>@(anular ? "Anular cita" : "Confirmar cita")</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32x32.png">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f6f8fa; color: #1a2a3a; margin: 0; }
+        .caja { max-width: 440px; margin: 12vh auto 0; background: #fff; border-radius: 12px; padding: 28px 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+        .logo { text-align: center; margin-bottom: 14px; }
+        .logo img { max-width: 140px; }
+        h1 { font-size: 20px; color: #0d86b3; margin: 0 0 14px; text-align: center; }
+        .dato { font-size: 15px; padding: 4px 0; }
+        .boton { display: block; width: 100%; margin-top: 22px; padding: 14px; border: 0; border-radius: 8px; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; }
+        .confirmar { background: #0d86b3; }
+        .anular { background: #e05d5d; }
+        .nota { font-size: 13px; color: #7a8794; margin-top: 14px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="caja">
+        <div class="logo"><img src="~/img/logo_fimel_correo.png" alt="Fimel"></div>
+        <h1>@(anular ? "¿Quieres anular tu cita?" : "Confirma tu cita")</h1>
+        <div class="dato"><strong>Paciente:</strong> @Model.Cita.NombrePaciente @Model.Cita.ApellidoPaciente</div>
+        <div class="dato"><strong>Profesional:</strong> @Model.NombreProfesional</div>
+        <div class="dato"><strong>Fecha:</strong> @Model.Fecha</div>
+        <div class="dato"><strong>Hora:</strong> @Model.Hora</div>
+
+        <form method="post" action="@Url.Content($"~/Cita/{Model.Cita.Id}/{Model.Accion}")?t=@Uri.EscapeDataString(Model.Firma)">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="boton @(anular ? "anular" : "confirmar")">
+                @(anular ? "Sí, anular mi cita" : "Confirmar mi asistencia")
+            </button>
+        </form>
+        @if (anular)
+        {
+            <p class="nota">Al anular, el horario queda libre y se avisa a tu profesional.</p>
+        }
+    </div>
+</body>
+</html>

@@ -111,6 +111,22 @@
 
     /* Columna de hoy */
     #calendar .fc-day-today .fc-col-header-cell-cushion { color: #0E96CC; }
+
+    /* Horarios bloqueados: color sólido de alto contraste + rayas, para que se note
+       claramente por encima del horario semanal/específico que pueda haber debajo.
+       FullCalendar aplica opacity:.3 por defecto a TODO evento display:"background",
+       por eso hay que forzar color y opacidad propios con !important. */
+    #calendar .fc-bg-event.fc-bloqueado-bg {
+        background-color: #C62828 !important;
+        opacity: 0.55 !important;
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(255,255,255,0.55) 0px,
+            rgba(255,255,255,0.55) 7px,
+            transparent 7px,
+            transparent 14px
+        );
+    }
 </style>
 
 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">

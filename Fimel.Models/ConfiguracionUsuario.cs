@@ -16,5 +16,6 @@ namespace Fimel.Models
         public string? TituloProfesional { get; set; } = "Matrón/a";
         public int? MinAntHoras { get; set; }
         public int? MaxAntDias { get; set; }
+        public string? Firma { get; set; }
     }
 }

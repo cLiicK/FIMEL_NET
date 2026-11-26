@@ -157,6 +157,47 @@
                 }
             });
         },
+        SubirFirma: function (btn) {
+            var fileInput = document.getElementById('inputFirmaFile');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                Swal.fire('Seleccione un archivo', 'Debe elegir una imagen antes de subir.', 'warning');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('firma', fileInput.files[0]);
+
+            $(btn).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Subiendo...');
+
+            $.ajax({
+                url: $('#hdnURL_SubirFirma').val(),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        // Actualizar imagen sin recargar la página
+                        var src = 'data:image/png;base64,' + response.firmaBase64;
+                        if ($('#imgFirmaActual').length) {
+                            $('#imgFirmaActual').attr('src', src);
+                        } else {
+                            var img = $('<img id="imgFirmaActual" alt="Firma actual" style="max-height:80px;max-width:220px;border:1px solid #e0e8f0;border-radius:8px;padding:6px;background:#fff">').attr('src', src);
+                            $('#divPreviewNuevaFirma').before($('<div class="mb-3"><label class="form-label">Firma actual</label><br></div>').append(img));
+                        }
+                        $('#divPreviewNuevaFirma').hide();
+                        Swal.fire('Firma guardada', response.message, 'success');
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                    $(btn).prop('disabled', false).html('<i class="fas fa-upload me-1"></i> Subir firma');
+                },
+                error: function () {
+                    Swal.fire('Error', 'Favor comuníquese con un administrador', 'error');
+                    $(btn).prop('disabled', false).html('<i class="fas fa-upload me-1"></i> Subir firma');
+                }
+            });
+        },
         GuardarInstitucion: function (btn) {
             var direccion = $('#inputDireccionInst').val().trim();
             if (!direccion) {
@@ -320,6 +361,17 @@ $(function () {
         reader.onload = function (e) {
             $('#imgPreviewLogo').attr('src', e.target.result);
             $('#divPreviewNuevoLogo').show();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    $('#inputFirmaFile').on('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imgPreviewFirma').attr('src', e.target.result);
+            $('#divPreviewNuevaFirma').show();
         };
         reader.readAsDataURL(file);
     });

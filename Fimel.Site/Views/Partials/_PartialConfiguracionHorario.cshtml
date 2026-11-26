@@ -21,6 +21,11 @@
                             Horarios Específicos
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="horarios-bloqueados-tab" data-bs-toggle="tab" data-bs-target="#horarios-bloqueados" type="button" role="tab" aria-controls="horarios-bloqueados" aria-selected="false">
+                            Horarios Bloqueados
+                        </button>
+                    </li>
                 </ul>
 
                 <!-- Contenido de las pestañas -->
@@ -125,6 +130,45 @@
                         <h5>Horarios Específicos Existentes</h5>
                         <div id="contenedorHorariosEspecificos">
                             <!-- Los horarios específicos se cargarán aquí dinámicamente -->
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="horarios-bloqueados" role="tabpanel" aria-labelledby="horarios-bloqueados-tab">
+                        <br />
+                        <!-- Formulario para nuevo horario bloqueado -->
+                        <div class="row mb-3">
+                            <div class="col-5">
+                                <label for="fechaBloqueadaNuevoHorario" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="fechaBloqueadaNuevoHorario" required />
+                            </div>
+                            <div class="col-3">
+                                <label for="horaInicioBloqueadoNuevoHorario" class="form-label">Hora Inicio</label>
+                                <select class="form-select" id="horaInicioBloqueadoNuevoHorario" required>
+                                    <option value="">--:--</option>
+                                </select>
+                            </div>
+                            <div class="col-3">
+                                <label for="horaFinBloqueadoNuevoHorario" class="form-label">Hora Fin</label>
+                                <select class="form-select" id="horaFinBloqueadoNuevoHorario" required>
+                                    <option value="">--:--</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="comentarioBloqueadoNuevoHorario" class="form-label">Comentario</label>
+                            <textarea class="form-control" id="comentarioBloqueadoNuevoHorario" rows="3" placeholder="Ej: Vacaciones, reunión, feriado..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary" id="btnGuardarHorarioBloqueado" onclick="ModuloHorarioCita.GuardarNuevoHorarioBloqueado()">
+                                <i class="fas fa-ban"></i> Guardar Horario Bloqueado
+                            </button>
+                        </div>
+
+                        <h5>Horarios Bloqueados Existentes</h5>
+                        <div id="contenedorHorariosBloqueados">
+                            <!-- Los horarios bloqueados se cargarán aquí dinámicamente -->
                         </div>
                     </div>
                 </div>

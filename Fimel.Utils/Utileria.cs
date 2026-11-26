@@ -30,7 +30,15 @@ namespace Fimel.Utils
 {
     public class Utileria
     {
-        private static IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        // appsettings.Secrets.json (opcional, no va a git) sobrescribe valores sensibles como SMTP_Config:Contrasena.
+        // Se busca junto a la app publicada (servidor) y en la carpeta del proyecto (local: Fimel.Site\appsettings.Secrets.json,
+        // que no se copia a bin).
+        private static IConfiguration config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Secrets.json", optional: true)
+            .AddJsonFile(new Microsoft.Extensions.FileProviders.PhysicalFileProvider(Directory.GetCurrentDirectory()),
+                "appsettings.Secrets.json", optional: true, reloadOnChange: false)
+            .Build();
         private static readonly APIClient APIBase = new APIClient(config["API_URL"]);
         public static readonly string SeparadorMiles = "#,##0";
 
@@ -84,6 +92,33 @@ namespace Fimel.Utils
             }
         }
 
+        public byte[] HtmlToPdfDesdeContenido(string htmlContent)
+        {
+            try
+            {
+                using var pdfDest = new MemoryStream();
+                ConverterProperties converterProperties = new ConverterProperties();
+                HtmlConverter.ConvertToPdf(htmlContent, pdfDest, converterProperties);
+                return pdfDest.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error metodo HtmlToPdfDesdeContenido (Utileria): {ex}");
+                throw;
+            }
+        }
+
+
+        /// <summary>
+        /// Agrega el encabezado Reply-To: el correo sigue saliendo desde la casilla de Fimel,
+        /// pero al presionar "Responder" la respuesta le llega a esta dirección (p.ej. el profesional).
+        /// </summary>
+        private static void AgregarResponderA(MailMessage mail, string? responderA)
+        {
+            if (string.IsNullOrWhiteSpace(responderA)) return;
+            try { mail.ReplyToList.Add(new MailAddress(responderA.Trim())); }
+            catch (FormatException) { Logger.Log($"Reply-To inválido, se omite: {responderA}"); }
+        }
 
         public void EnviarCorreo(EnvioCorreo correo)
         {
@@ -114,6 +149,8 @@ namespace Fimel.Utils
                     SubjectEncoding = Encoding.UTF8,
                     Body = correo.CuerpoCorreo ?? string.Empty
                 };
+
+                AgregarResponderA(mail, correo.ResponderA);
 
                 // To
                 if (correo.Destinatarios != null)
@@ -168,7 +205,8 @@ namespace Fimel.Utils
             }
         }
 
-        public void EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)> inlineImages, string remitente)
+        public void EnviarCorreo(EnvioCorreo correo, List<(string Path, string ContentId, string Mime)> inlineImages, string remitente,
+            List<(byte[] Bytes, string FileName, string Mime)>? adjuntos = null)
         {
             try
             {
@@ -184,8 +222,10 @@ namespace Fimel.Utils
                 smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
                 smtpClient.EnableSsl = false;
 
-                if (string.IsNullOrEmpty(remitente))
-                    remitente = config["SMTP_Config:Display_Name"];
+                // El nombre visible es siempre el genérico de la casilla ("FIMEL (No responder)"): antes se
+                // mostraba el del profesional/institución y los pacientes creían que le escribían a él.
+                // Las respuestas igual le llegan al profesional vía Reply-To (correo.ResponderA).
+                remitente = config["SMTP_Config:Display_Name"];
 
                 using var mail = new MailMessage
                 {
@@ -195,6 +235,8 @@ namespace Fimel.Utils
                     BodyEncoding = Encoding.UTF8,
                     SubjectEncoding = Encoding.UTF8
                 };
+
+                AgregarResponderA(mail, correo.ResponderA);
 
                 // To
                 if (correo.Destinatarios != null)
@@ -237,6 +279,16 @@ namespace Fimel.Utils
                     }
 
                     mail.AlternateViews.Add(htmlView);
+                }
+
+                // Adjuntos (ej: PDF de receta/orden de exámenes)
+                if (adjuntos != null)
+                {
+                    foreach (var adj in adjuntos)
+                    {
+                        var attachmentStream = new MemoryStream(adj.Bytes);
+                        mail.Attachments.Add(new Attachment(attachmentStream, adj.FileName, adj.Mime));
+                    }
                 }
 
                 smtpClient.Send(mail);

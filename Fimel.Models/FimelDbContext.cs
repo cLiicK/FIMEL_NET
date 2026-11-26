@@ -26,6 +26,7 @@ namespace Fimel.Models
         public DbSet<Config> Config { get; set; }
         public DbSet<HorarioAtencion> HorariosAtencion { get; set; }
         public DbSet<HorarioEspecifico> HorariosEspecificos { get; set; }
+        public DbSet<HorarioBloqueado> HorariosBloqueados { get; set; }
         public DbSet<Cita> Citas { get; set; }
         public DbSet<ConfiguracionUsuario> ConfiguracionesUsuario { get; set; }
         public DbSet<PlantillaConsulta> PlantillasConsulta { get; set; }
@@ -44,6 +45,10 @@ namespace Fimel.Models
         public DbSet<ModuloPerfil> ModuloPerfil { get; set; }
         public DbSet<UsuarioPerfil> UsuarioPerfil { get; set; }
         public DbSet<TipoConsulta> TiposConsulta { get; set; }
+        public DbSet<PlanSuscripcion> PlanesSuscripcion { get; set; }
+        public DbSet<SuscripcionUsuario> SuscripcionesUsuario { get; set; }
+        public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
+        public DbSet<ConsentimientoFirma> ConsentimientosFirma { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Consultas>().ToTable("Consultas");
@@ -68,7 +73,10 @@ namespace Fimel.Models
             modelBuilder.Entity<Config>().ToTable("Config", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<HorarioAtencion>().ToTable("HorariosAtencion", t => t.ExcludeFromMigrations());
             modelBuilder.Entity<HorarioEspecifico>().ToTable("HorariosEspecificos");
+            modelBuilder.Entity<HorarioBloqueado>().ToTable("HorariosBloqueados");
             modelBuilder.Entity<Cita>().ToTable("Citas");
+            // Link público de la videoconsulta del paciente: se busca por token
+            modelBuilder.Entity<Cita>().HasIndex(x => x.VideoToken).IsUnique().HasFilter("[VideoToken] IS NOT NULL");
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario");
             modelBuilder.Entity<PlantillaConsulta>().ToTable("PlantillasConsulta");
             modelBuilder.Entity<ExamenPaciente>().ToTable("ExamenesPaciente");
@@ -113,6 +121,30 @@ namespace Fimel.Models
                 .HasPrincipalKey(p => p.Id);
 
             modelBuilder.Entity<TipoConsulta>().ToTable("TipoConsulta");
+
+            modelBuilder.Entity<PlanSuscripcion>().ToTable("PlanesSuscripcion");
+            modelBuilder.Entity<PlanSuscripcion>().Property(p => p.CodigoFlow).HasMaxLength(100);
+            modelBuilder.Entity<PlanSuscripcion>().HasIndex(p => p.CodigoFlow).IsUnique();
+
+            modelBuilder.Entity<SuscripcionUsuario>().ToTable("SuscripcionesUsuario");
+            modelBuilder.Entity<SuscripcionUsuario>().Property(s => s.Estado).HasMaxLength(20);
+            modelBuilder.Entity<SuscripcionUsuario>().Property(s => s.FlowCustomerId).HasMaxLength(100);
+            modelBuilder.Entity<SuscripcionUsuario>().Property(s => s.FlowSubscriptionId).HasMaxLength(100);
+            modelBuilder.Entity<SuscripcionUsuario>().HasIndex(s => s.IdUsuario);
+            modelBuilder.Entity<SuscripcionUsuario>().HasIndex(s => s.FlowCustomerId);
+
+            modelBuilder.Entity<PagoSuscripcion>().ToTable("PagosSuscripcion");
+            modelBuilder.Entity<PagoSuscripcion>().HasIndex(p => p.FlowInvoiceId).IsUnique();
+
+            modelBuilder.Entity<ConsentimientoFirma>().ToTable("ConsentimientosFirma");
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.Token).HasMaxLength(64);
+            modelBuilder.Entity<ConsentimientoFirma>().HasIndex(c => c.Token).IsUnique();
+            modelBuilder.Entity<ConsentimientoFirma>().HasIndex(c => c.IdPaciente);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.TipoConsentimiento).HasMaxLength(40);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.Estado).HasMaxLength(20);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.TipoFirmante).HasMaxLength(20);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.IpFirma).HasMaxLength(64);
+            modelBuilder.Entity<ConsentimientoFirma>().Property(c => c.HashDocumento).HasMaxLength(64);
         }
     }
 }

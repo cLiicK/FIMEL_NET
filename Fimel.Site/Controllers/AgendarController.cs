@@ -1,4 +1,4 @@
-using Fimel.Models;
+﻿using Fimel.Models;
 using Fimel.Models.Integraciones;
 using Fimel.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +8,13 @@ namespace Fimel.Site.Controllers
     public class AgendarController : Controller
     {
         private readonly APIClient _api;
-        public AgendarController(IConfiguration config) => _api = new APIClient(config["API_URL"]);
+        private readonly string? _urlSitio;
+
+        public AgendarController(IConfiguration config)
+        {
+            _api = new APIClient(config["API_URL"]);
+            _urlSitio = config["URL_SITIO"];
+        }
 
         private static readonly Dictionary<string, DayOfWeek> _diasSemana = new()
         {
@@ -33,6 +39,7 @@ namespace Fimel.Site.Controllers
                 cfg.Usuario.Institucion = _api.Get<Instituciones>($"Instituciones/{cfg.Usuario.IdInstitucion}");
 
             ViewBag.Token = token;
+            // ViewBag.VideoconsultaHabilitada = Fimel.Site.Services.VideoconsultaSite.Habilitada(_api); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
             return View(cfg);
         }
 
@@ -58,6 +65,7 @@ namespace Fimel.Site.Controllers
 
                 var horariosSemanales = _api.Get<List<HorarioAtencion>>($"HorariosAtencion/GetByUser/{userId}") ?? new();
                 var horariosEspecificos = _api.Get<List<HorarioEspecifico>>($"HorariosEspecificos/GetByUser/{userId}") ?? new();
+                var horariosBloqueados = _api.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{userId}") ?? new();
                 var citas = _api.Get<List<Cita>>($"Citas/GetByCriteria", new
                 {
                     FechaInicio = desde,
@@ -92,7 +100,10 @@ namespace Fimel.Site.Controllers
                             if (dtInicio > maxPermitido) continue;
 
                             bool ocupado = citas.Any(c => c.FechaHoraInicio < dtFin && c.FechaHoraFinal > dtInicio);
-                            if (!ocupado)
+                            bool bloqueado = horariosBloqueados.Any(b =>
+                                b.FechaBloqueo.Date == fecha && b.HoraInicio < (t + duracion) && b.HoraFin > t);
+
+                            if (!ocupado && !bloqueado)
                                 slots.Add(new
                                 {
                                     fecha = fecha.ToString("yyyy-MM-dd"),
@@ -152,7 +163,8 @@ namespace Fimel.Site.Controllers
             [FromForm] string? apellidoPaciente, [FromForm] string? segundoApellidoPaciente,
             [FromForm] string? tipoDocumento, [FromForm] string? numeroDocumento,
             [FromForm] string correo, [FromForm] string? telefono, [FromForm] string? nota,
-            [FromForm] DateTime fechaHoraInicio, [FromForm] DateTime fechaHoraFin)
+            [FromForm] DateTime fechaHoraInicio, [FromForm] DateTime fechaHoraFin,
+            [FromForm] bool esVideoconsulta = false)
         {
             try
             {
@@ -178,6 +190,18 @@ namespace Fimel.Site.Controllers
                 if (citasExistentes.Count > 0)
                     return Json(new { ok = false, error = "Este horario ya no está disponible. Por favor elige otro." });
 
+                // Revalidación server-side: no confiar solo en que el frontend filtró
+                // correctamente los horarios bloqueados en ObtenerDisponibilidad.
+                var horariosBloqueados = _api.Get<List<HorarioBloqueado>>($"HorariosBloqueados/GetByUser/{cfg.Usuario.Id}") ?? new();
+
+                bool bloqueado = horariosBloqueados.Any(b =>
+                    b.FechaBloqueo.Date == fechaHoraInicio.Date &&
+                    b.HoraInicio < fechaHoraFin.TimeOfDay &&
+                    b.HoraFin > fechaHoraInicio.TimeOfDay);
+
+                if (bloqueado)
+                    return Json(new { ok = false, error = "Este horario ya no está disponible. Por favor elige otro." });
+
                 Usuarios? profesional = _api.Get<Usuarios>($"Usuarios/{cfg.Usuario.Id}");
                 if (profesional == null)
                     return Json(new { ok = false, error = "Error interno." });
@@ -194,6 +218,10 @@ namespace Fimel.Site.Controllers
                     CorreoPaciente = correo,
                     Telefono = telefono,
                     Nota = nota,
+                    // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                    // // Solo si la videoconsulta está habilitada (el checkbox no se muestra si no)
+                    // EsVideoconsulta = esVideoconsulta && Fimel.Site.Services.VideoconsultaSite.Habilitada(_api),
+                    EsVideoconsulta = false,
                     Usuario = profesional
                 };
 
@@ -272,13 +300,18 @@ namespace Fimel.Site.Controllers
                 .Replace("{{profesional}}", nombreProfesional)
                 .Replace("{{fecha_cita}}", fechaCita)
                 .Replace("{{hora_cita}}", horaCita)
-                .Replace("{{direccion}}", direccion);
+                // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar (y quitar las 2 líneas de abajo)
+                // .Replace("{{direccion}}", Fimel.Site.Services.VideoconsultaSite.Ubicacion(cita, direccion))
+                // .Replace("{{bloque_videoconsulta}}", Fimel.Site.Services.VideoconsultaSite.BloqueCorreo(cita, _urlSitio));
+                .Replace("{{direccion}}", direccion)
+                .Replace("{{bloque_videoconsulta}}", string.Empty);
 
             var correo = new EnvioCorreo
             {
                 Destinatarios = new List<string> { cita.CorreoPaciente },
                 Asunto = $"Confirmación de Cita — {cita.FechaHoraInicio:dd/MM/yyyy}",
-                CuerpoCorreo = html
+                CuerpoCorreo = html,
+                ResponderA = profesional.Email
             };
 
             var imagenes = new List<(string, string, string)>
@@ -286,7 +319,7 @@ namespace Fimel.Site.Controllers
                 (rutaLogo, "logoImage", "image/png")
             };
 
-            new Utileria().EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno}");
+            new Utileria().EnviarCorreo(correo, imagenes, $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno} vía FIMEL");
         }
 
         private void CrearOActualizarPacienteDesde(Cita cita, int idUsuario)
@@ -380,6 +413,8 @@ namespace Fimel.Site.Controllers
             var correo = new EnvioCorreo
             {
                 Destinatarios = new List<string> { profesional.Email },
+                // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                // Asunto = $"Nueva {(cita.EsVideoconsulta ? "videoconsulta" : "cita")} agendada — {cita.FechaHoraInicio:dd/MM/yyyy HH:mm}",
                 Asunto = $"Nueva cita agendada — {cita.FechaHoraInicio:dd/MM/yyyy HH:mm}",
                 CuerpoCorreo = html
             };

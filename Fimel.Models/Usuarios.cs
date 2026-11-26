@@ -18,6 +18,8 @@ namespace Fimel.Models
         public string? RequiereCambioClave { get; set; }
         public int IdPerfil { get; set; }
         public int? IdInstitucion { get; set; }
+        public int? Rut { get; set; }
+        public string? Dv { get; set; }
 
         public Perfiles? Perfil { get; set; }
 

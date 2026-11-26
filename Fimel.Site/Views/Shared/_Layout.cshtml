@@ -1,5 +1,6 @@
 ﻿@using Fimel.Utils
 @using System.Text.Json
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 <!DOCTYPE html>
 
 @{
@@ -25,10 +26,12 @@
     }
 }
 
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Language" content="es">
+    <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Fimel</title>
     <meta name="description" content="Fimel">
@@ -43,7 +46,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/locales/es.js"></script>
 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
@@ -86,6 +89,12 @@
                         <a class="nav-link" href="@Url.Action("Configuracion", "Usuario")">
                             <span>Configuración <i class="fas fa-cog"></i></span>
                         </a>
+                        @if (Configuration.GetValue<bool>("Suscripcion:Habilitada"))
+                        {
+                            <a class="nav-link" href="@Url.Action("Index", "Suscripcion")">
+                                <span>Mi suscripción <i class="fas fa-credit-card"></i></span>
+                            </a>
+                        }
                         <a class="dropdown-item" href="@Url.Action("Login", "Login")">Cerrar sesión <i class="fas fa-right-from-bracket"></i></a>
                     </div>
                 </div>
