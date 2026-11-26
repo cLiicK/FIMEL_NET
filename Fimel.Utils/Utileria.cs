@@ -30,7 +30,11 @@ namespace Fimel.Utils
 {
     public class Utileria
     {
-        private static IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        // appsettings.Secrets.json (opcional, solo en el servidor) sobrescribe valores sensibles como SMTP_Config:Contrasena
+        private static IConfiguration config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Secrets.json", optional: true)
+            .Build();
         private static readonly APIClient APIBase = new APIClient(config["API_URL"]);
         public static readonly string SeparadorMiles = "#,##0";
 
@@ -214,8 +218,10 @@ namespace Fimel.Utils
                 smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
                 smtpClient.EnableSsl = false;
 
-                if (string.IsNullOrEmpty(remitente))
-                    remitente = config["SMTP_Config:Display_Name"];
+                // El nombre visible es siempre el genérico de la casilla ("FIMEL (No responder)"): antes se
+                // mostraba el del profesional/institución y los pacientes creían que le escribían a él.
+                // Las respuestas igual le llegan al profesional vía Reply-To (correo.ResponderA).
+                remitente = config["SMTP_Config:Display_Name"];
 
                 using var mail = new MailMessage
                 {
