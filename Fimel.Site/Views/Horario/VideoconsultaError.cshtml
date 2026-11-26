@@ -1,0 +1,13 @@
+@model string
+@{
+    ViewData["Title"] = "Videoconsulta";
+}
+<div class="container" style="margin-top: 40px; max-width: 560px;">
+    <div class="card shadow-sm">
+        <div class="card-body text-center">
+            <h5 class="card-title">Videoconsulta</h5>
+            <p class="mb-3">@Model</p>
+            <a class="btn btn-blue" href="@Url.Action("MiHorario", "Horario")">Volver a la agenda</a>
+        </div>
+    </div>
+</div>

@@ -21,6 +21,11 @@ namespace Fimel.Utils
         private static string? AccessToken { get; set; }
         public static string ApiVersion { get; private set; } = "v23.0";
         public static string PlantillaRecordatorioCita { get; private set; } = "recordatorio_cita";
+        /// <summary>
+        /// Opcional: plantilla para videoconsultas (igual a la de recordatorio + 3er botón de URL con el link de la sala).
+        /// Requiere crearla y aprobarla en Meta; mientras esté vacía se usa PlantillaRecordatorioCita.
+        /// </summary>
+        public static string? PlantillaRecordatorioVideoconsulta { get; private set; }
         public static string Idioma { get; private set; } = "es";
 
         /// <summary>Se llama una vez al arrancar (Program.cs), con la configuración que ya incluye appsettings.Secrets.json.</summary>
@@ -32,6 +37,7 @@ namespace Fimel.Utils
             if (!string.IsNullOrWhiteSpace(s["ApiVersion"])) ApiVersion = s["ApiVersion"]!;
             if (!string.IsNullOrWhiteSpace(s["PlantillaRecordatorioCita"])) PlantillaRecordatorioCita = s["PlantillaRecordatorioCita"]!;
             if (!string.IsNullOrWhiteSpace(s["Idioma"])) Idioma = s["Idioma"]!;
+            PlantillaRecordatorioVideoconsulta = string.IsNullOrWhiteSpace(s["PlantillaRecordatorioVideoconsulta"]) ? null : s["PlantillaRecordatorioVideoconsulta"];
             Habilitado = bool.TryParse(s["Habilitado"], out bool h) && h
                          && !string.IsNullOrWhiteSpace(PhoneNumberId) && !string.IsNullOrWhiteSpace(AccessToken);
         }

@@ -8,7 +8,13 @@ namespace Fimel.Site.Controllers
     public class AgendarController : Controller
     {
         private readonly APIClient _api;
-        public AgendarController(IConfiguration config) => _api = new APIClient(config["API_URL"]);
+        private readonly string? _urlSitio;
+
+        public AgendarController(IConfiguration config)
+        {
+            _api = new APIClient(config["API_URL"]);
+            _urlSitio = config["URL_SITIO"];
+        }
 
         private static readonly Dictionary<string, DayOfWeek> _diasSemana = new()
         {
@@ -33,6 +39,7 @@ namespace Fimel.Site.Controllers
                 cfg.Usuario.Institucion = _api.Get<Instituciones>($"Instituciones/{cfg.Usuario.IdInstitucion}");
 
             ViewBag.Token = token;
+            // ViewBag.VideoconsultaHabilitada = Fimel.Site.Services.VideoconsultaSite.Habilitada(_api); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
             return View(cfg);
         }
 
@@ -156,7 +163,8 @@ namespace Fimel.Site.Controllers
             [FromForm] string? apellidoPaciente, [FromForm] string? segundoApellidoPaciente,
             [FromForm] string? tipoDocumento, [FromForm] string? numeroDocumento,
             [FromForm] string correo, [FromForm] string? telefono, [FromForm] string? nota,
-            [FromForm] DateTime fechaHoraInicio, [FromForm] DateTime fechaHoraFin)
+            [FromForm] DateTime fechaHoraInicio, [FromForm] DateTime fechaHoraFin,
+            [FromForm] bool esVideoconsulta = false)
         {
             try
             {
@@ -210,6 +218,10 @@ namespace Fimel.Site.Controllers
                     CorreoPaciente = correo,
                     Telefono = telefono,
                     Nota = nota,
+                    // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                    // // Solo si la videoconsulta está habilitada (el checkbox no se muestra si no)
+                    // EsVideoconsulta = esVideoconsulta && Fimel.Site.Services.VideoconsultaSite.Habilitada(_api),
+                    EsVideoconsulta = false,
                     Usuario = profesional
                 };
 
@@ -288,7 +300,11 @@ namespace Fimel.Site.Controllers
                 .Replace("{{profesional}}", nombreProfesional)
                 .Replace("{{fecha_cita}}", fechaCita)
                 .Replace("{{hora_cita}}", horaCita)
-                .Replace("{{direccion}}", direccion);
+                // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar (y quitar las 2 líneas de abajo)
+                // .Replace("{{direccion}}", Fimel.Site.Services.VideoconsultaSite.Ubicacion(cita, direccion))
+                // .Replace("{{bloque_videoconsulta}}", Fimel.Site.Services.VideoconsultaSite.BloqueCorreo(cita, _urlSitio));
+                .Replace("{{direccion}}", direccion)
+                .Replace("{{bloque_videoconsulta}}", string.Empty);
 
             var correo = new EnvioCorreo
             {
@@ -397,6 +413,8 @@ namespace Fimel.Site.Controllers
             var correo = new EnvioCorreo
             {
                 Destinatarios = new List<string> { profesional.Email },
+                // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                // Asunto = $"Nueva {(cita.EsVideoconsulta ? "videoconsulta" : "cita")} agendada — {cita.FechaHoraInicio:dd/MM/yyyy HH:mm}",
                 Asunto = $"Nueva cita agendada — {cita.FechaHoraInicio:dd/MM/yyyy HH:mm}",
                 CuerpoCorreo = html
             };

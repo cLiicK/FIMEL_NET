@@ -7,7 +7,12 @@ namespace Fimel.Site.Services
     public class RecordatorioCitaBackgroundService : BackgroundService
     {
         private readonly ILogger<RecordatorioCitaBackgroundService> _logger;
-        private static readonly IConfiguration _config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        // Con el overlay del entorno (appsettings.Testing.json / Production.json): sin él API_URL y URL_SITIO quedaban
+        // en localhost en el servidor y los links de los correos (confirmar/anular/videoconsulta) no servían.
+        private static readonly IConfiguration _config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
+            .Build();
         private static readonly APIClient _apiClient = new APIClient(_config["API_URL"]);
 
         private const int HoraEjecucion = 8;
@@ -121,7 +126,11 @@ namespace Fimel.Site.Services
                     .Replace("{{profesional}}", nombreProfesional)
                     .Replace("{{fecha_cita}}", fechaCita)
                     .Replace("{{hora_cita}}", horaCita)
+                    // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar (y quitar las 2 líneas de abajo)
+                    // .Replace("{{direccion}}", VideoconsultaSite.Ubicacion(cita, direccion))
+                    // .Replace("{{bloque_videoconsulta}}", VideoconsultaSite.BloqueCorreo(cita, _config["URL_SITIO"]))
                     .Replace("{{direccion}}", direccion)
+                    .Replace("{{bloque_videoconsulta}}", string.Empty)
                     .Replace("{{bloque_acciones}}", BloqueAcciones(cita, logger));
 
                 string logoEfectivo = logoPath;
@@ -184,22 +193,43 @@ namespace Fimel.Site.Services
                 ? $"Mat. {profesional.Nombres} {profesional.ApellidoPaterno}".Trim()
                 : "tu profesional";
 
+            var botones = new List<string>
+            {
+                EnlacesCita.SufijoWhatsApp(cita.Id, EnlacesCita.Confirmar, cita.FechaHoraInicio),
+                EnlacesCita.SufijoWhatsApp(cita.Id, EnlacesCita.Anular, cita.FechaHoraInicio)
+            };
+
+            // Videoconsulta: la plantilla actual (recordatorio_cita) no tiene botón para el link de la sala y Meta rechaza
+            // parámetros de más, así que con ella solo se cambia el texto de la ubicación. Para mandar el link hay que
+            // crear y aprobar en Meta una plantilla nueva igual a la actual más un 3er botón de URL
+            // "{URL_SITIO}/Videoconsulta/Sala/{{1}}" y configurarla en WhatsApp:PlantillaRecordatorioVideoconsulta;
+            // entonces se usa esa plantilla y el token de la sala va como sufijo del 3er botón.
+            string plantilla = WhatsAppCloud.PlantillaRecordatorioCita;
+            string ubicacion = profesional?.Institucion?.Dirección ?? "la consulta";
+            // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+            // if (cita.EsVideoconsulta)
+            // {
+            //     ubicacion = "videoconsulta (el link está en tu correo)";
+            //     if (!string.IsNullOrWhiteSpace(WhatsAppCloud.PlantillaRecordatorioVideoconsulta) && !string.IsNullOrWhiteSpace(cita.VideoToken))
+            //     {
+            //         plantilla = WhatsAppCloud.PlantillaRecordatorioVideoconsulta!;
+            //         ubicacion = "videoconsulta";
+            //         botones.Add(cita.VideoToken!);
+            //     }
+            // }
+
             var (ok, detalle) = await WhatsAppCloud.EnviarPlantillaAsync(
                 telefono,
-                WhatsAppCloud.PlantillaRecordatorioCita,
+                plantilla,
                 new[]
                 {
                     cita.NombrePaciente,
                     nombreProfesional,
                     cita.FechaHoraInicio.ToString("dddd dd 'de' MMMM", culture),
                     cita.FechaHoraInicio.ToString("HH:mm"),
-                    profesional?.Institucion?.Dirección ?? "la consulta"
+                    ubicacion
                 },
-                new[]
-                {
-                    EnlacesCita.SufijoWhatsApp(cita.Id, EnlacesCita.Confirmar, cita.FechaHoraInicio),
-                    EnlacesCita.SufijoWhatsApp(cita.Id, EnlacesCita.Anular, cita.FechaHoraInicio)
-                });
+                botones);
 
             if (ok) logger.LogInformation("Cita {Id}: recordatorio WhatsApp enviado a {Telefono} ({Wamid}).", cita.Id, telefono, detalle);
             else logger.LogError("Cita {Id}: error al enviar WhatsApp a {Telefono}: {Error}", cita.Id, telefono, detalle);

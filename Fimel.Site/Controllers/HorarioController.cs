@@ -13,7 +13,13 @@ namespace Fimel.Site.Controllers
     public class HorarioController : Controller
     {
         private readonly APIClient APIBase;
-        public HorarioController(IConfiguration config) => APIBase = new APIClient(config["API_URL"]);
+        private readonly string? urlSitio;
+
+        public HorarioController(IConfiguration config)
+        {
+            APIBase = new APIClient(config["API_URL"]);
+            urlSitio = config["URL_SITIO"];
+        }
 
         public IActionResult MiHorario()
         {
@@ -59,6 +65,7 @@ namespace Fimel.Site.Controllers
 
             // Pasar el perfil del usuario a la vista
             ViewBag.EsEspecialista = usuario.TienePerfil(EnumPerfiles.Especialista);
+            // ViewBag.VideoconsultaHabilitada = Fimel.Site.Services.VideoconsultaSite.Habilitada(APIBase); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
 
             HttpContext.Session.SetString("HorarioUser", JsonSerializer.Serialize(vm.HorariosAtencion));
 
@@ -92,9 +99,13 @@ namespace Fimel.Site.Controllers
                 bool confirmada = cita.EstadoConfirmacion == "Confirmada";
                 string color = confirmada ? "#4CAF7D" : "#75BDE0";
 
+                // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar (ícono 🎥 en el calendario)
+                // string titulo = (confirmada ? "✓ " : "") + (cita.EsVideoconsulta ? "🎥 " : "") + cita.NombrePaciente;
+                string titulo = (confirmada ? "✓ " : "") + cita.NombrePaciente;
+
                 jsonEventos.Add(new
                 {
-                    title = confirmada ? $"✓ {cita.NombrePaciente}" : cita.NombrePaciente,
+                    title = titulo,
                     start = cita.FechaHoraInicio.ToString("yyyy-MM-dd HH:mm:ss"),
                     end = cita.FechaHoraFinal.ToString("yyyy-MM-dd HH:mm:ss"),
                     backgroundColor = color,
@@ -103,6 +114,7 @@ namespace Fimel.Site.Controllers
                     {
                         idCita = cita.Id,
                         confirmada,
+                        esVideoconsulta = cita.EsVideoconsulta,
                         nombre = cita.NombrePaciente,
                         apellidoPaterno = cita.ApellidoPaciente,
                         apellidoMaterno = cita.SegundoApellidoPaciente,
@@ -373,6 +385,74 @@ namespace Fimel.Site.Controllers
             }
         }
 
+        /// <summary>
+        /// Vista del profesional para atender una videoconsulta: la llamada embebida (con token de dueño) y accesos
+        /// a la ficha del paciente y a nueva consulta, que se abren en otra pestaña para no cortar la llamada.
+        /// </summary>
+        [HttpGet]
+        public IActionResult Videoconsulta(int id)
+        {
+            Usuarios usuario = new Utileria().ObtenerSesion(HttpContext.Session.GetString("UsuarioConectado"));
+            if (usuario == null) return RedirectToAction("Index", "Login");
+
+            try
+            {
+                Cita? cita = APIBase.Get<Cita>($"Citas/{id}");
+                if (cita == null)
+                    return View("VideoconsultaError", "La cita no existe o fue anulada.");
+
+                // Solo el profesional de la cita entra con el token de dueño de la sala
+                if (cita.Usuario?.Id != usuario.Id)
+                    return View("VideoconsultaError", "Solo el profesional de la cita puede iniciar la videoconsulta.");
+
+                if (!cita.EsVideoconsulta)
+                    return View("VideoconsultaError", "Esta cita no está marcada como videoconsulta. Modifícala en la agenda y marca \"Videoconsulta\".");
+
+                if (string.IsNullOrWhiteSpace(cita.VideoUrlProfesional))
+                {
+                    Cita? conSala = APIBase.Put<Cita>($"Citas/{id}/AsegurarSalaVideo", new Cita());
+                    if (conSala != null) cita.VideoUrlProfesional = conSala.VideoUrlProfesional;
+                }
+
+                if (usuario.IdInstitucion.HasValue && cita.Usuario != null)
+                    cita.Usuario.Institucion = APIBase.Get<Instituciones>($"Instituciones/{usuario.IdInstitucion.Value}");
+
+                var vm = Fimel.Site.Services.VideoconsultaSite.ArmarVM(cita, cita.VideoUrlProfesional);
+                ArmarEnlacesPaciente(vm, cita);
+                ViewBag.VideoconsultaHabilitada = Fimel.Site.Services.VideoconsultaSite.Habilitada(APIBase);
+
+                return View(vm);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error Horario Videoconsulta: {ex}");
+                return View("VideoconsultaError", "No se pudo cargar la videoconsulta. Intenta nuevamente.");
+            }
+        }
+
+        /// <summary>Links a la ficha y a nueva consulta, con los mismos parámetros que usa "Iniciar Cita" en la agenda.</summary>
+        private void ArmarEnlacesPaciente(Fimel.Site.ViewModels.VideoconsultaVM vm, Cita cita)
+        {
+            if (string.IsNullOrWhiteSpace(cita.NumeroDocumento)) return;
+
+            Pacientes? paciente = null;
+            if (cita.TipoDocumento == "RUT" && int.TryParse(cita.NumeroDocumento, out int rut))
+            {
+                string rutFormateado = Utileria.FormatearRutSinDv(rut); // "12.345.678-9" (incluye el DV)
+                vm.UrlFichaPaciente = Url.Action("FichaPaciente", "Pacientes", new { p = rutFormateado });
+                vm.UrlNuevaConsulta = Url.Action("NuevaConsulta", "Consulta", new { rut = rutFormateado });
+                try { paciente = APIBase.Get<Pacientes>($"Pacientes/GetByRut/{rut}"); } catch { }
+            }
+            else
+            {
+                vm.UrlFichaPaciente = Url.Action("FichaPaciente", "Pacientes", new { numDoc = cita.NumeroDocumento, tipo = cita.TipoDocumento });
+                vm.UrlNuevaConsulta = Url.Action("NuevaConsulta", "Consulta", new { numDoc = cita.NumeroDocumento, tipo = cita.TipoDocumento });
+                try { paciente = APIBase.Get<Pacientes>($"Pacientes/GetByNumeroDocumento/{Uri.EscapeDataString(cita.NumeroDocumento)}"); } catch { }
+            }
+
+            vm.PacienteRegistrado = paciente != null && paciente.Id > 0;
+        }
+
         public ActionResult _EliminarCita(int id)
         {
             try
@@ -537,6 +617,8 @@ namespace Fimel.Site.Controllers
             var correo = new EnvioCorreo
             {
                 Destinatarios = new List<string> { profesional.Email },
+                // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                // Asunto = $"Nueva {(cita.EsVideoconsulta ? "videoconsulta" : "cita")} agendada — {cita.FechaHoraInicio:dd/MM/yyyy HH:mm}",
                 Asunto = $"Nueva cita agendada — {cita.FechaHoraInicio:dd/MM/yyyy HH:mm}",
                 CuerpoCorreo = html
             };
@@ -578,7 +660,11 @@ namespace Fimel.Site.Controllers
                     ["{{profesional}}"] = nombreProfesional,
                     ["{{fecha_cita}}"] = fechaCita,
                     ["{{hora_cita}}"] = horaCita,
+                    // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar (y quitar las 2 líneas de abajo)
+                    // ["{{direccion}}"] = Fimel.Site.Services.VideoconsultaSite.Ubicacion(cita, direccionInstitucion),
+                    // ["{{bloque_videoconsulta}}"] = Fimel.Site.Services.VideoconsultaSite.BloqueCorreo(cita, urlSitio),
                     ["{{direccion}}"] = direccionInstitucion,
+                    ["{{bloque_videoconsulta}}"] = string.Empty,
                 };
 
                 foreach (var kv in dataHtml)
@@ -751,6 +837,8 @@ namespace Fimel.Site.Controllers
 
                 // Guardar el ID del usuario seleccionado en la sesión para usar en las operaciones
                 HttpContext.Session.SetString("UsuarioSeleccionado", idUsuario.ToString());
+
+                // ViewBag.VideoconsultaHabilitada = Fimel.Site.Services.VideoconsultaSite.Habilitada(APIBase); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
 
                 return PartialView("_PartialContenedorAgenda", vm);
             }

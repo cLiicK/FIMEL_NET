@@ -75,6 +75,8 @@ namespace Fimel.Models
             modelBuilder.Entity<HorarioEspecifico>().ToTable("HorariosEspecificos");
             modelBuilder.Entity<HorarioBloqueado>().ToTable("HorariosBloqueados");
             modelBuilder.Entity<Cita>().ToTable("Citas");
+            // Link público de la videoconsulta del paciente: se busca por token
+            modelBuilder.Entity<Cita>().HasIndex(x => x.VideoToken).IsUnique().HasFilter("[VideoToken] IS NOT NULL");
             modelBuilder.Entity<ConfiguracionUsuario>().ToTable("ConfiguracionesUsuario");
             modelBuilder.Entity<PlantillaConsulta>().ToTable("PlantillasConsulta");
             modelBuilder.Entity<ExamenPaciente>().ToTable("ExamenesPaciente");

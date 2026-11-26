@@ -161,6 +161,7 @@ var ModuloHorarioCita = (function () {
                 $('#correoCitaNuevo').val('');
                 $('#telefonoCitaNuevo').val('');
                 $('#notaCitaNuevo').val('');
+                // $('#chkVideoconsultaNuevo').prop('checked', false); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
             });
 
             $('#selectProfesional').off('change').on('change', function () {
@@ -404,14 +405,21 @@ var ModuloHorarioCita = (function () {
                     $('#notaCita').val(info.event.extendedProps.nota);
                     $('#idCitaModal').val(info.event.extendedProps.idCita);
 
+                    // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                    // // Videoconsulta: el switch se muestra si está habilitada en el servidor o si la cita ya lo era (para poder quitarlo)
+                    // var esVideo = info.event.extendedProps.esVideoconsulta === true;
+                    // $('#chkVideoconsultaCita').prop('checked', esVideo);
+                    // $('#divVideoconsultaCita').toggleClass('d-none', !esVideo && $('#hdnVideoconsultaHabilitada').val() !== '1');
+
                     // Campos siempre deshabilitados al abrir
                     $('#fechaCita, #horaInicioCita, #horaTerminoCita, #tipoDocCita, #numDocCita').prop('disabled', true);
-                    $('#nombreCita, #apellidoPaternoCita, #apellidoMaternoCita, #correoCita, #telefonoCita, #notaCita').prop('disabled', true);
+                    $('#nombreCita, #apellidoPaternoCita, #apellidoMaternoCita, #correoCita, #telefonoCita, #notaCita, #chkVideoconsultaCita').prop('disabled', true);
 
                     $('#btnModificarCitaModal').show();
                     $('#btnGuardarModificacionCita').hide();
                     $('#btnCancelarModificacion').hide();
                     $('#btnIniciarCitaModal').show();
+                    // $('#btnIniciarVideoconsultaModal').toggle(esVideo); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
                     $('#btnEliminarCitaModal').show();
 
                     $('#modalEvento').modal('show');
@@ -971,6 +979,7 @@ var ModuloHorarioCita = (function () {
                 CorreoPaciente: $('#correoCitaNuevo').val(),
                 Telefono: $('#telefonoCitaNuevo').val(),
                 Nota: $('#notaCitaNuevo').val(),
+                // EsVideoconsulta: $('#chkVideoconsultaNuevo').is(':checked'), // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
             }
 
 
@@ -1200,8 +1209,10 @@ var ModuloHorarioCita = (function () {
             $('#correoCita').prop('disabled', false);
             $('#telefonoCita').prop('disabled', false);
             $('#notaCita').prop('disabled', false);
+            // $('#chkVideoconsultaCita').prop('disabled', false); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
 
             $('#btnModificarCitaModal').hide();
+            // $('#btnIniciarVideoconsultaModal').hide(); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
             $('#btnGuardarModificacionCita').show();
             $('#btnCancelarModificacion').show();
             $('#btnIniciarCitaModal').hide();
@@ -1210,13 +1221,21 @@ var ModuloHorarioCita = (function () {
 
         CancelarModificacion: function () {
             $('#fechaCita, #horaInicioCita, #horaTerminoCita, #tipoDocCita, #numDocCita').prop('disabled', true);
-            $('#nombreCita, #apellidoPaternoCita, #apellidoMaternoCita, #correoCita, #telefonoCita, #notaCita').prop('disabled', true);
+            $('#nombreCita, #apellidoPaternoCita, #apellidoMaternoCita, #correoCita, #telefonoCita, #notaCita, #chkVideoconsultaCita').prop('disabled', true);
 
             $('#btnModificarCitaModal').show();
             $('#btnGuardarModificacionCita').hide();
             $('#btnCancelarModificacion').hide();
             $('#btnIniciarCitaModal').show();
+            // $('#btnIniciarVideoconsultaModal').toggle($('#chkVideoconsultaCita').is(':checked')); // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
             $('#btnEliminarCitaModal').show();
+        },
+
+        // Abre la sala del profesional en otra pestaña (la agenda queda abierta)
+        IniciarVideoconsultaModal: function () {
+            var id = $('#idCitaModal').val();
+            if (!id) return;
+            window.open($('#hdnURL_Videoconsulta').val() + '/' + encodeURIComponent(id), '_blank');
         },
 
 
@@ -1268,6 +1287,7 @@ var ModuloHorarioCita = (function () {
                 CorreoPaciente: $('#correoCita').val(),
                 Telefono: $('#telefonoCita').val(),
                 Nota: $('#notaCita').val(),
+                // EsVideoconsulta: $('#chkVideoconsultaCita').is(':checked'), // VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
             }
 
             Swal.fire({

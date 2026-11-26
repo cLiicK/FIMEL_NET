@@ -1,6 +1,11 @@
 ﻿<input type="hidden" id="hdnURL_EliminarCitaModal" value="@Url.Action("_EliminarCita","Horario")" />
 <input type="hidden" id="hdnURL_CrearCita" value="@Url.Action("_GuardarCita","Horario")" />
 <input type="hidden" id="hdnURL_ActualizarCitaConCorreo" value="@Url.Action("ActualizarCitaConCorreo","Horario")" />
+<input type="hidden" id="hdnURL_Videoconsulta" value="@Url.Action("Videoconsulta","Horario")" />
+@{
+    bool videoHabilitada = ViewBag.VideoconsultaHabilitada == true;
+}
+<input type="hidden" id="hdnVideoconsultaHabilitada" value="@(videoHabilitada ? "1" : "0")" />
 
 <div class="modal fade" id="modalEventoNuevo" tabindex="-1" aria-labelledby="modalEventoNuevoLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -43,6 +48,13 @@
                 <p><strong>Correo <span class="text-danger">*</span></strong> <input class="form-control" type="email" id="correoCitaNuevo" /></p>
                 <p><strong>Teléfono</strong> <input class="form-control" id="telefonoCitaNuevo" /></p>
                 <p><strong>Nota</strong> <input class="form-control" id="notaCitaNuevo" /></p>
+                @* VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                <div class="form-check form-switch @(videoHabilitada ? "" : "d-none")">
+                    <input class="form-check-input" type="checkbox" role="switch" id="chkVideoconsultaNuevo" />
+                    <label class="form-check-label fw-semibold" for="chkVideoconsultaNuevo">Videoconsulta</label>
+                    <div class="form-text">Se crea una sala de video y el paciente recibe el link en el correo de confirmación.</div>
+                </div>
+                *@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-blue" id="btnGuardarCitaModal" onclick="ModuloHorarioCita.GuardarCitaModal()">Guardar</button>
@@ -89,10 +101,19 @@
                 <p><strong>Correo</strong> <input class="form-control" id="correoCita" disabled /></p>
                 <p><strong>Teléfono</strong> <input class="form-control" id="telefonoCita" disabled /></p>
                 <p><strong>Nota</strong> <input class="form-control" id="notaCita" disabled /></p>
+                @* VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                <div class="form-check form-switch" id="divVideoconsultaCita">
+                    <input class="form-check-input" type="checkbox" role="switch" id="chkVideoconsultaCita" disabled />
+                    <label class="form-check-label fw-semibold" for="chkVideoconsultaCita">Videoconsulta</label>
+                </div>
+                *@
             </div>
             <div class="modal-footer">
                 @if (ViewBag.EsEspecialista == true)
                 {
+                    @* VIDEOCONSULTA OCULTA (2026-11) - descomentar para reactivar
+                    <button class="btn btn-info text-white" id="btnIniciarVideoconsultaModal" style="display: none;" onclick="ModuloHorarioCita.IniciarVideoconsultaModal()"><i class="fas fa-video me-1"></i> Iniciar videoconsulta</button>
+                    *@
                     <button class="btn btn-success" id="btnIniciarCitaModal" onclick="ModuloHorarioCita.IniciarCitaModal()">Iniciar Cita</button>
                 }
                 <button class="btn btn-warning" id="btnModificarCitaModal" onclick="ModuloHorarioCita.ModificarCitaModal()">Modificar</button>

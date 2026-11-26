@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Fimel.Api.Seguridad;
 using Fimel.Api.Services.Flow;
+using Fimel.Api.Services.Video;
 using Fimel.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,6 +53,21 @@ builder.Services.PostConfigure<FlowOptions>(o =>
     if (string.IsNullOrWhiteSpace(o.SecretKey)) o.SecretKey = builder.Configuration["FLOW_SECRET_KEY"];
 });
 builder.Services.AddHttpClient<FlowClient>();
+
+// Videoconsultas: el proveedor se elige por Videoconsulta:Proveedor. Para agregar otro (p.ej. "Whereby"),
+// implementar IVideoProveedor, registrarlo con AddHttpClient y sumarlo al switch.
+builder.Services.Configure<VideoconsultaOptions>(builder.Configuration.GetSection(VideoconsultaOptions.Seccion));
+builder.Services.AddHttpClient<DailyVideoProveedor>();
+builder.Services.AddScoped<IVideoProveedor>(sp =>
+{
+    var opciones = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<VideoconsultaOptions>>().Value;
+    if (!opciones.Habilitada) return new SinVideoProveedor();
+    return opciones.Proveedor?.Trim().ToLowerInvariant() switch
+    {
+        "daily" => sp.GetRequiredService<DailyVideoProveedor>(),
+        _ => new SinVideoProveedor()
+    };
+});
 
 var app = builder.Build();
 

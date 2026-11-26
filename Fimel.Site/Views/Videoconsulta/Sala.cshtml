@@ -1,0 +1,117 @@
+@model Fimel.Site.ViewModels.VideoconsultaVM
+@using Fimel.Site.ViewModels
+@{
+    Layout = null;
+    string logo = Model.LogoBase64 != null ? $"data:image/png;base64,{Model.LogoBase64}" : Url.Content("~/img/logo_fimel_correo.png");
+    bool abierta = Model.Estado == VideoconsultaVM.EstadoSala.Abierta;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex">
+    <title>Videoconsulta</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32x32.png">
+    <link rel="stylesheet" href="~/lib/bootstrap-5/css/bootstrap.min.css" type="text/css">
+    <style>
+        html, body { height: 100%; margin: 0; }
+        body { font-family: Arial, sans-serif; background: #f6f8fa; color: #1a2a3a; display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+        .barra { display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #fff; border-bottom: 3px solid #f78a8a; flex: 0 0 auto; }
+        .barra img { max-height: 36px; max-width: 110px; object-fit: contain; }
+        .barra .datos { font-size: 14px; line-height: 1.25; min-width: 0; }
+        .barra .datos strong { color: #0d86b3; }
+        .barra .datos span { display: block; color: #556; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .zona { position: relative; flex: 1 1 auto; min-height: 0; }
+        #contenedorVideo { position: absolute; inset: 0; background: #1a1a1a; }
+        .caja { max-width: 440px; margin: 8vh auto 0; background: #fff; border-radius: 12px; padding: 28px 24px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+        .caja .logo { max-width: 150px; max-height: 80px; margin-bottom: 16px; object-fit: contain; }
+        .caja h1 { font-size: 20px; color: #0d86b3; margin: 0 0 12px; }
+        .caja p { font-size: 15px; line-height: 1.5; margin: 6px 0; }
+        .caja .hora { font-size: 30px; font-weight: 700; color: #0d86b3; margin: 10px 0; }
+        .caja .nota { font-size: 13px; color: #7a8794; margin-top: 14px; }
+        .btn-fimel { background: #0d86b3; color: #fff; font-weight: 700; padding: 12px 20px; border-radius: 8px; border: 0; width: 100%; margin-top: 16px; }
+        .btn-fimel:hover { background: #0b7299; color: #fff; }
+        @@media (max-width: 480px) { .caja { margin: 4vh 12px 0; } }
+    </style>
+</head>
+<body>
+    <input type="hidden" id="hdnVideoEstado" value="@Model.Estado" />
+    <input type="hidden" id="hdnVideoUrlSala" value="@(abierta ? Model.UrlSala : "")" />
+    <input type="hidden" id="hdnVideoSegundosParaAbrir" value="@Model.SegundosParaAbrir" />
+    <input type="hidden" id="hdnVideoSegundosParaCerrar" value="@Model.SegundosParaCerrar" />
+
+    @if (abierta)
+    {
+        <div class="barra">
+            <img src="@logo" alt="@(Model.NombreInstitucion ?? "Fimel")">
+            <div class="datos">
+                <span><strong>Videoconsulta</strong> con @Model.NombreProfesional</span>
+                <span>@Model.Fecha · @Model.Hora</span>
+            </div>
+        </div>
+    }
+
+    <div class="zona">
+        @if (abierta)
+        {
+            <div id="contenedorVideo"></div>
+        }
+
+        @switch (Model.Estado)
+        {
+            case VideoconsultaVM.EstadoSala.Pendiente:
+                <div class="caja">
+                    <img class="logo" src="@logo" alt="@(Model.NombreInstitucion ?? "Fimel")">
+                    <h1>Tu videoconsulta</h1>
+                    <p><strong>Profesional:</strong> @Model.NombreProfesional</p>
+                    <p><strong>Fecha:</strong> @Model.Fecha</p>
+                    <p><strong>Hora:</strong> @Model.Hora</p>
+                    <p class="mt-3">La sala se abrirá a las</p>
+                    <div class="hora">@Model.HoraApertura</div>
+                    <p class="nota">Esta página se actualizará sola cuando la sala esté lista. Usa un celular o computador con cámara y micrófono, y una conexión estable.</p>
+                </div>
+                break;
+
+            case VideoconsultaVM.EstadoSala.SinSala:
+                <div class="caja">
+                    <img class="logo" src="@logo" alt="@(Model.NombreInstitucion ?? "Fimel")">
+                    <h1>Preparando la sala…</h1>
+                    <p>Tu videoconsulta con @Model.NombreProfesional aún no está disponible.</p>
+                    <p class="nota">Lo volveremos a intentar en un minuto. Si el problema continúa, comunícate con tu profesional.</p>
+                </div>
+                break;
+
+            case VideoconsultaVM.EstadoSala.Finalizada:
+                <div class="caja">
+                    <img class="logo" src="@logo" alt="@(Model.NombreInstitucion ?? "Fimel")">
+                    <h1>La videoconsulta finalizó</h1>
+                    <p>Tu videoconsulta con @Model.NombreProfesional del @Model.Fecha ya terminó.</p>
+                    <p class="nota">Si necesitas otra atención, comunícate con tu profesional.</p>
+                </div>
+                break;
+        }
+
+        <div id="panelVideoSalida" class="caja d-none">
+            <img class="logo" src="@logo" alt="@(Model.NombreInstitucion ?? "Fimel")">
+            <h1>Saliste de la videoconsulta</h1>
+            <p>Si fue un error, puedes volver a entrar mientras la sala siga abierta.</p>
+            <button type="button" class="btn btn-fimel" onclick="ModuloVideoconsulta.VolverAEntrar()">Volver a entrar</button>
+        </div>
+
+        <div id="panelVideoFinalizada" class="caja d-none">
+            <img class="logo" src="@logo" alt="@(Model.NombreInstitucion ?? "Fimel")">
+            <h1>La videoconsulta finalizó</h1>
+            <p>La sala se cerró. Gracias por atenderte con @Model.NombreProfesional.</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10" type="text/javascript"></script>
+    @if (abierta)
+    {
+        <script crossorigin src="https://unpkg.com/@@daily-co/daily-js"></script>
+    }
+    <script src="~/js/Site/Videoconsulta.js" asp-append-version="true"></script>
+</body>
+</html>

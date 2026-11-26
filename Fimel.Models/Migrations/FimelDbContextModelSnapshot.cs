@@ -163,6 +163,9 @@ namespace Fimel.Models.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("EsVideoconsulta")
+                        .HasColumnType("bit");
+
                     b.Property<string>("EstadoConfirmacion")
                         .HasColumnType("nvarchar(max)");
 
@@ -200,12 +203,32 @@ namespace Fimel.Models.Migrations
                     b.Property<int?>("UsuarioId")
                         .HasColumnType("int");
 
+                    b.Property<string>("VideoSalaNombre")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("VideoToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("VideoUrlPaciente")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("VideoUrlProfesional")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<string>("Vigente")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UsuarioId");
+
+                    b.HasIndex("VideoToken")
+                        .IsUnique()
+                        .HasFilter("[VideoToken] IS NOT NULL");
 
                     b.ToTable("Citas", (string)null);
                 });
