@@ -308,9 +308,15 @@ namespace Fimel.Site.Controllers
                 {
                     using var ms = new MemoryStream();
                     archivo.CopyTo(ms);
-                    examen.ContenidoArchivo = Convert.ToBase64String(ms.ToArray());
-                    examen.NombreArchivo = archivo.FileName;
-                    examen.MimeType = archivo.ContentType;
+
+                    // Exámenes pesados (fotos, escaneos): se baja la calidad hasta ~300 KB.
+                    var comprimido = CompresorArchivos.Comprimir(ms.ToArray(), archivo.ContentType, archivo.FileName);
+                    if (comprimido.Comprimido)
+                        Logger.Log($"GuardarExamen: '{archivo.FileName}' comprimido de {archivo.Length / 1024} KB a {comprimido.Contenido.Length / 1024} KB.");
+
+                    examen.ContenidoArchivo = Convert.ToBase64String(comprimido.Contenido);
+                    examen.NombreArchivo = comprimido.NombreArchivo;
+                    examen.MimeType = comprimido.MimeType;
                 }
 
                 APIBase.Post<ExamenPaciente>("ExamenesPaciente", examen);
